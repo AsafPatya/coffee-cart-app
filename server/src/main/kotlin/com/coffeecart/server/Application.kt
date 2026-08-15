@@ -1,6 +1,7 @@
 package com.coffeecart.server
 
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
+import com.coffeecart.shared.contract.Endpoints
 import com.coffeecart.shared.contract.toDto
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -32,19 +33,18 @@ fun Application.module() {
     val cartStore = CartStore()
 
     routing {
-        get("/health") { call.respond(HealthResponse(status = "ok")) }
 
-        get("/carts") {
+        get(Endpoints.CARTS) {
             call.respond(cartStore.getAll().map { it.toDto() })
         }
 
-        post("/carts") {
+        post(Endpoints.CARTS) {
             val request = call.receive<CreateCoffeeCartRequest>()
             val cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl)
             call.respond(HttpStatusCode.Created, cart.toDto())
         }
 
-        delete("/carts/{id}") {
+        delete(Endpoints.CARTS_ID) {
             val id = call.parameters["id"]
             val removed = id != null && cartStore.remove(id)
             call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
