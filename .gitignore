@@ -1,0 +1,19 @@
+*.iml
+.idea/
+.gradle/
+build/
+local.properties
+.DS_Store
+.kotlin/
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+
+# Node (Wasm/JS toolchain)
+node_modules/
+kotlin-js-store/
+
+# Secrets — never commit
+.env
