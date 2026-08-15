@@ -18,6 +18,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -56,6 +57,13 @@ fun Application.module() {
             val id = call.parameters["id"]
             val removed = id != null && cartStore.remove(id)
             call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
+        }
+
+        put(Endpoints.CARTS_ID) {
+            val id = call.parameters["id"]
+            val request = call.receive<CreateCoffeeCartRequest>()
+            val updated = id != null && cartStore.update(cartId = id, name = request.name, address = request.address, imageUrl = request.imageUrl)
+            call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
     }
 }
