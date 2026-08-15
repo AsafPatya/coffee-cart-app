@@ -7,7 +7,6 @@ import kotlinx.serialization.Serializable
 data class CoffeeCartDto(
     val id: String,
     val name: String,
-    val isOpen: Boolean,
     val address: String,
     val imageUrl: String,
 )
@@ -15,7 +14,6 @@ data class CoffeeCartDto(
 fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     id = id,
     name = name,
-    isOpen = isOpen,
     address = address,
     imageUrl = imageUrl,
 )
@@ -23,7 +21,6 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     id = id,
     name = name,
-    isOpen = isOpen,
     address = address,
     imageUrl = imageUrl,
 )

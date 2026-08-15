@@ -11,14 +11,12 @@ class CoffeeCartTest {
         val cart = CoffeeCart(
             id = "1",
             name = "Downtown Espresso Cart",
-            isOpen = false,
             address = "123 Main St",
             imageUrl = "https://example.com/cart.png",
         )
 
         assertEquals("1", cart.id)
         assertEquals("Downtown Espresso Cart", cart.name)
-        assertFalse(cart.isOpen)
         assertEquals("123 Main St", cart.address)
         assertEquals("https://example.com/cart.png", cart.imageUrl)
     }

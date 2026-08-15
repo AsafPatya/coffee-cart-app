@@ -60,9 +60,9 @@ fun CoffeeCartListContent(
 @Composable
 private fun CoffeeCartListScreenSuccessPreview() {
     val stubCarts = listOf(
-        CoffeeCart("1", "Downtown Espresso Cart", true, "123 Main St", ""),
-        CoffeeCart("2", "Riverside Brew", false, "456 River Rd", ""),
-        CoffeeCart("3", "Central Park Coffee", true, "789 Park Ave", ""),
+        CoffeeCart("1", "Downtown Espresso Cart", "123 Main St", ""),
+        CoffeeCart("2", "Riverside Brew", "456 River Rd", ""),
+        CoffeeCart("3", "Central Park Coffee", "789 Park Ave", ""),
     )
     CoffeeCartListContent(
         uiState = CoffeeCartListUiState.Success(stubCarts),
