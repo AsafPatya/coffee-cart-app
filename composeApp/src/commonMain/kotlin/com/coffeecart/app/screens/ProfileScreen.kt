@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +37,12 @@ fun ProfileScreen(
     ProfileContent(
         dialogMessage = dialogMessage,
         onGetClick = { viewModel.getCoffeeCarts() },
-        onPostClick = { viewModel.addCoffeeCart() },
+        onConfirmAdd = { name, address, imageUrl ->
+            viewModel.addCoffeeCart(name, address, imageUrl)
+        },
+        onConfirmEdit = { id, name, address, imageUrl ->
+            viewModel.editCoffeeCart(id, name, address, imageUrl)
+        },
         onConfirmDelete = { id -> viewModel.removeCoffeeCart(id) },
         onDismissDialog = { viewModel.dismissDialog() },
     )
@@ -45,10 +52,13 @@ fun ProfileScreen(
 fun ProfileContent(
     dialogMessage: String?,
     onGetClick: () -> Unit,
-    onPostClick: () -> Unit,
+    onConfirmAdd: (String, String, String) -> Unit,
+    onConfirmEdit: (String, String, String, String) -> Unit,
     onConfirmDelete: (String) -> Unit,
     onDismissDialog: () -> Unit,
 ) {
+    var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -71,10 +81,17 @@ fun ProfileContent(
         }
 
         Button(
-            onClick = onPostClick,
+            onClick = { showAddDialog = true },
             modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
         ) {
             Text("Add Coffee Cart")
+        }
+
+        Button(
+            onClick = { showEditDialog = true },
+            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+        ) {
+            Text("Edit Coffee Cart")
         }
 
         Button(
@@ -88,10 +105,134 @@ fun ProfileContent(
             AlertDialog(
                 onDismissRequest = onDismissDialog,
                 title = { Text("Result") },
-                text = { Text(dialogMessage) },
+                text = {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        Text(dialogMessage)
+                    }
+                },
                 confirmButton = {
                     TextButton(onClick = onDismissDialog) {
                         Text("Dismiss")
+                    }
+                }
+            )
+        }
+
+        if (showAddDialog) {
+            var nameInput by remember { mutableStateOf("") }
+            var addressInput by remember { mutableStateOf("") }
+            var imageUrlInput by remember { mutableStateOf("https://picsum.photos/seed/100/200") }
+
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = { Text("Add Coffee Cart") },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.Small.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = nameInput,
+                            onValueChange = { nameInput = it },
+                            label = { Text("Name") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = addressInput,
+                            onValueChange = { addressInput = it },
+                            label = { Text("Address") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = imageUrlInput,
+                            onValueChange = { imageUrlInput = it },
+                            label = { Text("Image URL") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            onConfirmAdd(nameInput, addressInput, imageUrlInput)
+                            showAddDialog = false
+                        }
+                    ) {
+                        Text("Add")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
+
+        if (showEditDialog) {
+            var idInput by remember { mutableStateOf("") }
+            var nameInput by remember { mutableStateOf("") }
+            var addressInput by remember { mutableStateOf("") }
+            var imageUrlInput by remember { mutableStateOf("https://picsum.photos/seed/100/200") }
+
+            AlertDialog(
+                onDismissRequest = { showEditDialog = false },
+                title = { Text("Edit Coffee Cart") },
+                text = {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.Small.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = idInput,
+                            onValueChange = { idInput = it },
+                            label = { Text("Cart ID to Edit") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = nameInput,
+                            onValueChange = { nameInput = it },
+                            label = { Text("New Name") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = addressInput,
+                            onValueChange = { addressInput = it },
+                            label = { Text("New Address") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        OutlinedTextField(
+                            value = imageUrlInput,
+                            onValueChange = { imageUrlInput = it },
+                            label = { Text("New Image URL") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            onConfirmEdit(idInput, nameInput, addressInput, imageUrlInput)
+                            showEditDialog = false
+                        }
+                    ) {
+                        Text("Save")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showEditDialog = false }) {
+                        Text("Cancel")
                     }
                 }
             )
@@ -143,7 +284,8 @@ private fun ProfileScreenPreview() {
     ProfileContent(
         dialogMessage = null,
         onGetClick = {},
-        onPostClick = {},
+        onConfirmAdd = { _, _, _ -> },
+        onConfirmEdit = { _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
     )
@@ -155,7 +297,8 @@ private fun ProfileScreenWithDialogPreview() {
     ProfileContent(
         dialogMessage = "Existing Coffee Carts:\n\nDowntown Espresso Cart\n📍 123 Main St\n\nRiverside Brew\n📍 456 River Rd",
         onGetClick = {},
-        onPostClick = {},
+        onConfirmAdd = { _, _, _ -> },
+        onConfirmEdit = { _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
     )

@@ -12,6 +12,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -28,6 +29,14 @@ class KtorCoffeeCartRepository(
             contentType(ContentType.Application.Json)
             setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl))
         }.body<CoffeeCartDto>().toModel()
+
+    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean {
+        val response = client.put("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}") {
+            contentType(ContentType.Application.Json)
+            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl))
+        }
+        return response.status == HttpStatusCode.OK
+    }
 
     override suspend fun removeCoffeeCart(id: String): Boolean {
         val response = client.delete("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}")
