@@ -18,7 +18,6 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
-import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -44,35 +43,19 @@ fun Application.module() {
     routing {
 
         get(Endpoints.CARTS) {
-            println("SERVER LOG: Received GET carts request")
-            val carts = cartStore.getAll()
-            println("SERVER LOG: Returning ${carts.size} carts from database")
-            call.respond(carts.map { it.toDto() })
+            call.respond(cartStore.getAll().map { it.toDto() })
         }
 
         post(Endpoints.CARTS) {
             val request = call.receive<CreateCoffeeCartRequest>()
-            println("SERVER LOG: Received POST cart request with data: name='${request.name}', address='${request.address}'")
             val cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl)
-            println("SERVER LOG: Successfully inserted cart: ID='${cart.id}', name='${cart.name}'")
             call.respond(HttpStatusCode.Created, cart.toDto())
         }
 
         delete(Endpoints.CARTS_ID) {
             val id = call.parameters["id"]
-            println("SERVER LOG: Received DELETE request for ID '$id'")
             val removed = id != null && cartStore.remove(id)
-            println("SERVER LOG: Delete result for ID '$id': removed=$removed")
             call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
-        }
-
-        put(Endpoints.CARTS_ID) {
-            val id = call.parameters["id"]
-            val request = call.receive<CreateCoffeeCartRequest>()
-            println("SERVER LOG: Received PUT update request for ID '$id' with data: name='${request.name}', address='${request.address}'")
-            val updated = id != null && cartStore.update(cartId = id, name = request.name, address = request.address, imageUrl = request.imageUrl)
-            println("SERVER LOG: Update result for ID '$id': updated=$updated")
-            call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
     }
 }
