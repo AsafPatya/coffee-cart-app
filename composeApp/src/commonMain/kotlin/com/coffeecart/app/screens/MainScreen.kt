@@ -49,7 +49,7 @@ fun MainScreen() {
                 HomeScreen(onNewOrderClick = { navController.navigate(Destination.CoffeeCart.route) })
             }
             composable(Destination.CoffeeCart.route) {
-                CoffeeCartListScreen(onCartClick = { navController.navigate(Destination.Orders.route) })
+                CoffeeCartListScreen(onCartClick = { cartId -> navController.navigate(Destination.Orders.route) })
             }
             composable(Destination.Orders.route) {
                 OrdersScreen()
