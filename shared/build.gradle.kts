@@ -34,6 +34,7 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.koin.core)
+            implementation(libs.lifecycle.viewmodel)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
