@@ -3,7 +3,7 @@ package com.coffeecart.shared.data.repository
 import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.toModel
-import com.coffeecart.shared.data.remote.baseUrl
+import com.coffeecart.shared.data.remote.ServerEnvironment
 import com.coffeecart.shared.domain.CoffeeCartRepository
 import com.coffeecart.shared.model.CoffeeCart
 import io.ktor.client.HttpClient
@@ -19,15 +19,15 @@ class KtorCoffeeCartRepository(
     private val client: HttpClient,
 ) : CoffeeCartRepository {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> =
-        client.get("$baseUrl/carts").body<List<CoffeeCartDto>>().map { it.toModel() }
+        client.get("${ServerEnvironment.baseUrl}/carts").body<List<CoffeeCartDto>>().map { it.toModel() }
 
     suspend fun addCoffeeCart(request: CreateCoffeeCartRequest): CoffeeCart =
-        client.post("$baseUrl/carts") {
+        client.post("${ServerEnvironment.baseUrl}/carts") {
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body<CoffeeCartDto>().toModel()
 
     suspend fun removeCoffeeCart(id: String) {
-        client.delete("$baseUrl/carts/$id")
+        client.delete("${ServerEnvironment.baseUrl}/carts/$id")
     }
 }
