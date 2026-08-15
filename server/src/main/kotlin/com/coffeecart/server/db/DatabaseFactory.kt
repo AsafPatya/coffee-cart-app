@@ -28,6 +28,8 @@ object DatabaseFactory {
 
         transaction {
             SchemaUtils.create(CoffeeCartsTable)
+            // One-off cleanup: an earlier schema had a NOT NULL "is_open" column that no longer exists in code.
+            exec("ALTER TABLE coffee_carts DROP COLUMN IF EXISTS is_open")
         }
     }
 }
