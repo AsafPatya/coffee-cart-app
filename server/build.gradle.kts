@@ -21,6 +21,11 @@ dependencies {
 
     implementation(libs.logback)
 
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
+    implementation(libs.postgresql)
+    implementation(libs.hikari)
+
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.testHost)
 }

@@ -1,5 +1,7 @@
 package com.coffeecart.server
 
+import com.coffeecart.server.db.DatabaseFactory
+import com.coffeecart.server.db.PostgresCartStore
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
 import com.coffeecart.shared.contract.toDto
@@ -30,7 +32,8 @@ fun Application.module() {
     install(ContentNegotiation) { json() }
     install(CallLogging)
 
-    val cartStore = CartStore()
+    DatabaseFactory.init()
+    val cartStore = PostgresCartStore()
 
     routing {
 

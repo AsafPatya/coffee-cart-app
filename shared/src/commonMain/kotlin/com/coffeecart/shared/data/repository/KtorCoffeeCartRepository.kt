@@ -14,6 +14,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 class KtorCoffeeCartRepository(
@@ -22,13 +23,14 @@ class KtorCoffeeCartRepository(
     override suspend fun getCoffeeCarts(): List<CoffeeCart> =
         client.get("${ServerEnvironment.baseUrl}${Endpoints.CARTS}").body<List<CoffeeCartDto>>().map { it.toModel() }
 
-    suspend fun addCoffeeCart(request: CreateCoffeeCartRequest): CoffeeCart =
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart =
         client.post("${ServerEnvironment.baseUrl}${Endpoints.CARTS}") {
             contentType(ContentType.Application.Json)
-            setBody(request)
+            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl))
         }.body<CoffeeCartDto>().toModel()
 
-    suspend fun removeCoffeeCart(id: String) {
-        client.delete("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}")
+    override suspend fun removeCoffeeCart(id: String): Boolean {
+        val response = client.delete("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}")
+        return response.status == HttpStatusCode.NoContent
     }
 }
