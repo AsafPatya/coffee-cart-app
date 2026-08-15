@@ -20,16 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
+import com.coffeecart.app.theme.Colors
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp as spacingDp
 import com.coffeecart.shared.model.CoffeeCart
 
-private val openDotColor = Color(0xFF4CAF50)
-private val closedDotColor = Color(0xFFF44336)
+private val CART_IMAGE_SIZE = 64.dp
 
 @Composable
 fun CoffeeCartListItem(cart: CoffeeCart, onClick: () -> Unit) {
@@ -44,9 +44,9 @@ fun CoffeeCartListItem(cart: CoffeeCart, onClick: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
-                            .size(8.dp)
+                            .size(Spacing.Small.spacingDp)
                             .background(
-                                color = if (cart.isOpen) openDotColor else closedDotColor,
+                                color = if (cart.isOpen) Colors.Green else Colors.Red,
                                 shape = CircleShape,
                             ),
                     )
@@ -58,9 +58,26 @@ fun CoffeeCartListItem(cart: CoffeeCart, onClick: () -> Unit) {
             AsyncImage(
                 model = cart.imageUrl,
                 contentDescription = cart.name,
-                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(8.dp)),
+                modifier = Modifier.size(CART_IMAGE_SIZE).clip(RoundedCornerShape(Spacing.Small.spacingDp)),
                 contentScale = ContentScale.Crop,
             )
         }
     }
 }
+
+@Preview
+@Composable
+private fun CoffeeCartListItemPreview() {
+    val stubCart = CoffeeCart(
+        id = "1",
+        name = "Downtown Espresso Cart",
+        isOpen = true,
+        address = "123 Main St",
+        imageUrl = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
+    )
+    CoffeeCartListItem(
+        cart = stubCart,
+        onClick = {},
+    )
+}
+
