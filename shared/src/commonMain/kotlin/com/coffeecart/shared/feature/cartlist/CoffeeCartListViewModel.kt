@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 sealed interface CoffeeCartListUiState {
     data object Loading : CoffeeCartListUiState
@@ -27,7 +26,7 @@ class CoffeeCartListViewModel(
     }
 
     fun loadCarts() {
-        runBlocking {
+        viewModelScope.launch {
             _uiState.value = CoffeeCartListUiState.Loading
             _uiState.value = try {
                 CoffeeCartListUiState.Success(repository.getCoffeeCarts())

@@ -2,10 +2,14 @@ package com.coffeecart.shared.feature.cartlist
 
 import com.coffeecart.shared.domain.CoffeeCartRepository
 import com.coffeecart.shared.model.CoffeeCart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+
+@OptIn(ExperimentalCoroutinesApi::class)
 
 private class SucceedingRepository(private val carts: List<CoffeeCart>) : CoffeeCartRepository {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = carts
@@ -24,18 +28,22 @@ class CoffeeCartListViewModelTest {
         imageUrl = "https://example.com/cart.png",
     )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `starts loading then succeeds with carts from repository`() = runTest {
         val viewModel = CoffeeCartListViewModel(SucceedingRepository(listOf(sampleCart)))
+        advanceUntilIdle()
 
         val state = viewModel.uiState.value
         assertIs<CoffeeCartListUiState.Success>(state)
         assertEquals(listOf(sampleCart), state.carts)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `becomes an error state when the repository throws`() = runTest {
         val viewModel = CoffeeCartListViewModel(FailingRepository(RuntimeException("boom")))
+        advanceUntilIdle()
 
         val state = viewModel.uiState.value
         assertIs<CoffeeCartListUiState.Error>(state)
