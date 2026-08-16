@@ -1,7 +1,24 @@
 package com.coffeecart.shared.contract
 
 import com.coffeecart.shared.model.CoffeeCart
+import com.coffeecart.shared.model.MenuCategory
+import com.coffeecart.shared.model.Product
 import kotlinx.serialization.Serializable
+
+@Serializable
+data class ProductDto(
+    val name: String,
+    val price: Double,
+    val description: String,
+    val imageUrl: String,
+)
+
+@Serializable
+data class MenuCategoryDto(
+    val name: String,
+    val imageUrl: String,
+    val products: List<ProductDto> = emptyList(),
+)
 
 @Serializable
 data class CoffeeCartDto(
@@ -9,6 +26,33 @@ data class CoffeeCartDto(
     val name: String,
     val address: String,
     val imageUrl: String,
+    val categories: List<MenuCategoryDto> = emptyList(),
+)
+
+fun ProductDto.toModel(): Product = Product(
+    name = name,
+    price = price,
+    description = description,
+    imageUrl = imageUrl,
+)
+
+fun Product.toDto(): ProductDto = ProductDto(
+    name = name,
+    price = price,
+    description = description,
+    imageUrl = imageUrl,
+)
+
+fun MenuCategoryDto.toModel(): MenuCategory = MenuCategory(
+    name = name,
+    imageUrl = imageUrl,
+    products = products.map { it.toModel() },
+)
+
+fun MenuCategory.toDto(): MenuCategoryDto = MenuCategoryDto(
+    name = name,
+    imageUrl = imageUrl,
+    products = products.map { it.toDto() },
 )
 
 fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
@@ -16,6 +60,7 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     name = name,
     address = address,
     imageUrl = imageUrl,
+    categories = categories.map { it.toModel() },
 )
 
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
@@ -23,6 +68,7 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     name = name,
     address = address,
     imageUrl = imageUrl,
+    categories = categories.map { it.toDto() },
 )
 
 @Serializable

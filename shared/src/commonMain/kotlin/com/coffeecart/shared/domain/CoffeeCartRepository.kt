@@ -7,4 +7,5 @@ interface CoffeeCartRepository {
     suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart
     suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean
     suspend fun removeCoffeeCart(id: String): Boolean
+    suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean
 }

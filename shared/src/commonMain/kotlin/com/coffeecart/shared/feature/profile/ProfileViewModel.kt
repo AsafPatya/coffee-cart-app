@@ -3,6 +3,7 @@ package com.coffeecart.shared.feature.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.model.CoffeeCart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,10 +19,28 @@ class ProfileViewModel(
     private val _dialogMessage = MutableStateFlow<String?>(null)
     val dialogMessage: StateFlow<String?> = _dialogMessage.asStateFlow()
 
+    private val _cartsList = MutableStateFlow<List<CoffeeCart>>(emptyList())
+    val cartsList: StateFlow<List<CoffeeCart>> = _cartsList.asStateFlow()
+
+    init {
+        loadCarts()
+    }
+
+    fun loadCarts() {
+        viewModelScope.launch {
+            try {
+                _cartsList.value = repository.getCoffeeCarts()
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+    }
+
     fun getCoffeeCarts() {
         viewModelScope.launch {
             try {
                 val carts = repository.getCoffeeCarts()
+                _cartsList.value = carts
                 if (carts.isEmpty()) {
                     _dialogMessage.value = "No coffee carts found."
                 } else {
@@ -50,6 +69,7 @@ class ProfileViewModel(
                     imageUrl = imageUrl.trim().ifEmpty { "https://picsum.photos/seed/100/200" },
                 )
                 _dialogMessage.value = "Successfully Added Coffee Cart!\n\nID: ${cart.id}\nName: ${cart.name}\n📍 ${cart.address}"
+                loadCarts()
             } catch (e: Exception) {
                 _dialogMessage.value = "Error adding cart: ${e.message ?: "Unknown error"}"
             }
@@ -68,6 +88,7 @@ class ProfileViewModel(
                 val success = repository.removeCoffeeCart(trimmedId)
                 if (success) {
                     _dialogMessage.value = "Successfully Removed Coffee Cart with ID: $trimmedId!"
+                    loadCarts()
                 } else {
                     _dialogMessage.value = "Failed to remove coffee cart. ID '$trimmedId' was not found."
                 }
@@ -94,6 +115,7 @@ class ProfileViewModel(
                 )
                 if (success) {
                     _dialogMessage.value = "Successfully Updated Coffee Cart!\n\nID: $trimmedId\nName: ${name.trim()}\n📍 ${address.trim()}"
+                    loadCarts()
                 } else {
                     _dialogMessage.value = "Failed to update. Coffee cart with ID '$trimmedId' was not found."
                 }

@@ -2,9 +2,11 @@ package com.coffeecart.server
 
 import com.coffeecart.server.db.DatabaseFactory
 import com.coffeecart.server.db.PostgresCartStore
+import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
 import com.coffeecart.shared.contract.toDto
+import com.coffeecart.shared.contract.toModel
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
@@ -61,8 +63,8 @@ fun Application.module() {
 
         put(Endpoints.CARTS_ID) {
             val id = call.parameters["id"]
-            val request = call.receive<CreateCoffeeCartRequest>()
-            val updated = id != null && cartStore.update(cartId = id, name = request.name, address = request.address, imageUrl = request.imageUrl)
+            val request = call.receive<CoffeeCartDto>()
+            val updated = id != null && cartStore.updateFull(request.toModel())
             call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
     }
