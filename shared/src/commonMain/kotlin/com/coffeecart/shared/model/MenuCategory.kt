@@ -3,10 +3,9 @@ package com.coffeecart.shared.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CoffeeCart(
-    val id: String,
+data class MenuCategory(
     val name: String,
-    val address: String,
     val imageUrl: String,
-    val categories: List<MenuCategory> = emptyList(),
+    val products: List<Product> = emptyList(),
 )
+
