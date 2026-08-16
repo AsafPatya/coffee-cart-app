@@ -13,6 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.coffeecart.app.nav.Destination
 import com.coffeecart.app.ui.BottomBar
 import androidx.compose.ui.tooling.preview.Preview
+import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
 
 /**
  * Main application container screen that sets up the internal navigation host and bottom navigation.

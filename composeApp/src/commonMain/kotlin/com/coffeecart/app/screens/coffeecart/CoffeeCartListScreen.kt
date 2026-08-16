@@ -1,4 +1,4 @@
-package com.coffeecart.app.screens
+package com.coffeecart.app.screens.coffeecart
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
