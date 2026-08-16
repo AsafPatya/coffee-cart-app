@@ -3,6 +3,7 @@ package com.coffeecart.shared.data.repository
 import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
+import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
 import com.coffeecart.shared.data.remote.ServerEnvironment
 import com.coffeecart.shared.domain.CoffeeCartRepository
@@ -45,11 +46,17 @@ class KtorCoffeeCartRepository(
     }
 
     override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean {
-        val response = client.put("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}") {
-            contentType(ContentType.Application.Json)
-            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl))
-        }
-        val success = response.status == HttpStatusCode.OK
+        // The server always persists the full cart on PUT, so fetch current categories first —
+        // otherwise this name/address/image-only edit would silently wipe them out.
+        val existingCategories = getCoffeeCarts().find { it.id == id }?.categories.orEmpty()
+        return updateCoffeeCartFull(
+            CoffeeCart(id = id, name = name, address = address, imageUrl = imageUrl, categories = existingCategories)
+        )
+    }
+
+    override suspend fun removeCoffeeCart(id: String): Boolean {
+        val response = client.delete("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}")
+        val success = response.status == HttpStatusCode.NoContent
         if (success) {
             mutex.withLock {
                 cachedCarts = null
@@ -58,9 +65,12 @@ class KtorCoffeeCartRepository(
         return success
     }
 
-    override suspend fun removeCoffeeCart(id: String): Boolean {
-        val response = client.delete("${ServerEnvironment.baseUrl}${Endpoints.cartById(id)}")
-        val success = response.status == HttpStatusCode.NoContent
+    override suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean {
+        val response = client.put("${ServerEnvironment.baseUrl}${Endpoints.cartById(cart.id)}") {
+            contentType(ContentType.Application.Json)
+            setBody(cart.toDto())
+        }
+        val success = response.status == HttpStatusCode.OK
         if (success) {
             mutex.withLock {
                 cachedCarts = null

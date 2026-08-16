@@ -7,6 +7,7 @@ object CoffeeCartsTable : Table("coffee_carts") {
     val name = varchar("name", 255)
     val address = varchar("address", 255)
     val imageUrl = varchar("image_url", 1024)
+    val menuJson = text("menu_json").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

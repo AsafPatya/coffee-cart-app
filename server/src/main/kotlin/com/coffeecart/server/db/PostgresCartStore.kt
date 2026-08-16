@@ -1,7 +1,10 @@
 package com.coffeecart.server.db
 
 import com.coffeecart.shared.model.CoffeeCart
+import com.coffeecart.shared.model.MenuCategory
 import java.util.UUID
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -45,6 +48,16 @@ class PostgresCartStore {
         } > 0
     }
 
+    fun updateFull(cart: CoffeeCart): Boolean = transaction {
+        val jsonString = Json.encodeToString(cart.categories)
+        CoffeeCartsTable.update({ CoffeeCartsTable.id eq cart.id }) {
+            it[CoffeeCartsTable.name] = cart.name
+            it[CoffeeCartsTable.address] = cart.address
+            it[CoffeeCartsTable.imageUrl] = cart.imageUrl
+            it[menuJson] = jsonString
+        } > 0
+    }
+
     private fun seedIfEmpty() = transaction {
         if (CoffeeCartsTable.selectAll().empty()) {
             listOf(
@@ -67,5 +80,12 @@ class PostgresCartStore {
         name = this[CoffeeCartsTable.name],
         address = this[CoffeeCartsTable.address],
         imageUrl = this[CoffeeCartsTable.imageUrl],
+        categories = this[CoffeeCartsTable.menuJson]?.let {
+            try {
+                Json.decodeFromString<List<MenuCategory>>(it)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } ?: emptyList()
     )
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.coffeecart.shared.domain.CoffeeCartRepository
 import com.coffeecart.shared.model.CoffeeCart
+import com.coffeecart.shared.model.MenuCategory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +35,29 @@ class CoffeeCartDetailsViewModel(
                 }
             } catch (e: Exception) {
                 _uiState.value = CoffeeCartDetailsUiState.Error(e.message ?: "Failed to load coffee cart detail.")
+            }
+        }
+    }
+
+    fun addCategory(cartId: String, category: MenuCategory, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val carts = repository.getCoffeeCarts()
+                val cart = carts.find { it.id == cartId }
+                if (cart != null) {
+                    val updatedCart = cart.copy(categories = cart.categories + category)
+                    val success = repository.updateCoffeeCartFull(updatedCart)
+                    if (success) {
+                        _uiState.value = CoffeeCartDetailsUiState.Success(updatedCart)
+                        onResult(true)
+                    } else {
+                        onResult(false)
+                    }
+                } else {
+                    onResult(false)
+                }
+            } catch (e: Exception) {
+                onResult(false)
             }
         }
     }

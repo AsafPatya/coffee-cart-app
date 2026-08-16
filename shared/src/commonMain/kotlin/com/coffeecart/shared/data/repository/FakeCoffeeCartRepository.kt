@@ -160,4 +160,12 @@ class FakeCoffeeCartRepository : CoffeeCartRepository {
         delay(200)
         return carts.removeAll { it.id == id }
     }
+
+    override suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean {
+        delay(200)
+        val idx = carts.indexOfFirst { it.id == cart.id }
+        if (idx == -1) return false
+        carts[idx] = cart
+        return true
+    }
 }

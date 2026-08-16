@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.read
 import com.coffeecart.app.nav.Destination
 import com.coffeecart.app.nav.Routes
+import com.coffeecart.app.screens.coffeecart.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartCategoryProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
@@ -48,13 +49,15 @@ fun MainScreen() {
         topBar = {
             if (currentRoute == Routes.COFFEE_CART_DETAILS ||
                 currentRoute == Routes.COFFEE_CART_MENU_CATEGORIES ||
-                currentRoute == Routes.COFFEE_CART_CATEGORY_PRODUCTS
+                currentRoute == Routes.COFFEE_CART_CATEGORY_PRODUCTS ||
+                currentRoute == Routes.COFFEE_CART_ADD_CATEGORY_WIZARD
             ) {
                 val titleString = when (currentRoute) {
                     Routes.COFFEE_CART_MENU_CATEGORIES -> "Menu Categories"
                     Routes.COFFEE_CART_CATEGORY_PRODUCTS -> {
                         currentEntry?.arguments?.read { getStringOrNull("categoryName") } ?: "Products"
                     }
+                    Routes.COFFEE_CART_ADD_CATEGORY_WIZARD -> "Add Menu Category"
                     else -> topBarTitle
                 }
                 TopAppBar(
@@ -127,11 +130,26 @@ fun MainScreen() {
                 } ?: ""
                 CoffeeCartCategoryProductsScreen(cartId = cartId, categoryName = categoryName)
             }
+            composable(Routes.COFFEE_CART_ADD_CATEGORY_WIZARD) { backStackEntry ->
+                val cartId = backStackEntry.arguments?.read {
+                    getStringOrNull("cartId")
+                } ?: ""
+                CoffeeCartAddCategoryScreen(
+                    cartId = cartId,
+                    onSuccess = {
+                        navController.popBackStack()
+                    }
+                )
+            }
             composable(Destination.Orders.route) {
                 OrdersScreen()
             }
             composable(Destination.Profile.route) {
-                ProfileScreen()
+                ProfileScreen(
+                    onAddCategoryClick = { cartId ->
+                        navController.navigate(Routes.coffeeCartAddCategoryWizard(cartId))
+                    }
+                )
             }
         }
     }
