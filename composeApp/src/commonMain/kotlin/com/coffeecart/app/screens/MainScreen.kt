@@ -29,7 +29,7 @@ import com.coffeecart.app.screens.coffeecart.CoffeeCartCategoryProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
-import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
+import com.coffeecart.app.screens.profile.ui.ProfileScreen
 import com.coffeecart.app.ui.BottomBar
 
 /**
