@@ -45,10 +45,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.readBytes
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 /**
- * A highly reusable media selection/capture picker overlay offering
- * simulated offline Storage and camera viewfinder simulations.
+ * A highly reusable media selection/capture picker overlay offering a real system file picker
+ * (via FileKit) for Storage, and a simulated camera viewfinder.
+ *
+ * Note: a picked photo only previews locally here — there is no upload endpoint yet, so it is
+ * not persisted with the cart. [imageUrl] / [onImageUrlChange] are unaffected by Storage picks.
  */
 @Composable
 fun CartMediaPicker(
@@ -56,8 +64,17 @@ fun CartMediaPicker(
     onImageUrlChange: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var showGallery by remember { mutableStateOf(false) }
     var showCamera by remember { mutableStateOf(false) }
+    var pickedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+
+    val filePickerLauncher = rememberFilePickerLauncher(type = FileKitType.Image) { file ->
+        file?.let {
+            coroutineScope.launch {
+                pickedImageBytes = it.readBytes()
+            }
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -70,10 +87,11 @@ fun CartMediaPicker(
             modifier = Modifier.padding(top = Spacing.Small.dp)
         )
 
-        if (imageUrl.isNotEmpty()) {
+        val previewModel: Any? = pickedImageBytes ?: imageUrl.takeIf { it.isNotEmpty() }
+        if (previewModel != null) {
             Card(modifier = Modifier.size(Spacing.XXXLarge.dp * 4)) {
                 AsyncImage(
-                    model = imageUrl,
+                    model = previewModel,
                     contentDescription = "Cart Preview",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Fit
@@ -86,7 +104,7 @@ fun CartMediaPicker(
             horizontalArrangement = Arrangement.spacedBy(Spacing.Medium.dp)
         ) {
             Button(
-                onClick = { showGallery = true },
+                onClick = { filePickerLauncher.launch() },
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -118,61 +136,7 @@ fun CartMediaPicker(
         }
     }
 
-    // LOCAL PHOTO PICKERS
-    if (showGallery) {
-        val galleryOptions = listOf(
-            "Downtown Cart" to "https://picsum.photos/seed/1/200",
-            "Riverside Brew" to "https://picsum.photos/seed/2/200",
-            "Central Park Coffee" to "https://picsum.photos/seed/3/200",
-            "Cozy Corner Brew" to "https://picsum.photos/seed/4/200",
-            "Metro Espresso" to "https://picsum.photos/seed/5/200"
-        )
-
-        AlertDialog(
-            onDismissRequest = { showGallery = false },
-            title = { Text("Simulated Media Storage") },
-            text = {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.Small.dp)
-                ) {
-                    Text("Pick an image from simulated device storage:")
-                    Column(
-                        modifier = Modifier.height(Spacing.XXXLarge.dp * 5).verticalScroll(rememberScrollState()),
-                        verticalArrangement = Arrangement.spacedBy(Spacing.XSmall.dp)
-                    ) {
-                        galleryOptions.forEach { (label, url) ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onImageUrlChange(url)
-                                        showGallery = false
-                                    }
-                                    .padding(Spacing.Small.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                AsyncImage(
-                                    model = url,
-                                    contentDescription = label,
-                                    modifier = Modifier.size(Spacing.XXXLarge.dp).clip(MaterialTheme.shapes.small),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(modifier = Modifier.width(Spacing.Medium.dp))
-                                Text(text = label, style = MaterialTheme.typography.bodyLarge)
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showGallery = false }) {
-                    Text("Close")
-                }
-            }
-        )
-    }
+    // SIMULATED CAMERA
 
     if (showCamera) {
         var cameraStage by remember { mutableStateOf(0) }
