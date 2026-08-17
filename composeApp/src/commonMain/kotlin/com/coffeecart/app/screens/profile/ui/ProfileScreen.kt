@@ -118,6 +118,11 @@ fun ProfileContent(
             Text("Remove Coffee Cart")
         }
 
+        Text(
+            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp),
+            text = "Relevant for Coffee Carts Owners"
+        )
+
         Button(
             onClick = {
                 onGetClick()
