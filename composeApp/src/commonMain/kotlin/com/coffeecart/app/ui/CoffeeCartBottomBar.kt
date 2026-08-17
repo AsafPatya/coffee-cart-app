@@ -24,8 +24,18 @@ fun BottomBar(
 ) {
     NavigationBar {
         Destination.entries.forEach { destination ->
+            val isSelected = when (destination) {
+                Destination.Home -> currentRoute == Destination.Home.route
+                Destination.CoffeeCart -> currentRoute == Destination.CoffeeCart.route ||
+                        currentRoute?.startsWith("coffee_cart_details") == true ||
+                        currentRoute?.startsWith("coffee_cart_menu_categories") == true ||
+                        currentRoute?.startsWith("coffee_cart_category_products") == true
+                Destination.Orders -> currentRoute == Destination.Orders.route
+                Destination.Profile -> currentRoute == Destination.Profile.route ||
+                        currentRoute?.startsWith("coffee_cart_add_category_wizard") == true
+            }
             NavigationBarItem(
-                selected = currentRoute == destination.route,
+                selected = isSelected,
                 onClick = { onNavigate(destination) },
                 icon = { Icon(destination.icon, contentDescription = destination.label) },
                 label = { Text(destination.label) },

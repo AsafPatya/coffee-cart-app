@@ -16,6 +16,7 @@ kotlin {
         namespace = "com.coffeecart.app.ui"
         compileSdk = libs.versions.androidCompileSdk.get().toInt()
         minSdk = libs.versions.androidMinSdk.get().toInt()
+        androidResources { enable = true }
     }
 
     // Compose Multiplatform 1.11+ no longer publishes iosX64 (Intel simulator) artifacts.
@@ -43,6 +44,7 @@ kotlin {
 
             implementation(compose.runtime)
             implementation(compose.foundation)
+            implementation(compose.components.resources)
             implementation(compose.material3)
             implementation(compose.materialIconsExtended)
             implementation(libs.compose.uiToolingPreview)

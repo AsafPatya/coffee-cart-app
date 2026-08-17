@@ -24,12 +24,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.read
 import com.coffeecart.app.nav.Destination
 import com.coffeecart.app.nav.Routes
-import com.coffeecart.app.screens.coffeecart.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartCategoryProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
 import com.coffeecart.app.screens.profile.ui.ProfileScreen
+import com.coffeecart.app.screens.profile.ui.addcategory.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.ui.BottomBar
 
 /**
@@ -76,12 +76,34 @@ fun MainScreen() {
             BottomBar(
                 currentRoute = currentRoute,
                 onNavigate = { destination ->
-                    navController.navigate(destination.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
+                    val isCurrentTabActive = when (destination) {
+                        Destination.Home -> currentRoute == Destination.Home.route
+                        Destination.CoffeeCart -> currentRoute == Destination.CoffeeCart.route ||
+                                currentRoute?.startsWith("coffee_cart_details") == true ||
+                                currentRoute?.startsWith("coffee_cart_menu_categories") == true ||
+                                currentRoute?.startsWith("coffee_cart_category_products") == true
+                        Destination.Orders -> currentRoute == Destination.Orders.route
+                        Destination.Profile -> currentRoute == Destination.Profile.route ||
+                                currentRoute?.startsWith("coffee_cart_add_category_wizard") == true
+                    }
+
+                    if (isCurrentTabActive) {
+                        if (currentRoute != destination.route) {
+                            navController.navigate(destination.route) {
+                                popUpTo(destination.route) {
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                            }
                         }
-                        launchSingleTop = true
-                        restoreState = true
+                    } else {
+                        navController.navigate(destination.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = false
+                            }
+                            launchSingleTop = true
+                            restoreState = false
+                        }
                     }
                 }
             )
