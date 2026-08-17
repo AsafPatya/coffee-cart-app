@@ -36,25 +36,6 @@ class ProfileViewModel(
         }
     }
 
-    fun getCoffeeCarts() {
-        viewModelScope.launch {
-            try {
-                val carts = repository.getCoffeeCarts()
-                _cartsList.value = carts
-                if (carts.isEmpty()) {
-                    _dialogMessage.value = "No coffee carts found."
-                } else {
-                    val formatted = carts.joinToString(separator = "\n\n") { cart ->
-                        "ID: ${cart.id}\nName: ${cart.name}\n📍 ${cart.address}"
-                    }
-                    _dialogMessage.value = "Existing Coffee Carts:\n\n$formatted"
-                }
-            } catch (e: Exception) {
-                _dialogMessage.value = "Error fetching carts: ${e.message ?: "Unknown error"}"
-            }
-        }
-    }
-
     fun dismissDialog() {
         _dialogMessage.value = null
     }

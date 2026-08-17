@@ -15,6 +15,8 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.http.HttpMethod
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
@@ -39,6 +41,14 @@ fun Application.module() {
         })
     }
     install(CallLogging)
+    install(CORS) {
+        anyHost() // dev/QA convenience — the web (wasmJs) client runs on localhost or any preview URL
+        allowMethod(HttpMethod.Get)
+        allowMethod(HttpMethod.Post)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowHeader(io.ktor.http.HttpHeaders.ContentType)
+    }
 
     DatabaseFactory.init()
     val cartStore = PostgresCartStore()
