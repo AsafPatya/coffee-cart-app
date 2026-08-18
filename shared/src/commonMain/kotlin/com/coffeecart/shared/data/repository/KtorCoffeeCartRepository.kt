@@ -3,6 +3,7 @@ package com.coffeecart.shared.data.repository
 import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
+import com.coffeecart.shared.contract.UploadImageResponse
 import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
 import com.coffeecart.shared.data.remote.ServerEnvironment
@@ -13,8 +14,12 @@ import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -92,5 +97,17 @@ class KtorCoffeeCartRepository(
             }
         }
         return success
+    }
+
+    override suspend fun uploadImage(bytes: ByteArray, fileName: String): String {
+        val response = client.submitFormWithBinaryData(
+            url = "${ServerEnvironment.baseUrl}${Endpoints.IMAGES_UPLOAD}",
+            formData = formData {
+                append("file", bytes, Headers.build {
+                    append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                })
+            },
+        )
+        return response.body<UploadImageResponse>().url
     }
 }

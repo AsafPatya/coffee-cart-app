@@ -31,18 +31,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import com.coffeecart.shared.domain.CoffeeCartRepository
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 /**
  * A highly reusable media selection/capture picker offering FileKit's real system file picker
  * for Storage, and its real camera capture for Camera (Android/iOS only — FileKit's camera
  * launcher is not supported on Wasm; the button is disabled there instead of faking a photo).
  *
- * Note: a picked/captured photo only previews locally here — there is no upload endpoint yet,
- * so it is not persisted with the cart. [imageUrl] / [onImageUrlChange] are unaffected.
+ * A picked/captured photo previews locally, then uploads in the background; [onImageUrlChange]
+ * receives the server-hosted URL once the upload completes.
  */
 @Composable
 fun CartMediaPicker(
@@ -50,23 +53,32 @@ fun CartMediaPicker(
     onImageUrlChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     title: String = "Select Cart Image",
+    repository: CoffeeCartRepository = koinInject(),
 ) {
     var pickedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+
+    fun uploadAndApply(bytes: ByteArray, fileName: String) {
+        pickedImageBytes = bytes
+        isUploading = true
+        coroutineScope.launch {
+            val url = repository.uploadImage(bytes, fileName)
+            onImageUrlChange(url)
+            isUploading = false
+        }
+    }
 
     val filePickerLauncher = rememberFilePickerLauncher(type = FileKitType.Image) { file ->
         file?.let {
             coroutineScope.launch {
-                val bytes = it.readBytes()
-                pickedImageBytes = bytes
-                onImageUrlChange("https://picsum.photos/seed/${kotlin.math.abs(bytes.hashCode())}/400")
+                uploadAndApply(it.readBytes(), it.name)
             }
         }
     }
 
     val cameraLauncher = rememberCartCameraLauncher { bytes ->
-        pickedImageBytes = bytes
-        onImageUrlChange("https://picsum.photos/seed/${kotlin.math.abs(bytes.hashCode())}/400")
+        uploadAndApply(bytes, "cart_photo.jpg")
     }
 
     Column(
@@ -98,6 +110,7 @@ fun CartMediaPicker(
         ) {
             Button(
                 onClick = { filePickerLauncher.launch() },
+                enabled = !isUploading,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -113,7 +126,7 @@ fun CartMediaPicker(
             }
             Button(
                 onClick = { cameraLauncher.launch() },
-                enabled = cameraLauncher.isSupported,
+                enabled = cameraLauncher.isSupported && !isUploading,
                 modifier = Modifier.weight(1f),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -127,6 +140,14 @@ fun CartMediaPicker(
                 Spacer(Modifier.width(Spacing.Small.dp))
                 Text("Camera")
             }
+        }
+
+        if (isUploading) {
+            Text(
+                text = "Uploading...",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
 
         if (!cameraLauncher.isSupported) {
