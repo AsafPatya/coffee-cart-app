@@ -175,4 +175,9 @@ class FakeCoffeeCartRepository : CoffeeCartRepository {
         carts[idx] = cart
         return true
     }
+
+    override suspend fun uploadImage(bytes: ByteArray, fileName: String): String {
+        delay(200)
+        return "https://picsum.photos/seed/${kotlin.math.abs(bytes.hashCode())}/400"
+    }
 }
