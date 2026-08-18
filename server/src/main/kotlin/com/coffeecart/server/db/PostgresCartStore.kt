@@ -55,6 +55,8 @@ class PostgresCartStore {
             it[CoffeeCartsTable.address] = cart.address
             it[CoffeeCartsTable.imageUrl] = cart.imageUrl
             it[menuJson] = jsonString
+            it[latitude] = cart.latitude
+            it[longitude] = cart.longitude
         } > 0
     }
 
@@ -86,6 +88,8 @@ class PostgresCartStore {
             } catch (e: Exception) {
                 emptyList()
             }
-        } ?: emptyList()
+        } ?: emptyList(),
+        latitude = this[CoffeeCartsTable.latitude],
+        longitude = this[CoffeeCartsTable.longitude],
     )
 }

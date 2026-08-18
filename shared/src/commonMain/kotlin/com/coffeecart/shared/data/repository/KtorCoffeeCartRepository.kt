@@ -45,12 +45,27 @@ class KtorCoffeeCartRepository(
         return cart
     }
 
-    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean {
+    override suspend fun updateCoffeeCart(
+        id: String,
+        name: String,
+        address: String,
+        imageUrl: String,
+        latitude: Double?,
+        longitude: Double?,
+    ): Boolean {
         // The server always persists the full cart on PUT, so fetch current categories first —
         // otherwise this name/address/image-only edit would silently wipe them out.
         val existingCategories = getCoffeeCarts().find { it.id == id }?.categories.orEmpty()
         return updateCoffeeCartFull(
-            CoffeeCart(id = id, name = name, address = address, imageUrl = imageUrl, categories = existingCategories)
+            CoffeeCart(
+                id = id,
+                name = name,
+                address = address,
+                imageUrl = imageUrl,
+                categories = existingCategories,
+                latitude = latitude,
+                longitude = longitude,
+            )
         )
     }
 
