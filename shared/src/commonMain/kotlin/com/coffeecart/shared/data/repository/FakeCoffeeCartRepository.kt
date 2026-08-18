@@ -148,11 +148,18 @@ class FakeCoffeeCartRepository : CoffeeCartRepository {
         return newCart
     }
 
-    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean {
+    override suspend fun updateCoffeeCart(
+        id: String,
+        name: String,
+        address: String,
+        imageUrl: String,
+        latitude: Double?,
+        longitude: Double?,
+    ): Boolean {
         delay(200)
         val idx = carts.indexOfFirst { it.id == id }
         if (idx == -1) return false
-        carts[idx] = CoffeeCart(id = id, name = name, address = address, imageUrl = imageUrl)
+        carts[idx] = CoffeeCart(id = id, name = name, address = address, imageUrl = imageUrl, latitude = latitude, longitude = longitude)
         return true
     }
 

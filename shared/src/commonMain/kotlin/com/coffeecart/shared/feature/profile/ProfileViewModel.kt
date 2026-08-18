@@ -79,7 +79,14 @@ class ProfileViewModel(
         }
     }
 
-    fun editCoffeeCart(id: String, name: String, address: String, imageUrl: String) {
+    fun editCoffeeCart(
+        id: String,
+        name: String,
+        address: String,
+        imageUrl: String,
+        latitude: Double? = null,
+        longitude: Double? = null,
+    ) {
         viewModelScope.launch {
             try {
                 val trimmedId = id.trim()
@@ -93,6 +100,8 @@ class ProfileViewModel(
                     name = name.trim().ifEmpty { "Updated Cart" },
                     address = address.trim().ifEmpty { "Updated Street" },
                     imageUrl = imageUrl.trim().ifEmpty { "https://picsum.photos/seed/100/200" },
+                    latitude = latitude,
+                    longitude = longitude,
                 )
                 if (success) {
                     _dialogMessage.value = "Successfully Updated Coffee Cart!\n\nID: $trimmedId\nName: ${name.trim()}\n📍 ${address.trim()}"

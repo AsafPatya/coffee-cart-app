@@ -49,8 +49,8 @@ fun ProfileScreen(
         onConfirmAdd = { name, address, imageUrl ->
             viewModel.addCoffeeCart(name, address, imageUrl)
         },
-        onConfirmEdit = { id, name, address, imageUrl ->
-            viewModel.editCoffeeCart(id, name, address, imageUrl)
+        onConfirmEdit = { id, name, address, imageUrl, latitude, longitude ->
+            viewModel.editCoffeeCart(id, name, address, imageUrl, latitude, longitude)
         },
         onConfirmDelete = { id -> viewModel.removeCoffeeCart(id) },
         onDismissDialog = { viewModel.dismissDialog() },
@@ -65,7 +65,7 @@ fun ProfileContent(
     cartsList: List<CoffeeCart>,
     onGetClick: () -> Unit,
     onConfirmAdd: (String, String, String) -> Unit,
-    onConfirmEdit: (String, String, String, String) -> Unit,
+    onConfirmEdit: (String, String, String, String, Double?, Double?) -> Unit,
     onConfirmDelete: (String) -> Unit,
     onDismissDialog: () -> Unit,
     onAddCategoryClick: (String) -> Unit,
@@ -178,8 +178,8 @@ fun ProfileContent(
             EditCartDialog(
                 cart = selectedCartForEdit!!,
                 onDismiss = { selectedCartForEdit = null },
-                onConfirm = { id, name, address, imageUrl ->
-                    onConfirmEdit(id, name, address, imageUrl)
+                onConfirm = { id, name, address, imageUrl, latitude, longitude ->
+                    onConfirmEdit(id, name, address, imageUrl, latitude, longitude)
                     selectedCartForEdit = null
                 }
             )
@@ -207,7 +207,7 @@ private fun ProfileScreenPreview() {
         cartsList = emptyList(),
         onGetClick = {},
         onConfirmAdd = { _, _, _ -> },
-        onConfirmEdit = { _, _, _, _ -> },
+        onConfirmEdit = { _, _, _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
         onAddCategoryClick = {}
@@ -225,7 +225,7 @@ private fun ProfileScreenWithDialogPreview() {
         ),
         onGetClick = {},
         onConfirmAdd = { _, _, _ -> },
-        onConfirmEdit = { _, _, _, _ -> },
+        onConfirmEdit = { _, _, _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
         onAddCategoryClick = {}

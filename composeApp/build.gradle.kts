@@ -66,6 +66,10 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.compose.uiTooling)
+            implementation(libs.kmpmaps.core)
+        }
+        iosMain.dependencies {
+            implementation(libs.kmpmaps.core)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

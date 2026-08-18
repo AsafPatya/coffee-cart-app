@@ -22,6 +22,8 @@
     <true/>
     <key>NSCameraUsageDescription</key>
     <string>Coffee Cart uses the camera to take a photo of a coffee cart.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Coffee Cart uses your location to help set a cart's position on the map.</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UILaunchScreen</key>
