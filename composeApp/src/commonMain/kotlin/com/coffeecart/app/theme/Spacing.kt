@@ -17,6 +17,7 @@ enum class Spacing {
     XLarge,
     XXLarge,
     XXXLarge,
+    XXXXLarge,
 }
 
 val Spacing.dp: Dp
@@ -30,4 +31,5 @@ val Spacing.dp: Dp
         Spacing.XLarge -> 20.dp
         Spacing.XXLarge -> 24.dp
         Spacing.XXXLarge -> 32.dp
+        Spacing.XXXXLarge -> 48.dp
     }

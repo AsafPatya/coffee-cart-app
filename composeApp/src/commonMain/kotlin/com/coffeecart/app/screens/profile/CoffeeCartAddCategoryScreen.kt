@@ -1,4 +1,4 @@
-package com.coffeecart.app.screens.profile.ui.addcategory
+package com.coffeecart.app.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

@@ -33,7 +33,8 @@ fun BottomBar(
                         currentRoute?.startsWith("coffee_cart_category_products") == true
                 Destination.Orders -> currentRoute == Destination.Orders.route
                 Destination.Profile -> currentRoute == Destination.Profile.route ||
-                        currentRoute?.startsWith("coffee_cart_add_category_wizard") == true
+                        currentRoute?.startsWith("coffee_cart_add_category_wizard") == true ||
+                        currentRoute?.startsWith("coffee_cart_edit") == true
             }
             NavigationBarItem(
                 selected = isSelected,

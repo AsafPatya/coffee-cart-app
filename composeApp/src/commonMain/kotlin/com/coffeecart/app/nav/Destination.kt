@@ -28,5 +28,8 @@ object Routes {
 
     const val COFFEE_CART_ADD_CATEGORY_WIZARD = "coffee_cart_add_category_wizard/{cartId}"
     fun coffeeCartAddCategoryWizard(cartId: String): String = "coffee_cart_add_category_wizard/$cartId"
+
+    const val COFFEE_CART_EDIT = "coffee_cart_edit/{cartId}"
+    fun coffeeCartEdit(cartId: String): String = "coffee_cart_edit/$cartId"
 }
 

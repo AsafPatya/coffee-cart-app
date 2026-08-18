@@ -18,34 +18,48 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.app.theme.dp as spacingDp
-
-private val CART_IMAGE_SIZE = 64.dp
+import coffeecart.composeapp.generated.resources.Res
+import coffeecart.composeapp.generated.resources.strKm
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun CoffeeCartListItem(cart: CoffeeCart, onClick: () -> Unit) {
+fun CoffeeCartListItem(cart: CoffeeCart, distanceKm: Double? = null, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.Large.spacingDp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(cart.name, style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(Spacing.XXSmall.spacingDp))
-                Text(cart.address, style = MaterialTheme.typography.bodyMedium)
-            }
-            Spacer(Modifier.width(Spacing.Small.spacingDp))
             AsyncImage(
                 model = cart.imageUrl,
                 contentDescription = cart.name,
-                modifier = Modifier.size(CART_IMAGE_SIZE).clip(RoundedCornerShape(Spacing.Small.spacingDp)),
+                modifier = Modifier.size(Spacing.XXXXLarge.spacingDp).clip(RoundedCornerShape(Spacing.Small.spacingDp)),
                 contentScale = ContentScale.Crop,
             )
+            Spacer(Modifier.width(Spacing.Medium.spacingDp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    cart.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                Spacer(Modifier.height(Spacing.XXSmall.spacingDp))
+                Text(cart.address, style = MaterialTheme.typography.bodyMedium)
+            }
+            if (distanceKm != null) {
+                Spacer(Modifier.width(Spacing.Small.spacingDp))
+                val formattedDistance = "${(distanceKm * 10).toInt() / 10.0}"
+                Text(
+                    "$formattedDistance ${stringResource(Res.string.strKm)}",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
         }
     }
 }
@@ -61,6 +75,7 @@ private fun CoffeeCartListItemPreview() {
     )
     CoffeeCartListItem(
         cart = stubCart,
+        distanceKm = 1.2,
         onClick = {},
     )
 }

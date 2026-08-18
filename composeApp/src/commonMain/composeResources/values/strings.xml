@@ -9,4 +9,5 @@
     <string name="strCoffeeCarts">Coffee Cart</string>
     <string name="strMyOrder">My Order</string>
     <string name="strProfile">Profile</string>
+    <string name="strKm">km</string>
 </resources>
