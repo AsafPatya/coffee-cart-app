@@ -30,9 +30,12 @@ import com.coffeecart.app.screens.coffeecart.CoffeeCartCategoryProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
-import com.coffeecart.app.screens.profile.ui.ProfileScreen
-import com.coffeecart.app.screens.profile.ui.addcategory.CoffeeCartAddCategoryScreen
+import com.coffeecart.app.screens.profile.ProfileScreen
+import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
+import com.coffeecart.app.screens.profile.EditCartScreen
 import com.coffeecart.app.ui.BottomBar
+import com.coffeecart.shared.feature.profile.ProfileViewModel
+import org.koin.compose.koinInject
 
 /**
  * Main application container screen that sets up the internal navigation host and bottom navigation.
@@ -52,7 +55,8 @@ fun MainScreen() {
             if (currentRoute == Routes.COFFEE_CART_DETAILS ||
                 currentRoute == Routes.COFFEE_CART_MENU_CATEGORIES ||
                 currentRoute == Routes.COFFEE_CART_CATEGORY_PRODUCTS ||
-                currentRoute == Routes.COFFEE_CART_ADD_CATEGORY_WIZARD
+                currentRoute == Routes.COFFEE_CART_ADD_CATEGORY_WIZARD ||
+                currentRoute == Routes.COFFEE_CART_EDIT
             ) {
                 val titleString = when (currentRoute) {
                     Routes.COFFEE_CART_MENU_CATEGORIES -> "Menu Categories"
@@ -60,6 +64,7 @@ fun MainScreen() {
                         currentEntry?.arguments?.read { getStringOrNull("categoryName") } ?: "Products"
                     }
                     Routes.COFFEE_CART_ADD_CATEGORY_WIZARD -> "Add Menu Category"
+                    Routes.COFFEE_CART_EDIT -> "Edit Coffee Cart"
                     else -> topBarTitle
                 }
                 TopAppBar(
@@ -169,6 +174,20 @@ fun MainScreen() {
                     }
                 )
             }
+            composable(Routes.COFFEE_CART_EDIT) { backStackEntry ->
+                val cartId = backStackEntry.arguments?.read {
+                    getStringOrNull("cartId")
+                } ?: ""
+                val profileViewModel: ProfileViewModel = koinInject()
+                EditCartScreen(
+                    cartId = cartId,
+                    onDismiss = { navController.popBackStack() },
+                    onConfirm = { id, name, address, imageUrl, latitude, longitude ->
+                        profileViewModel.editCoffeeCart(id, name, address, imageUrl, latitude, longitude)
+                        navController.popBackStack()
+                    }
+                )
+            }
             composable(Destination.Orders.route) {
                 OrdersScreen()
             }
@@ -176,6 +195,9 @@ fun MainScreen() {
                 ProfileScreen(
                     onAddCategoryClick = { cartId ->
                         navController.navigate(Routes.coffeeCartAddCategoryWizard(cartId))
+                    },
+                    onEditCartClick = { cartId ->
+                        navController.navigate(Routes.coffeeCartEdit(cartId))
                     }
                 )
             }

@@ -12,9 +12,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.coffeecart.app.theme.Spacing
+import com.coffeecart.app.theme.dp
 import com.swmansion.kmpmaps.core.CameraPosition
 import com.swmansion.kmpmaps.core.Coordinates
 import com.swmansion.kmpmaps.core.Map
@@ -33,12 +34,15 @@ actual fun rememberLocationPicker(
         ?: Coordinates(latitude = 0.0, longitude = 0.0)
 
     if (isVisible) {
-        Dialog(onDismissRequest = { isVisible = false }) {
+        Dialog(
+            onDismissRequest = { isVisible = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false),
+        ) {
             Box(Modifier.fillMaxSize()) {
                 Map(
                     modifier = Modifier.fillMaxSize(),
                     properties = MapProperties(isMyLocationEnabled = true),
-                    uiSettings = MapUISettings(myLocationButtonEnabled = true, zoomEnabled = true),
+                    uiSettings = MapUISettings(myLocationButtonEnabled = true),
                     cameraPosition = CameraPosition(
                         coordinates = picked ?: initialCameraCoordinates,
                         zoom = 14f,
@@ -52,7 +56,7 @@ actual fun rememberLocationPicker(
                         isVisible = false
                     },
                     enabled = picked != null,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp),
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(Spacing.Large.dp),
                 ) {
                     Text("Confirm location")
                 }

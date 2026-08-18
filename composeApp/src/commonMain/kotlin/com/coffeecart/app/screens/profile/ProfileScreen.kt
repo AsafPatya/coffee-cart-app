@@ -1,6 +1,7 @@
-package com.coffeecart.app.screens.profile.ui
+package com.coffeecart.app.screens.profile
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.coffeecart.app.screens.profile.ui.components.AddCartBottomSheet
 import com.coffeecart.app.screens.profile.ui.components.CartSelectionBottomSheet
-import com.coffeecart.app.screens.profile.ui.components.EditCartDialog
 import com.coffeecart.app.screens.profile.ui.components.RemoveCartDialog
 import com.coffeecart.app.screens.profile.ui.components.ResultDialog
 import com.coffeecart.app.screens.profile.ui.components.ShowCartsBottomSheet
@@ -38,6 +38,7 @@ enum class ProfileAction {
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinInject(),
     onAddCategoryClick: (String) -> Unit,
+    onEditCartClick: (String) -> Unit,
 ) {
     val dialogMessage by viewModel.dialogMessage.collectAsState()
     val cartsList by viewModel.cartsList.collectAsState()
@@ -54,7 +55,8 @@ fun ProfileScreen(
         },
         onConfirmDelete = { id -> viewModel.removeCoffeeCart(id) },
         onDismissDialog = { viewModel.dismissDialog() },
-        onAddCategoryClick = onAddCategoryClick
+        onAddCategoryClick = onAddCategoryClick,
+        onEditCartClick = onEditCartClick,
     )
 }
 
@@ -69,68 +71,70 @@ fun ProfileContent(
     onConfirmDelete: (String) -> Unit,
     onDismissDialog: () -> Unit,
     onAddCategoryClick: (String) -> Unit,
+    onEditCartClick: (String) -> Unit,
 ) {
     var activeAction by remember { mutableStateOf(ProfileAction.NONE) }
-    var selectedCartForEdit by remember { mutableStateOf<CoffeeCart?>(null) }
     var selectedCartForDelete by remember { mutableStateOf<CoffeeCart?>(null) }
     var showAddDialog by remember { mutableStateOf(false) }
     var showCartsDialog by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(Spacing.XXLarge.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Button(
-            onClick = {
-                onGetClick()
-                showCartsDialog = true
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(Spacing.XXLarge.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
-            Text("Get Coffee Carts")
-        }
+            Button(
+                onClick = {
+                    onGetClick()
+                    showCartsDialog = true
+                },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Get Coffee Carts")
+            }
 
-        Button(
-            onClick = { showAddDialog = true },
-            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
-        ) {
-            Text("Add Coffee Cart")
-        }
+            Button(
+                onClick = { showAddDialog = true },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Add Coffee Cart")
+            }
 
-        Button(
-            onClick = {
-                onGetClick()
-                activeAction = ProfileAction.EDIT
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
-        ) {
-            Text("Edit Coffee Cart")
-        }
+            Button(
+                onClick = {
+                    onGetClick()
+                    activeAction = ProfileAction.EDIT
+                },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Edit Coffee Cart")
+            }
 
-        Button(
-            onClick = {
-                onGetClick()
-                activeAction = ProfileAction.REMOVE
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
-        ) {
-            Text("Remove Coffee Cart")
-        }
+            Button(
+                onClick = {
+                    onGetClick()
+                    activeAction = ProfileAction.REMOVE
+                },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Remove Coffee Cart")
+            }
 
-        Text(
-            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp),
-            text = "Relevant for Coffee Carts Owners"
-        )
+            Text(
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp),
+                text = "Relevant for Coffee Carts Owners"
+            )
 
-        Button(
-            onClick = {
-                onGetClick()
-                activeAction = ProfileAction.ADD_CATEGORY
-            },
-            modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
-        ) {
-            Text("Add New Category")
+            Button(
+                onClick = {
+                    onGetClick()
+                    activeAction = ProfileAction.ADD_CATEGORY
+                },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Add New Category")
+            }
         }
 
         if (dialogMessage != null) {
@@ -155,7 +159,7 @@ fun ProfileContent(
                     val lastAction = activeAction
                     activeAction = ProfileAction.NONE
                     when (lastAction) {
-                        ProfileAction.EDIT -> selectedCartForEdit = cart
+                        ProfileAction.EDIT -> onEditCartClick(cart.id)
                         ProfileAction.REMOVE -> selectedCartForDelete = cart
                         ProfileAction.ADD_CATEGORY -> onAddCategoryClick(cart.id)
                         else -> {}
@@ -174,16 +178,6 @@ fun ProfileContent(
             )
         }
 
-        if (selectedCartForEdit != null) {
-            EditCartDialog(
-                cart = selectedCartForEdit!!,
-                onDismiss = { selectedCartForEdit = null },
-                onConfirm = { id, name, address, imageUrl, latitude, longitude ->
-                    onConfirmEdit(id, name, address, imageUrl, latitude, longitude)
-                    selectedCartForEdit = null
-                }
-            )
-        }
 
         if (selectedCartForDelete != null) {
             RemoveCartDialog(
@@ -210,7 +204,8 @@ private fun ProfileScreenPreview() {
         onConfirmEdit = { _, _, _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
-        onAddCategoryClick = {}
+        onAddCategoryClick = {},
+        onEditCartClick = {}
     )
 }
 
@@ -228,6 +223,7 @@ private fun ProfileScreenWithDialogPreview() {
         onConfirmEdit = { _, _, _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
-        onAddCategoryClick = {}
+        onAddCategoryClick = {},
+        onEditCartClick = {}
     )
 }

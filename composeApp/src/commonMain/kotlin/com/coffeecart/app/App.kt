@@ -4,6 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import com.coffeecart.app.screens.MainScreen
+import com.coffeecart.app.theme.appTypography
 import com.coffeecart.shared.di.coffeeCartModule
 import org.koin.compose.KoinApplication
 
@@ -11,7 +12,7 @@ import org.koin.compose.KoinApplication
 @Composable
 fun App() {
     KoinApplication(application = { modules(coffeeCartModule) }) {
-        MaterialTheme {
+        MaterialTheme(typography = appTypography()) {
             Surface {
                 MainScreen()
             }
