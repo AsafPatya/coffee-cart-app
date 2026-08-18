@@ -16,11 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
-import com.coffeecart.app.theme.Spacing
-import com.coffeecart.app.theme.dp
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.coffee_cart_quick_order
+import coffeecart.composeapp.generated.resources.strClickHere
+import coffeecart.composeapp.generated.resources.strToStartANewOrder
+import com.coffeecart.app.theme.Spacing
+import com.coffeecart.app.theme.dp
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 /** Landing tab: full-bleed hero background, title, and a CTA into the coffee cart directory. */
 @Composable
@@ -44,7 +47,7 @@ fun HomeScreen(onNewOrderClick: () -> Unit) {
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                "Coffee Cart",
+                stringResource(Res.string.strToStartANewOrder),
                 style = MaterialTheme.typography.headlineLarge,
                 color = Color.White,
             )
@@ -53,13 +56,13 @@ fun HomeScreen(onNewOrderClick: () -> Unit) {
                 onClick = onNewOrderClick,
                 modifier = Modifier.padding(top = Spacing.XXLarge.dp),
             ) {
-                Text("New Order")
+                Text(stringResource(Res.string.strClickHere))
             }
         }
     }
 }
 
-@Preview
+@Preview(locale = "iw")
 @Composable
 private fun HomeScreenPreview() {
     HomeScreen(onNewOrderClick = {})

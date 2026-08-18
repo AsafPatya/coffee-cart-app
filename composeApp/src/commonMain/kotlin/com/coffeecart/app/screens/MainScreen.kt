@@ -1,5 +1,7 @@
 package com.coffeecart.app.screens
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -113,6 +115,10 @@ fun MainScreen() {
             navController = navController,
             startDestination = Destination.Home.route,
             modifier = Modifier.padding(innerPadding),
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
         ) {
             composable(Destination.Home.route) {
                 HomeScreen(onNewOrderClick = { navController.navigate(Destination.CoffeeCart.route) })

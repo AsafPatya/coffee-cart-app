@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="str_coffee_cart">Coffee Cart</string>
+    <string name="str_new_order">New Order</string>
+    <string name="strWelcomeToQuickOrderFromCoffeeCart">Welcome To Quick Order From Coffee Cart</string>
+    <string name="strToStartANewOrder">To Start a New Order</string>
+    <string name="strClickHere">Click Here</string>
+    <string name="strHome">Home</string>
+    <string name="strCoffeeCarts">Coffee Cart</string>
+    <string name="strMyOrder">My Order</string>
+    <string name="strProfile">Profile</string>
+</resources>

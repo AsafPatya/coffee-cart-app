@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="str_coffee_cart">עגלת קפה</string>
+    <string name="str_new_order">הזמנה חדשה</string>
+    <string name="strWelcomeToQuickOrderFromCoffeeCart">ברוכים הבאים להזמנה מהירה מעגלת קפה </string>
+    <string name="strToStartANewOrder">להזמנה חדשה</string>
+    <string name="strClickHere">לחץ כאן</string>
+    <string name="strHome">בית</string>
+    <string name="strCoffeeCarts">עגלות קפה</string>
+    <string name="strMyOrder">ההזמנה שלי</string>
+    <string name="strProfile">פרופיל</string>
+</resources>

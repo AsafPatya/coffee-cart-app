@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import com.coffeecart.app.nav.Destination
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Bottom navigation bar for standard app layout, rendering tab buttons based on [Destination].
@@ -37,8 +38,8 @@ fun BottomBar(
             NavigationBarItem(
                 selected = isSelected,
                 onClick = { onNavigate(destination) },
-                icon = { Icon(destination.icon, contentDescription = destination.label) },
-                label = { Text(destination.label) },
+                icon = { Icon(destination.icon, contentDescription = stringResource(destination.label)) },
+                label = { Text(stringResource(destination.label)) },
             )
         }
     }
