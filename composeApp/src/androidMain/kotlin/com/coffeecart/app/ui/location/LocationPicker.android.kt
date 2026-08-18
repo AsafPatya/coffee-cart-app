@@ -22,9 +22,14 @@ import com.swmansion.kmpmaps.core.MapUISettings
 import com.swmansion.kmpmaps.core.Marker
 
 @Composable
-actual fun rememberLocationPicker(onPicked: (latitude: Double, longitude: Double) -> Unit): (() -> Unit)? {
+actual fun rememberLocationPicker(
+    initialLocation: UserLocation?,
+    onPicked: (latitude: Double, longitude: Double) -> Unit,
+): (() -> Unit)? {
     var isVisible by remember { mutableStateOf(false) }
     var picked by remember { mutableStateOf<Coordinates?>(null) }
+    val initialCameraCoordinates = initialLocation?.let { Coordinates(latitude = it.latitude, longitude = it.longitude) }
+        ?: Coordinates(latitude = 0.0, longitude = 0.0)
 
     if (isVisible) {
         Dialog(onDismissRequest = { isVisible = false }) {
@@ -34,7 +39,7 @@ actual fun rememberLocationPicker(onPicked: (latitude: Double, longitude: Double
                     properties = MapProperties(isMyLocationEnabled = true),
                     uiSettings = MapUISettings(myLocationButtonEnabled = true),
                     cameraPosition = CameraPosition(
-                        coordinates = picked ?: Coordinates(latitude = 0.0, longitude = 0.0),
+                        coordinates = picked ?: initialCameraCoordinates,
                         zoom = 14f,
                     ),
                     markers = picked?.let { listOf(Marker(coordinates = it)) } ?: emptyList(),

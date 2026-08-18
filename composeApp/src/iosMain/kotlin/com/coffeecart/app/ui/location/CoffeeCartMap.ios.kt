@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import com.swmansion.kmpmaps.core.CameraPosition
 import com.swmansion.kmpmaps.core.Coordinates
 import com.swmansion.kmpmaps.core.Map
+import com.swmansion.kmpmaps.core.MapProperties
+import com.swmansion.kmpmaps.core.MapUISettings
 import com.swmansion.kmpmaps.core.Marker
 
 @Composable
@@ -12,6 +14,8 @@ actual fun CoffeeCartMap(latitude: Double, longitude: Double, modifier: Modifier
     val coordinates = Coordinates(latitude = latitude, longitude = longitude)
     Map(
         modifier = modifier,
+        properties = MapProperties(isMyLocationEnabled = true),
+        uiSettings = MapUISettings(myLocationButtonEnabled = true, zoomEnabled = true),
         cameraPosition = CameraPosition(coordinates = coordinates, zoom = 14f),
         markers = listOf(Marker(coordinates = coordinates)),
     )

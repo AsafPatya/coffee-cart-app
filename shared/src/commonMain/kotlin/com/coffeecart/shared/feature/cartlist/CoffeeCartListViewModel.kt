@@ -21,8 +21,15 @@ class CoffeeCartListViewModel(
     private val _uiState = MutableStateFlow<CoffeeCartListUiState>(CoffeeCartListUiState.Loading)
     val uiState: StateFlow<CoffeeCartListUiState> = _uiState.asStateFlow()
 
+    private val _userLocation = MutableStateFlow<Pair<Double, Double>?>(null)
+    val userLocation: StateFlow<Pair<Double, Double>?> = _userLocation.asStateFlow()
+
     init {
         loadCarts()
+    }
+
+    fun setUserLocation(latitude: Double, longitude: Double) {
+        _userLocation.value = latitude to longitude
     }
 
     fun loadCarts() {

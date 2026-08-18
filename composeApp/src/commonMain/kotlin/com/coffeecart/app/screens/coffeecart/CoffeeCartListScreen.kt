@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -16,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import com.coffeecart.app.ui.location.rememberCurrentLocation
 import com.coffeecart.shared.feature.cartlist.CoffeeCartListUiState
 import com.coffeecart.shared.feature.cartlist.CoffeeCartListViewModel
+import com.coffeecart.shared.location.distanceKm
 import com.coffeecart.shared.model.CoffeeCart
 import org.koin.compose.koinInject
 
@@ -27,8 +30,16 @@ fun CoffeeCartListScreen(
     viewModel: CoffeeCartListViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val userLocation by viewModel.userLocation.collectAsState()
+
+    val currentLocation = rememberCurrentLocation()
+    LaunchedEffect(currentLocation) {
+        currentLocation?.let { viewModel.setUserLocation(it.latitude, it.longitude) }
+    }
+
     CoffeeCartListContent(
         uiState = uiState,
+        userLocation = userLocation,
         onCartClick = onCartClick,
     )
 }
@@ -36,6 +47,7 @@ fun CoffeeCartListScreen(
 @Composable
 fun CoffeeCartListContent(
     uiState: CoffeeCartListUiState,
+    userLocation: Pair<Double, Double>? = null,
     onCartClick: (String) -> Unit,
 ) {
     when (uiState) {
@@ -45,12 +57,31 @@ fun CoffeeCartListContent(
         is CoffeeCartListUiState.Error -> Box(Modifier.fillMaxSize(), Alignment.Center) {
             Text(uiState.message)
         }
-        is CoffeeCartListUiState.Success -> LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(Spacing.Large.dp),
-            verticalArrangement = Arrangement.spacedBy(Spacing.Small.dp),
-        ) {
-            items(uiState.carts, key = { it.id }) { cart ->
-                CoffeeCartListItem(cart = cart, onClick = { onCartClick(cart.id) })
+        is CoffeeCartListUiState.Success -> {
+            val cartsWithDistance = uiState.carts.map { cart ->
+                val cartLatitude = cart.latitude
+                val cartLongitude = cart.longitude
+                val distance = if (userLocation != null && cartLatitude != null && cartLongitude != null) {
+                    distanceKm(userLocation.first, userLocation.second, cartLatitude, cartLongitude)
+                } else {
+                    null
+                }
+                cart to distance
+            }
+
+            val sortedCarts = if (userLocation != null) {
+                cartsWithDistance.sortedBy { (_, distance) -> distance ?: Double.MAX_VALUE }
+            } else {
+                cartsWithDistance
+            }
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(Spacing.Large.dp),
+                verticalArrangement = Arrangement.spacedBy(Spacing.Small.dp),
+            ) {
+                items(sortedCarts, key = { (cart, _) -> cart.id }) { (cart, distance) ->
+                    CoffeeCartListItem(cart = cart, distanceKm = distance, onClick = { onCartClick(cart.id) })
+                }
             }
         }
     }

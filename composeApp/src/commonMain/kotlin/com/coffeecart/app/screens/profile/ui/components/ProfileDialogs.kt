@@ -17,6 +17,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.coffeecart.app.ui.location.UserLocation
+import com.coffeecart.app.ui.location.rememberCurrentLocation
 import com.coffeecart.app.ui.location.rememberLocationPicker
 import com.coffeecart.shared.model.CoffeeCart
 
@@ -60,10 +62,20 @@ internal fun EditCartDialog(
     var latitude by remember { mutableStateOf(cart.latitude) }
     var longitude by remember { mutableStateOf(cart.longitude) }
 
-    val launchLocationPicker = rememberLocationPicker(onPicked = { lat, lng ->
-        latitude = lat
-        longitude = lng
-    })
+    val cartLatitude = latitude
+    val cartLongitude = longitude
+    val initialLocation = if (cartLatitude != null && cartLongitude != null) {
+        UserLocation(cartLatitude, cartLongitude)
+    } else {
+        rememberCurrentLocation()
+    }
+    val launchLocationPicker = rememberLocationPicker(
+        initialLocation = initialLocation,
+        onPicked = { lat, lng ->
+            latitude = lat
+            longitude = lng
+        },
+    )
 
     AlertDialog(
         onDismissRequest = onDismiss,
