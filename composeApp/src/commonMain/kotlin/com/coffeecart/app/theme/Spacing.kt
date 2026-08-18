@@ -18,6 +18,8 @@ enum class Spacing {
     XXLarge,
     XXXLarge,
     XXXXLarge,
+    HeroHeight,
+    MapHeight,
 }
 
 val Spacing.dp: Dp
@@ -32,4 +34,6 @@ val Spacing.dp: Dp
         Spacing.XXLarge -> 24.dp
         Spacing.XXXLarge -> 32.dp
         Spacing.XXXXLarge -> 48.dp
+        Spacing.HeroHeight -> 240.dp
+        Spacing.MapHeight -> 200.dp
     }

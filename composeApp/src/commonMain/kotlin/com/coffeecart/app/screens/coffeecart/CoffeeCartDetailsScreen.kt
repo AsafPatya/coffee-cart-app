@@ -1,11 +1,14 @@
 package com.coffeecart.app.screens.coffeecart
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -16,14 +19,18 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.app.ui.location.CoffeeCartMap
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsUiState
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
 import com.coffeecart.shared.model.CoffeeCart
+import coffeecart.composeapp.generated.resources.Res
+import coffeecart.composeapp.generated.resources.strStartYourOrderNow
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 /**
@@ -52,7 +59,6 @@ fun CoffeeCartDetailsScreen(
     }
 
     CoffeeCartDetailsContent(
-        cartId = cartId,
         uiState = uiState,
         onViewCategoriesClick = { onViewCategoriesClick(cartId) },
     )
@@ -60,16 +66,12 @@ fun CoffeeCartDetailsScreen(
 
 @Composable
 fun CoffeeCartDetailsContent(
-    cartId: String,
     uiState: CoffeeCartDetailsUiState,
     onViewCategoriesClick: () -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Spacing.XXLarge.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
         when (uiState) {
             is CoffeeCartDetailsUiState.Loading -> {
@@ -79,42 +81,65 @@ fun CoffeeCartDetailsContent(
                 Text(
                     text = uiState.message,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(Spacing.XXLarge.dp)
                 )
             }
             is CoffeeCartDetailsUiState.Success -> {
                 val cart = uiState.cart
-                Text(
-                    text = cart.name,
-                    style = MaterialTheme.typography.headlineLarge,
-                    modifier = Modifier.padding(bottom = Spacing.Medium.dp)
-                )
-                Text(
-                    text = cart.address,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(bottom = Spacing.Small.dp)
-                )
-                Text(
-                    text = "Cart ID: $cartId",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = Spacing.Medium.dp)
-                )
-                val latitude = cart.latitude
-                val longitude = cart.longitude
-                if (latitude != null && longitude != null) {
-                    CoffeeCartMap(
-                        latitude = latitude,
-                        longitude = longitude,
+                val scrollState = rememberScrollState()
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Top,
+                ) {
+                    if (cart.imageUrl.isNotEmpty()) {
+                        AsyncImage(
+                            model = cart.imageUrl,
+                            contentDescription = "${cart.name} banner",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(Spacing.HeroHeight.dp),
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(bottom = Spacing.XXLarge.dp),
-                    )
-                }
-                Button(
-                    onClick = onViewCategoriesClick,
-                ) {
-                    Text("View Categories")
+                            .padding(Spacing.XXLarge.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = cart.name,
+                            style = MaterialTheme.typography.headlineLarge,
+                            modifier = Modifier.padding(bottom = Spacing.Medium.dp)
+                        )
+                        Text(
+                            text = cart.address,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(bottom = Spacing.Large.dp)
+                        )
+                        Button(
+                            onClick = onViewCategoriesClick,
+                            modifier = Modifier.padding(bottom = Spacing.Large.dp)
+                        ) {
+                            Text(stringResource(Res.string.strStartYourOrderNow))
+                        }
+                        val latitude = cart.latitude
+                        val longitude = cart.longitude
+                        if (latitude != null && longitude != null) {
+                            CoffeeCartMap(
+                                latitude = latitude,
+                                longitude = longitude,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(Spacing.MapHeight.dp)
+                                    .padding(bottom = Spacing.XXLarge.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -125,13 +150,12 @@ fun CoffeeCartDetailsContent(
 @Composable
 private fun CoffeeCartDetailsScreenSuccessPreview() {
     CoffeeCartDetailsContent(
-        cartId = "123",
         uiState = CoffeeCartDetailsUiState.Success(
             CoffeeCart(
                 id = "123",
                 name = "Downtown Espresso Cart",
                 address = "123 Main St",
-                imageUrl = ""
+                imageUrl = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb"
             )
         ),
         onViewCategoriesClick = {}
@@ -142,7 +166,6 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
 @Composable
 private fun CoffeeCartDetailsScreenLoadingPreview() {
     CoffeeCartDetailsContent(
-        cartId = "123",
         uiState = CoffeeCartDetailsUiState.Loading,
         onViewCategoriesClick = {}
     )
@@ -152,7 +175,6 @@ private fun CoffeeCartDetailsScreenLoadingPreview() {
 @Composable
 private fun CoffeeCartDetailsScreenErrorPreview() {
     CoffeeCartDetailsContent(
-        cartId = "123",
         uiState = CoffeeCartDetailsUiState.Error("Failed to load coffee cart detail."),
         onViewCategoriesClick = {}
     )
