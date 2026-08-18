@@ -64,6 +64,11 @@ fun Application.module() {
     // Mounted to a persistent Railway volume in production so uploaded images survive restarts/redeploys.
     val imagesDir = File(System.getenv("IMAGES_DIR") ?: "images").apply { mkdirs() }
 
+    // RAILWAY_PUBLIC_DOMAIN is auto-injected by Railway for any service with a public domain —
+    // needed because clients load images via absolute URLs, not relative to this server.
+    val publicBaseUrl = System.getenv("RAILWAY_PUBLIC_DOMAIN")?.let { "https://$it" }
+        ?: "http://localhost:${System.getenv("PORT")?.toIntOrNull() ?: DEFAULT_PORT}"
+
     routing {
         staticFiles("/images", imagesDir)
 
@@ -81,7 +86,7 @@ fun Application.module() {
             }
             val fileName = savedFileName
             if (fileName != null) {
-                call.respond(HttpStatusCode.Created, UploadImageResponse(url = "/images/$fileName"))
+                call.respond(HttpStatusCode.Created, UploadImageResponse(url = "$publicBaseUrl/images/$fileName"))
             } else {
                 call.respond(HttpStatusCode.BadRequest)
             }
