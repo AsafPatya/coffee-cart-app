@@ -11,4 +11,8 @@
     <string name="strProfile">Profile</string>
     <string name="strKm">km</string>
     <string name="strStartYourOrderNow">Start Your Order Now</string>
+    <string name="strAddedToBasket">added to basket</string>
+    <string name="strNoOpenOrder">There isn't any open order</string>
+    <string name="strExploreCoffeeCarts">Explore Coffee Carts</string>
+    <string name="strStartNewOrder">Start New Order</string>
 </resources>

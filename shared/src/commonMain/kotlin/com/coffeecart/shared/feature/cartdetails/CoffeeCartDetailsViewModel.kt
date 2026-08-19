@@ -2,9 +2,12 @@ package com.coffeecart.shared.feature.cartdetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.coffeecart.shared.domain.AddProductResult
 import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.shared.model.MenuCategory
+import com.coffeecart.shared.model.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,7 @@ sealed interface CoffeeCartDetailsUiState {
 
 class CoffeeCartDetailsViewModel(
     private val repository: CoffeeCartRepository,
+    private val shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<CoffeeCartDetailsUiState>(CoffeeCartDetailsUiState.Loading)
     val uiState: StateFlow<CoffeeCartDetailsUiState> = _uiState.asStateFlow()
@@ -37,6 +41,10 @@ class CoffeeCartDetailsViewModel(
                 _uiState.value = CoffeeCartDetailsUiState.Error(e.message ?: "Failed to load coffee cart detail.")
             }
         }
+    }
+
+    fun addProductToCart(cartId: String, cartName: String, product: Product): AddProductResult {
+        return shoppingCartRepositoryInterface.addProduct(cartId, cartName, product)
     }
 
     fun addCategory(cartId: String, category: MenuCategory, onResult: (Boolean) -> Unit) {

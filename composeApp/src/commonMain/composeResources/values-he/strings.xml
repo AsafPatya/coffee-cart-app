@@ -11,4 +11,8 @@
     <string name="strProfile">פרופיל</string>
     <string name="strKm">ק״מ</string>
     <string name="strStartYourOrderNow">התחל הזמנה עכשיו</string>
+    <string name="strAddedToBasket">נוסף לסל</string>
+    <string name="strNoOpenOrder">אין אף הזמנה פתוחה</string>
+    <string name="strExploreCoffeeCarts">צפה בעגלות הקפה</string>
+    <string name="strStartNewOrder">התחל הזמנה חדשה</string>
 </resources>
