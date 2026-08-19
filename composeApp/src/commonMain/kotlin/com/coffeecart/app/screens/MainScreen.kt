@@ -12,6 +12,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,8 @@ import com.coffeecart.app.screens.profile.ProfileScreen
 import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.screens.profile.EditCartScreen
 import com.coffeecart.app.ui.BottomBar
+import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
+import com.coffeecart.shared.data.repository.ShoppingCartRepository
 import com.coffeecart.shared.feature.profile.ProfileViewModel
 import org.koin.compose.koinInject
 
@@ -44,11 +47,16 @@ import org.koin.compose.koinInject
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface = koinInject(),
+) {
     val navController = rememberNavController()
     val currentEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentEntry?.destination?.route
     var topBarTitle by remember { mutableStateOf<String?>(null) }
+
+    val cartState by shoppingCartRepositoryInterface.state.collectAsState()
+    val cartProductCount = cartState.items.sumOf { it.quantity }
 
     Scaffold(
         topBar = {
@@ -82,6 +90,7 @@ fun MainScreen() {
         bottomBar = {
             BottomBar(
                 currentRoute = currentRoute,
+                cartProductCount = cartProductCount,
                 onNavigate = { destination ->
                     val isCurrentTabActive = when (destination) {
                         Destination.Home -> currentRoute == Destination.Home.route
@@ -189,7 +198,17 @@ fun MainScreen() {
                 )
             }
             composable(Destination.Orders.route) {
-                OrdersScreen()
+                MyOrderScreen(
+                    onExploreCartsClick = {
+                        navController.navigate(Destination.CoffeeCart.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = false
+                            }
+                            launchSingleTop = true
+                            restoreState = false
+                        }
+                    }
+                )
             }
             composable(Destination.Profile.route) {
                 ProfileScreen(
@@ -208,6 +227,6 @@ fun MainScreen() {
 @Preview
 @Composable
 private fun MainScreenPreview() {
-    MainScreen()
+    MainScreen(shoppingCartRepositoryInterface = ShoppingCartRepository())
 }
 

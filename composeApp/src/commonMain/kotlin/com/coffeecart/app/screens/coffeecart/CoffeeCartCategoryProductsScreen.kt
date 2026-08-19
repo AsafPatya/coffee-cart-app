@@ -1,5 +1,6 @@
 package com.coffeecart.app.screens.coffeecart
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +15,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddShoppingCart
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,9 +50,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import com.coffeecart.shared.domain.AddProductResult
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsUiState
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
 import com.coffeecart.shared.model.Product
+import coffeecart.composeapp.generated.resources.Res
+import coffeecart.composeapp.generated.resources.strAddedToBasket
+import coffeecart.composeapp.generated.resources.strAddToCart
+import coffeecart.composeapp.generated.resources.strComments
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 /**
@@ -46,37 +73,150 @@ fun CoffeeCartCategoryProductsScreen(
     viewModel: CoffeeCartDetailsViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val snackBarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var selectedProduct by remember { mutableStateOf<Product?>(null) }
 
     LaunchedEffect(cartId) {
         viewModel.loadCart(cartId)
     }
 
-    when (val state = uiState) {
-        is CoffeeCartDetailsUiState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
-        is CoffeeCartDetailsUiState.Error -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(text = state.message, color = MaterialTheme.colorScheme.error)
-            }
-        }
-        is CoffeeCartDetailsUiState.Success -> {
-            val category = state.cart.categories.find { it.name == categoryName }
-            if (category == null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Category '$categoryName' not found.")
+    fun addToCart(cartName: String, product: Product, quantity: Int, comment: String) {
+        val result = viewModel.addProductToCart(cartId, cartName, product, quantity, comment)
+        when (result) {
+            AddProductResult.BlockedDifferentCart -> {
+                coroutineScope.launch {
+                    snackBarHostState.showSnackbar(
+                        "Finish or clear your current order before adding from a different coffee cart."
+                    )
                 }
-            } else {
-                CoffeeCartCategoryProductsContent(products = category.products)
+            }
+            AddProductResult.Added, AddProductResult.IncrementedExisting -> {
+                coroutineScope.launch {
+                    val addedText = getString(Res.string.strAddedToBasket)
+                    val message = "${product.name} $addedText"
+                    snackBarHostState.showSnackbar(message)
+                }
+            }
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        when (val state = uiState) {
+            is CoffeeCartDetailsUiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            is CoffeeCartDetailsUiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = state.message, color = MaterialTheme.colorScheme.error)
+                }
+            }
+            is CoffeeCartDetailsUiState.Success -> {
+                val category = state.cart.categories.find { it.name == categoryName }
+                if (category == null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "Category '$categoryName' not found.")
+                    }
+                } else {
+                    CoffeeCartCategoryProductsContent(
+                        products = category.products,
+                        onProductClick = { product -> selectedProduct = product },
+                    )
+
+                    selectedProduct?.let { product ->
+                        ProductDetailsBottomSheet(
+                            product = product,
+                            onDismiss = { selectedProduct = null },
+                            onAddToCart = { quantity, comment ->
+                                addToCart(state.cart.name, product, quantity, comment)
+                                selectedProduct = null
+                            },
+                        )
+                    }
+                }
+            }
+        }
+        SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProductDetailsBottomSheet(
+    product: Product,
+    onDismiss: () -> Unit,
+    onAddToCart: (quantity: Int, comment: String) -> Unit,
+) {
+    var quantity by remember { mutableStateOf(1) }
+    var comment by remember { mutableStateOf("") }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(Spacing.Large.dp),
+        ) {
+            AsyncImage(
+                model = product.imageUrl,
+                contentDescription = product.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Spacing.XXXXLarge.dp * 3)
+                    .clip(MaterialTheme.shapes.medium),
+                contentScale = ContentScale.Crop,
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
+
+            Text(product.name, style = MaterialTheme.typography.headlineSmall)
+            Text(formatPrice(product.price), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+
+            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
+
+            OutlinedTextField(
+                value = comment,
+                onValueChange = { comment = it },
+                label = { Text(stringResource(Res.string.strComments)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IconButton(onClick = { if (quantity > 1) quantity-- }) {
+                    Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease quantity")
+                }
+                Text("$quantity", style = MaterialTheme.typography.titleLarge)
+                IconButton(onClick = { quantity++ }) {
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Increase quantity")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
+
+            Button(
+                onClick = { onAddToCart(quantity, comment) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(Res.string.strAddToCart))
             }
         }
     }
 }
 
+private fun formatPrice(price: Double): String {
+    val cents = price.toString().substringAfter(".", "00").padEnd(2, '0').take(2)
+    val dollars = price.toString().substringBefore(".")
+    return "$$dollars.$cents"
+}
+
 @Composable
-private fun CoffeeCartCategoryProductsContent(products: List<Product>) {
+private fun CoffeeCartCategoryProductsContent(products: List<Product>, onProductClick: (Product) -> Unit) {
     if (products.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "No products available in this category.", style = MaterialTheme.typography.bodyLarge)
@@ -88,7 +228,7 @@ private fun CoffeeCartCategoryProductsContent(products: List<Product>) {
             verticalArrangement = Arrangement.spacedBy(Spacing.Medium.dp)
         ) {
             items(products) { product ->
-                ProductListItem(product = product)
+                ProductListItem(product = product, onClick = { onProductClick(product) })
                 HorizontalDivider(
                     modifier = Modifier.padding(top = Spacing.Medium.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
@@ -99,10 +239,11 @@ private fun CoffeeCartCategoryProductsContent(products: List<Product>) {
 }
 
 @Composable
-private fun ProductListItem(product: Product) {
+private fun ProductListItem(product: Product, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = Spacing.Small.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -149,6 +290,10 @@ private fun ProductListItem(product: Product) {
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary
         )
+
+        IconButton(onClick = onClick) {
+            Icon(imageVector = Icons.Default.AddShoppingCart, contentDescription = "View product")
+        }
     }
 }
 
@@ -169,6 +314,6 @@ private fun CoffeeCartCategoryProductsScreenPreview() {
             imageUrl = "https://picsum.photos/seed/capp/200"
         )
     )
-    CoffeeCartCategoryProductsContent(products = placeholder)
+    CoffeeCartCategoryProductsContent(products = placeholder, onProductClick = {})
 }
 

@@ -22,11 +22,26 @@ private class SucceedingRepository(private val carts: List<CoffeeCart>) : Coffee
         error("Not used in this test suite")
     }
 
-    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean {
+    override suspend fun updateCoffeeCart(
+        id: String,
+        name: String,
+        address: String,
+        imageUrl: String,
+        latitude: Double?,
+        longitude: Double?,
+    ): Boolean {
         error("Not used in this test suite")
     }
 
     override suspend fun removeCoffeeCart(id: String): Boolean {
+        error("Not used in this test suite")
+    }
+
+    override suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean {
+        error("Not used in this test suite")
+    }
+
+    override suspend fun uploadImage(bytes: ByteArray, fileName: String): String {
         error("Not used in this test suite")
     }
 }
@@ -36,9 +51,20 @@ private class FailingRepository(private val exception: Exception) : CoffeeCartRe
 
     override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart = throw exception
 
-    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String): Boolean = throw exception
+    override suspend fun updateCoffeeCart(
+        id: String,
+        name: String,
+        address: String,
+        imageUrl: String,
+        latitude: Double?,
+        longitude: Double?,
+    ): Boolean = throw exception
 
     override suspend fun removeCoffeeCart(id: String): Boolean = throw exception
+
+    override suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean = throw exception
+
+    override suspend fun uploadImage(bytes: ByteArray, fileName: String): String = throw exception
 }
 
 class CoffeeCartListViewModelTest {

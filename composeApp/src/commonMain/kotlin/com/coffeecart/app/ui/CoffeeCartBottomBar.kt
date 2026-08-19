@@ -5,6 +5,8 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,6 +23,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun BottomBar(
     currentRoute: String?,
+    cartProductCount: Int,
     onNavigate: (Destination) -> Unit,
 ) {
     NavigationBar {
@@ -39,7 +42,21 @@ fun BottomBar(
             NavigationBarItem(
                 selected = isSelected,
                 onClick = { onNavigate(destination) },
-                icon = { Icon(destination.icon, contentDescription = stringResource(destination.label)) },
+                icon = {
+                    if (destination == Destination.Orders && cartProductCount > 0) {
+                        BadgedBox(
+                            badge = {
+                                Badge {
+                                    Text(text = cartProductCount.toString())
+                                }
+                            }
+                        ) {
+                            Icon(destination.icon, contentDescription = stringResource(destination.label))
+                        }
+                    } else {
+                        Icon(destination.icon, contentDescription = stringResource(destination.label))
+                    }
+                },
                 label = { Text(stringResource(destination.label)) },
             )
         }
@@ -59,6 +76,7 @@ val Destination.icon: ImageVector
 private fun BottomBarPreview() {
     BottomBar(
         currentRoute = Destination.Home.route,
+        cartProductCount = 2,
         onNavigate = {},
     )
 }

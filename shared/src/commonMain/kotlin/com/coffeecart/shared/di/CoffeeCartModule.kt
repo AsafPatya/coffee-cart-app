@@ -1,7 +1,9 @@
 package com.coffeecart.shared.di
 
+import com.coffeecart.shared.data.repository.ShoppingCartRepository
 import com.coffeecart.shared.data.repository.KtorCoffeeCartRepository
 import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
 import com.coffeecart.shared.feature.cartlist.CoffeeCartListViewModel
 import com.coffeecart.shared.feature.profile.ProfileViewModel
@@ -21,8 +23,9 @@ val coffeeCartModule = module {
             }
         }
     }
-    single<CoffeeCartRepository> { KtorCoffeeCartRepository(get()) }
+        single<CoffeeCartRepository> { KtorCoffeeCartRepository(get()) }
+    single<ShoppingCartRepositoryInterface> { ShoppingCartRepository() }
     factory { CoffeeCartListViewModel(get()) }
-    factory { CoffeeCartDetailsViewModel(get()) }
+    factory { CoffeeCartDetailsViewModel(get(), get()) }
     factory { ProfileViewModel(get()) }
 }
