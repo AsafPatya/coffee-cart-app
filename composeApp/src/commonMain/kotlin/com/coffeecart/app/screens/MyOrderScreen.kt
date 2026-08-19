@@ -23,6 +23,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -30,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +42,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import com.coffeecart.shared.domain.OrderRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.domain.ShoppingCartState
 import com.coffeecart.shared.model.OrderItem
@@ -46,8 +50,12 @@ import com.coffeecart.shared.model.Product
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strComments
 import coffeecart.composeapp.generated.resources.strNoOpenOrder
+import coffeecart.composeapp.generated.resources.strOrderPlaced
+import coffeecart.composeapp.generated.resources.strPlaceOrder
 import coffeecart.composeapp.generated.resources.strStartNewOrder
 import coffeecart.composeapp.generated.resources.strUpdateItem
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -56,16 +64,40 @@ import org.koin.compose.koinInject
 fun MyOrderScreen(
     onExploreCartsClick: () -> Unit,
     shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface = koinInject(),
+    orderRepository: OrderRepository = koinInject(),
 ) {
     val state by shoppingCartRepositoryInterface.state.collectAsState()
     var selectedItem by remember { mutableStateOf<OrderItem?>(null) }
+    var isPlacingOrder by remember { mutableStateOf(false) }
+    val snackBarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-    MyOrderContent(
-        state = state,
-        onQuantityChange = { product, quantity -> shoppingCartRepositoryInterface.updateQuantity(product, quantity) },
-        onExploreCartsClick = onExploreCartsClick,
-        onItemClick = { item -> selectedItem = item },
-    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        MyOrderContent(
+            state = state,
+            isPlacingOrder = isPlacingOrder,
+            onQuantityChange = { product, quantity -> shoppingCartRepositoryInterface.updateQuantity(product, quantity) },
+            onExploreCartsClick = onExploreCartsClick,
+            onItemClick = { item -> selectedItem = item },
+            onPlaceOrderClick = {
+                state.cartId?.let { cartId ->
+                    isPlacingOrder = true
+                    coroutineScope.launch {
+                        try {
+                            orderRepository.submitOrder(cartId, state.items)
+                            shoppingCartRepositoryInterface.clear()
+                            snackBarHostState.showSnackbar(getString(Res.string.strOrderPlaced))
+                        } catch (e: Exception) {
+                            snackBarHostState.showSnackbar(e.message ?: "Failed to place order.")
+                        } finally {
+                            isPlacingOrder = false
+                        }
+                    }
+                }
+            },
+        )
+        SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+    }
 
     selectedItem?.let { item ->
         EditOrderItemBottomSheet(
@@ -82,9 +114,11 @@ fun MyOrderScreen(
 @Composable
 private fun MyOrderContent(
     state: ShoppingCartState,
+    isPlacingOrder: Boolean,
     onQuantityChange: (Product, Int) -> Unit,
     onExploreCartsClick: () -> Unit,
     onItemClick: (OrderItem) -> Unit,
+    onPlaceOrderClick: () -> Unit,
 ) {
     if (state.items.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -130,6 +164,16 @@ private fun MyOrderContent(
         ) {
             Text("Total", style = MaterialTheme.typography.titleMedium)
             Text(formatPrice(total), style = MaterialTheme.typography.titleMedium)
+        }
+
+        Spacer(Modifier.height(Spacing.Small.dp))
+
+        Button(
+            onClick = onPlaceOrderClick,
+            enabled = !isPlacingOrder,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(Res.string.strPlaceOrder))
         }
     }
 }
@@ -250,7 +294,14 @@ private fun formatPrice(price: Double): String {
 @Preview
 @Composable
 private fun MyOrderScreenEmptyPreview() {
-    MyOrderContent(state = ShoppingCartState(), onQuantityChange = { _, _ -> }, onExploreCartsClick = {}, onItemClick = {})
+    MyOrderContent(
+        state = ShoppingCartState(),
+        isPlacingOrder = false,
+        onQuantityChange = { _, _ -> },
+        onExploreCartsClick = {},
+        onItemClick = {},
+        onPlaceOrderClick = {},
+    )
 }
 
 @Preview
@@ -274,8 +325,10 @@ private fun MyOrderScreenPreview() {
             cartName = "Downtown Espresso Cart",
             items = listOf(OrderItem(latte, quantity = 2, comment = "Extra hot, oat milk"), OrderItem(cappuccino, quantity = 1)),
         ),
+        isPlacingOrder = false,
         onQuantityChange = { _, _ -> },
         onExploreCartsClick = {},
         onItemClick = {},
+        onPlaceOrderClick = {},
     )
 }

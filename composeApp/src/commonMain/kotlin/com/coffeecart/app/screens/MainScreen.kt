@@ -34,6 +34,7 @@ import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
 import com.coffeecart.app.screens.profile.ProfileScreen
 import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.screens.profile.EditCartScreen
+import com.coffeecart.app.screens.profile.OrderDashboardScreen
 import com.coffeecart.app.ui.BottomBar
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.data.repository.ShoppingCartRepository
@@ -64,7 +65,8 @@ fun MainScreen(
                 currentRoute == Routes.COFFEE_CART_MENU_CATEGORIES ||
                 currentRoute == Routes.COFFEE_CART_CATEGORY_PRODUCTS ||
                 currentRoute == Routes.COFFEE_CART_ADD_CATEGORY_WIZARD ||
-                currentRoute == Routes.COFFEE_CART_EDIT
+                currentRoute == Routes.COFFEE_CART_EDIT ||
+                currentRoute == Routes.ORDER_DASHBOARD
             ) {
                 val titleString = when (currentRoute) {
                     Routes.COFFEE_CART_MENU_CATEGORIES -> "Menu Categories"
@@ -73,6 +75,7 @@ fun MainScreen(
                     }
                     Routes.COFFEE_CART_ADD_CATEGORY_WIZARD -> "Add Menu Category"
                     Routes.COFFEE_CART_EDIT -> "Edit Coffee Cart"
+                    Routes.ORDER_DASHBOARD -> "Orders"
                     else -> topBarTitle
                 }
                 TopAppBar(
@@ -217,8 +220,17 @@ fun MainScreen(
                     },
                     onEditCartClick = { cartId ->
                         navController.navigate(Routes.coffeeCartEdit(cartId))
+                    },
+                    onViewOrdersClick = { cartId ->
+                        navController.navigate(Routes.orderDashboard(cartId))
                     }
                 )
+            }
+            composable(Routes.ORDER_DASHBOARD) { backStackEntry ->
+                val cartId = backStackEntry.arguments?.read {
+                    getStringOrNull("cartId")
+                } ?: ""
+                OrderDashboardScreen(cartId = cartId)
             }
         }
     }

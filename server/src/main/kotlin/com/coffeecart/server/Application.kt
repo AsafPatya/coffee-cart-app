@@ -2,12 +2,14 @@ package com.coffeecart.server
 
 import com.coffeecart.server.db.DatabaseFactory
 import com.coffeecart.server.db.PostgresCartStore
+import com.coffeecart.server.db.PostgresOrderStore
 import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
 import com.coffeecart.shared.contract.UploadImageResponse
 import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
+import com.coffeecart.shared.model.OrderItem
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
@@ -60,6 +62,7 @@ fun Application.module() {
 
     DatabaseFactory.init()
     val cartStore = PostgresCartStore()
+    val orderStore = PostgresOrderStore()
 
     // Mounted to a persistent Railway volume in production so uploaded images survive restarts/redeploys.
     val imagesDir = File(System.getenv("IMAGES_DIR") ?: "images").apply { mkdirs() }
@@ -113,6 +116,35 @@ fun Application.module() {
             val request = call.receive<CoffeeCartDto>()
             val updated = id != null && cartStore.updateFull(request.toModel())
             call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
+        }
+
+        post(Endpoints.cartOrders("{id}")) {
+            val cartId = call.parameters["id"]
+            if (cartId == null) {
+                call.respond(HttpStatusCode.BadRequest)
+            } else {
+                val items = call.receive<List<OrderItem>>()
+                call.respond(HttpStatusCode.Created, orderStore.create(cartId, items))
+            }
+        }
+
+        get(Endpoints.cartOrders("{id}")) {
+            val cartId = call.parameters["id"]
+            if (cartId == null) {
+                call.respond(HttpStatusCode.BadRequest)
+            } else {
+                call.respond(orderStore.getByCart(cartId))
+            }
+        }
+
+        post(Endpoints.advanceOrder("{id}", "{orderId}")) {
+            val orderId = call.parameters["orderId"]
+            val updated = orderId?.let { orderStore.advance(it) }
+            if (updated != null) {
+                call.respond(updated)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
         }
     }
 }
