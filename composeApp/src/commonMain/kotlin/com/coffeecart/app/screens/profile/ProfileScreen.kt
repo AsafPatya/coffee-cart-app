@@ -30,7 +30,7 @@ import com.coffeecart.shared.model.CoffeeCart
 import org.koin.compose.koinInject
 
 enum class ProfileAction {
-    NONE, EDIT, REMOVE, ADD_CATEGORY
+    NONE, EDIT, REMOVE, ADD_CATEGORY, VIEW_ORDERS
 }
 
 /** Screen enabling operational calls (GET/POST/DELETE) for coffee carts. */
@@ -39,6 +39,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinInject(),
     onAddCategoryClick: (String) -> Unit,
     onEditCartClick: (String) -> Unit,
+    onViewOrdersClick: (String) -> Unit,
 ) {
     val dialogMessage by viewModel.dialogMessage.collectAsState()
     val cartsList by viewModel.cartsList.collectAsState()
@@ -57,6 +58,7 @@ fun ProfileScreen(
         onDismissDialog = { viewModel.dismissDialog() },
         onAddCategoryClick = onAddCategoryClick,
         onEditCartClick = onEditCartClick,
+        onViewOrdersClick = onViewOrdersClick,
     )
 }
 
@@ -72,6 +74,7 @@ fun ProfileContent(
     onDismissDialog: () -> Unit,
     onAddCategoryClick: (String) -> Unit,
     onEditCartClick: (String) -> Unit,
+    onViewOrdersClick: (String) -> Unit,
 ) {
     var activeAction by remember { mutableStateOf(ProfileAction.NONE) }
     var selectedCartForDelete by remember { mutableStateOf<CoffeeCart?>(null) }
@@ -135,6 +138,16 @@ fun ProfileContent(
             ) {
                 Text("Add New Category")
             }
+
+            Button(
+                onClick = {
+                    onGetClick()
+                    activeAction = ProfileAction.VIEW_ORDERS
+                },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("View Orders")
+            }
         }
 
         if (dialogMessage != null) {
@@ -162,6 +175,7 @@ fun ProfileContent(
                         ProfileAction.EDIT -> onEditCartClick(cart.id)
                         ProfileAction.REMOVE -> selectedCartForDelete = cart
                         ProfileAction.ADD_CATEGORY -> onAddCategoryClick(cart.id)
+                        ProfileAction.VIEW_ORDERS -> onViewOrdersClick(cart.id)
                         else -> {}
                     }
                 }
@@ -205,7 +219,8 @@ private fun ProfileScreenPreview() {
         onConfirmDelete = {},
         onDismissDialog = {},
         onAddCategoryClick = {},
-        onEditCartClick = {}
+        onEditCartClick = {},
+        onViewOrdersClick = {}
     )
 }
 
@@ -224,6 +239,7 @@ private fun ProfileScreenWithDialogPreview() {
         onConfirmDelete = {},
         onDismissDialog = {},
         onAddCategoryClick = {},
-        onEditCartClick = {}
+        onEditCartClick = {},
+        onViewOrdersClick = {}
     )
 }

@@ -18,4 +18,6 @@
     <string name="strComments">הערות</string>
     <string name="strAddToCart">הוסף לסל</string>
     <string name="strUpdateItem">עדכן פריט</string>
+    <string name="strPlaceOrder">בצע הזמנה</string>
+    <string name="strOrderPlaced">ההזמנה נשלחה!</string>
 </resources>

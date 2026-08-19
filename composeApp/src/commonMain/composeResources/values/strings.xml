@@ -18,4 +18,6 @@
     <string name="strComments">Comments</string>
     <string name="strAddToCart">Add to Cart</string>
     <string name="strUpdateItem">Update Item</string>
+    <string name="strPlaceOrder">Place Order</string>
+    <string name="strOrderPlaced">Order placed!</string>
 </resources>
