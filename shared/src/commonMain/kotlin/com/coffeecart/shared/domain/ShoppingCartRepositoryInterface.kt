@@ -20,10 +20,13 @@ enum class AddProductResult { Added, IncrementedExisting, BlockedDifferentCart }
 interface ShoppingCartRepositoryInterface {
     val state: StateFlow<ShoppingCartState>
 
-    fun addProduct(cartId: String, cartName: String, product: Product): AddProductResult
+    /** Matches an existing line item by [product] alone; when found, adds to its quantity and overwrites its comment. */
+    fun addProduct(cartId: String, cartName: String, product: Product, quantity: Int = 1, comment: String = ""): AddProductResult
 
     /** Setting quantity to 0 or less removes the line item. */
     fun updateQuantity(product: Product, quantity: Int)
+
+    fun updateItem(product: Product, quantity: Int, comment: String)
 
     fun clear()
 }

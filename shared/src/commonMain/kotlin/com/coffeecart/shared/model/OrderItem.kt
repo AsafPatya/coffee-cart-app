@@ -1,3 +1,3 @@
 package com.coffeecart.shared.model
 
-data class OrderItem(val product: Product, val quantity: Int)
+data class OrderItem(val product: Product, val quantity: Int, val comment: String = "")

@@ -15,4 +15,7 @@
     <string name="strNoOpenOrder">אין אף הזמנה פתוחה</string>
     <string name="strExploreCoffeeCarts">צפה בעגלות הקפה</string>
     <string name="strStartNewOrder">התחל הזמנה חדשה</string>
+    <string name="strComments">הערות</string>
+    <string name="strAddToCart">הוסף לסל</string>
+    <string name="strUpdateItem">עדכן פריט</string>
 </resources>

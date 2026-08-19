@@ -15,4 +15,7 @@
     <string name="strNoOpenOrder">There isn't any open order</string>
     <string name="strExploreCoffeeCarts">Explore Coffee Carts</string>
     <string name="strStartNewOrder">Start New Order</string>
+    <string name="strComments">Comments</string>
+    <string name="strAddToCart">Add to Cart</string>
+    <string name="strUpdateItem">Update Item</string>
 </resources>

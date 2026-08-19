@@ -43,8 +43,14 @@ class CoffeeCartDetailsViewModel(
         }
     }
 
-    fun addProductToCart(cartId: String, cartName: String, product: Product): AddProductResult {
-        return shoppingCartRepositoryInterface.addProduct(cartId, cartName, product)
+    fun addProductToCart(
+        cartId: String,
+        cartName: String,
+        product: Product,
+        quantity: Int = 1,
+        comment: String = "",
+    ): AddProductResult {
+        return shoppingCartRepositoryInterface.addProduct(cartId, cartName, product, quantity, comment)
     }
 
     fun addCategory(cartId: String, category: MenuCategory, onResult: (Boolean) -> Unit) {
