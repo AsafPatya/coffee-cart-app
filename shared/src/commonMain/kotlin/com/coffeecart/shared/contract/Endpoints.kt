@@ -17,5 +17,11 @@ object Endpoints {
     fun cartOrders(cartId: String): String = "$CARTS/$cartId/orders"
 
     fun advanceOrder(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/advance"
+
+    const val RAPYD_WEBHOOK = "/webhooks/rapyd"
+
+    fun paymentAccount(cartId: String): String = "$CARTS/$cartId/payment-account"
+
+    fun orderCheckout(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/checkout"
 }
 

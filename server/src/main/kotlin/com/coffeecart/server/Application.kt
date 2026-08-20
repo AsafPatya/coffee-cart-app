@@ -3,13 +3,22 @@ package com.coffeecart.server
 import com.coffeecart.server.db.DatabaseFactory
 import com.coffeecart.server.db.PostgresCartStore
 import com.coffeecart.server.db.PostgresOrderStore
+import com.coffeecart.server.rapyd.RapydClient
+import com.coffeecart.server.rapyd.RapydConfig
+import com.coffeecart.server.rapyd.RapydSigner
+import com.coffeecart.shared.contract.CheckoutResponse
 import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
+import com.coffeecart.shared.contract.PaymentAccountResponse
 import com.coffeecart.shared.contract.UploadImageResponse
 import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
 import com.coffeecart.shared.model.OrderItem
+import com.coffeecart.shared.model.PaymentStatus
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
@@ -23,8 +32,10 @@ import io.ktor.server.plugins.calllogging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.http.HttpMethod
+import io.ktor.server.request.header
 import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
+import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
@@ -34,6 +45,8 @@ import io.ktor.server.routing.routing
 import io.ktor.utils.io.toByteArray
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 import java.util.UUID
 
@@ -63,6 +76,12 @@ fun Application.module() {
     DatabaseFactory.init()
     val cartStore = PostgresCartStore()
     val orderStore = PostgresOrderStore()
+    val rapydHttpClient = HttpClient(OkHttp) {
+        install(ClientContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
+    val rapydClient = RapydClient(rapydHttpClient)
 
     // Mounted to a persistent Railway volume in production so uploaded images survive restarts/redeploys.
     val imagesDir = File(System.getenv("IMAGES_DIR") ?: "images").apply { mkdirs() }
@@ -133,7 +152,8 @@ fun Application.module() {
             if (cartId == null) {
                 call.respond(HttpStatusCode.BadRequest)
             } else {
-                call.respond(orderStore.getByCart(cartId))
+                // Only paid orders are "live" — an order awaiting payment doesn't exist yet from the dashboard's view.
+                call.respond(orderStore.getByCart(cartId).filter { it.paymentStatus == PaymentStatus.PAID })
             }
         }
 
@@ -145,6 +165,101 @@ fun Application.module() {
             } else {
                 call.respond(HttpStatusCode.NotFound)
             }
+        }
+
+        post(Endpoints.paymentAccount("{id}")) {
+            val cartId = call.parameters["id"]
+            val cart = cartId?.let { cartStore.getById(it) }
+            if (cart == null) {
+                call.respond(HttpStatusCode.NotFound)
+                return@post
+            }
+            val existingWalletId = cart.paymentAccountId
+            val walletId: String
+            val contactId: String
+            if (existingWalletId != null) {
+                walletId = existingWalletId
+                // TODO: once a wallet already exists we still need its contact id to create a new IDV page —
+                // for now this assumes a fresh wallet each time; revisit once tested against a real sandbox.
+                contactId = ""
+            } else {
+                val created = rapydClient.createWallet(
+                    referenceId = cart.id,
+                    firstName = cart.name,
+                    lastName = "Owner",
+                    email = "owner+${cart.id}@example.com",
+                    phoneNumber = "+972000000000",
+                )
+                walletId = created.walletId
+                contactId = created.contactId
+                cartStore.setPaymentAccount(cart.id, walletId)
+            }
+            val url = rapydClient.createIdvPage(walletId = walletId, contactId = contactId, referenceId = cart.id)
+            call.respond(HttpStatusCode.Created, PaymentAccountResponse(url = url))
+        }
+
+        post(Endpoints.orderCheckout("{id}", "{orderId}")) {
+            val cartId = call.parameters["id"]
+            val orderId = call.parameters["orderId"]
+            val cart = cartId?.let { cartStore.getById(it) }
+            val order = orderId?.let { orderStore.getById(it) }
+            val walletId = cart?.paymentAccountId
+            if (walletId == null || order == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val amount = order.items.sumOf { it.product.price * it.quantity }
+            val url = rapydClient.createCheckout(
+                walletId = walletId,
+                amountInMainUnits = amount,
+                currency = "ILS",
+                orderId = order.id,
+                completeUrl = "$publicBaseUrl/payments/complete",
+                errorUrl = "$publicBaseUrl/payments/error",
+            )
+            orderStore.setCheckoutUrl(order.id, url)
+            call.respond(HttpStatusCode.Created, CheckoutResponse(url = url))
+        }
+
+        post(Endpoints.RAPYD_WEBHOOK) {
+            val bodyText = call.receiveText()
+            val signature = call.request.header("signature")
+            val salt = call.request.header("salt")
+            val timestamp = call.request.header("timestamp")
+            if (signature == null || salt == null || timestamp == null) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val expected = RapydSigner.sign(
+                method = "",
+                urlPath = Endpoints.RAPYD_WEBHOOK,
+                salt = salt,
+                timestamp = timestamp.toLong(),
+                body = bodyText,
+                accessKey = RapydConfig.accessKey,
+                secretKey = RapydConfig.secretKey,
+            )
+            if (expected != signature) {
+                call.respond(HttpStatusCode.Unauthorized)
+                return@post
+            }
+
+            val json = Json { ignoreUnknownKeys = true }.parseToJsonElement(bodyText).jsonObject
+            val type = json["type"]?.jsonPrimitive?.content
+            val data = json["data"]?.jsonObject
+            when (type) {
+                // TODO(confirm exact event name against real sandbox webhook)
+                "PAYMENT_COMPLETED" -> {
+                    val orderId = data?.get("merchant_reference_id")?.jsonPrimitive?.content
+                    orderId?.let { orderStore.markPaid(it) }
+                }
+                // TODO(confirm exact event name against real sandbox webhook)
+                "EWALLET_ENABLED" -> {
+                    val walletId = data?.get("id")?.jsonPrimitive?.content
+                    walletId?.let { cartStore.setPaymentAccountVerified(it, true) }
+                }
+            }
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

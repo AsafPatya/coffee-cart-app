@@ -19,6 +19,11 @@ dependencies {
     implementation(libs.ktor.server.callLogging)
     implementation(libs.ktor.server.cors)
 
+    // Outbound calls to Rapyd's API
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.contentNegotiation)
+
     implementation(libs.logback)
 
     implementation(libs.exposed.core)

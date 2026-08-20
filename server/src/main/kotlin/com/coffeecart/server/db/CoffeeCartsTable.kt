@@ -10,6 +10,8 @@ object CoffeeCartsTable : Table("coffee_carts") {
     val menuJson = text("menu_json").nullable()
     val latitude = double("latitude").nullable()
     val longitude = double("longitude").nullable()
+    val paymentAccountId = varchar("payment_account_id", 128).nullable()
+    val paymentAccountVerified = bool("payment_account_verified").default(false)
 
     override val primaryKey = PrimaryKey(id)
 }
