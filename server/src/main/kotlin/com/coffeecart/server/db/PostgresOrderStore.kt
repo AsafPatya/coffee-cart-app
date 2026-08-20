@@ -3,6 +3,7 @@ package com.coffeecart.server.db
 import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.OrderStatus
+import com.coffeecart.shared.model.PaymentStatus
 import java.util.UUID
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -18,6 +19,24 @@ class PostgresOrderStore {
 
     fun getByCart(cartId: String): List<Order> = transaction {
         OrdersTable.selectAll().where { OrdersTable.cartId eq cartId }.map { it.toOrder() }
+    }
+
+    fun getById(orderId: String): Order? = transaction {
+        OrdersTable.selectAll().where { OrdersTable.id eq orderId }.singleOrNull()?.toOrder()
+    }
+
+    fun setCheckoutUrl(orderId: String, url: String): Boolean = transaction {
+        OrdersTable.update({ OrdersTable.id eq orderId }) { it[checkoutUrl] = url } > 0
+    }
+
+    /** Called from the Rapyd webhook once payment is confirmed. Returns null if the order isn't found. */
+    fun markPaid(orderId: String): Order? = transaction {
+        val row = OrdersTable.selectAll().where { OrdersTable.id eq orderId }.singleOrNull() ?: return@transaction null
+        OrdersTable.update({ OrdersTable.id eq orderId }) {
+            it[paymentStatus] = PaymentStatus.PAID.name
+            it[checkoutUrl] = null
+        }
+        row.toOrder().copy(paymentStatus = PaymentStatus.PAID, checkoutUrl = null)
     }
 
     fun create(cartId: String, items: List<OrderItem>): Order = transaction {
@@ -52,5 +71,7 @@ class PostgresOrderStore {
         items = Json.decodeFromString(this[OrdersTable.itemsJson]),
         status = OrderStatus.valueOf(this[OrdersTable.status]),
         createdAt = this[OrdersTable.createdAt],
+        paymentStatus = PaymentStatus.valueOf(this[OrdersTable.paymentStatus]),
+        checkoutUrl = this[OrdersTable.checkoutUrl],
     )
 }

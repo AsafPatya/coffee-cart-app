@@ -8,6 +8,8 @@ object OrdersTable : Table("orders") {
     val itemsJson = text("items_json")
     val status = varchar("status", 32)
     val createdAt = long("created_at")
+    val paymentStatus = varchar("payment_status", 32).default("PENDING")
+    val checkoutUrl = text("checkout_url").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

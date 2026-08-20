@@ -12,6 +12,8 @@ enum class OrderStatus {
     }
 }
 
+enum class PaymentStatus { PENDING, PAID, FAILED }
+
 @Serializable
 data class Order(
     val id: String,
@@ -19,4 +21,6 @@ data class Order(
     val items: List<OrderItem>,
     val status: OrderStatus,
     val createdAt: Long,
+    val paymentStatus: PaymentStatus = PaymentStatus.PENDING,
+    val checkoutUrl: String? = null,
 )

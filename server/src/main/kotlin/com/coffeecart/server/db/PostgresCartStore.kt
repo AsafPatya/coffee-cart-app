@@ -23,6 +23,23 @@ class PostgresCartStore {
         CoffeeCartsTable.selectAll().map { it.toCoffeeCart() }
     }
 
+    fun getById(cartId: String): CoffeeCart? = transaction {
+        CoffeeCartsTable.selectAll().where { CoffeeCartsTable.id eq cartId }.singleOrNull()?.toCoffeeCart()
+    }
+
+    fun setPaymentAccount(cartId: String, accountId: String): Boolean = transaction {
+        CoffeeCartsTable.update({ CoffeeCartsTable.id eq cartId }) {
+            it[paymentAccountId] = accountId
+            it[paymentAccountVerified] = false
+        } > 0
+    }
+
+    fun setPaymentAccountVerified(accountId: String, verified: Boolean): Boolean = transaction {
+        CoffeeCartsTable.update({ CoffeeCartsTable.paymentAccountId eq accountId }) {
+            it[paymentAccountVerified] = verified
+        } > 0
+    }
+
     fun add(name: String, address: String, imageUrl: String): CoffeeCart {
         val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl)
         transaction {
@@ -91,5 +108,7 @@ class PostgresCartStore {
         } ?: emptyList(),
         latitude = this[CoffeeCartsTable.latitude],
         longitude = this[CoffeeCartsTable.longitude],
+        paymentAccountId = this[CoffeeCartsTable.paymentAccountId],
+        paymentAccountVerified = this[CoffeeCartsTable.paymentAccountVerified],
     )
 }

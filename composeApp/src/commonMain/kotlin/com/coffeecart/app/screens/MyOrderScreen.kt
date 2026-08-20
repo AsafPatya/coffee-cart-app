@@ -42,7 +42,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import com.coffeecart.app.ui.payment.CheckoutWebView
+import com.coffeecart.shared.data.remote.ServerEnvironment
 import com.coffeecart.shared.domain.OrderRepository
+import com.coffeecart.shared.domain.PaymentRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.domain.ShoppingCartState
 import com.coffeecart.shared.model.OrderItem
@@ -65,12 +68,16 @@ fun MyOrderScreen(
     onExploreCartsClick: () -> Unit,
     shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface = koinInject(),
     orderRepository: OrderRepository = koinInject(),
+    paymentRepository: PaymentRepository = koinInject(),
 ) {
     val state by shoppingCartRepositoryInterface.state.collectAsState()
     var selectedItem by remember { mutableStateOf<OrderItem?>(null) }
     var isPlacingOrder by remember { mutableStateOf(false) }
+    var checkoutUrl by remember { mutableStateOf<String?>(null) }
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val completeUrlPrefix = "${ServerEnvironment.baseUrl}/payments/complete"
+    val errorUrlPrefix = "${ServerEnvironment.baseUrl}/payments/error"
 
     Box(modifier = Modifier.fillMaxSize()) {
         MyOrderContent(
@@ -84,11 +91,10 @@ fun MyOrderScreen(
                     isPlacingOrder = true
                     coroutineScope.launch {
                         try {
-                            orderRepository.submitOrder(cartId, state.items)
-                            shoppingCartRepositoryInterface.clear()
-                            snackBarHostState.showSnackbar(getString(Res.string.strOrderPlaced))
+                            val order = orderRepository.submitOrder(cartId, state.items)
+                            checkoutUrl = paymentRepository.createCheckout(cartId, order.id)
                         } catch (e: Exception) {
-                            snackBarHostState.showSnackbar(e.message ?: "Failed to place order.")
+                            snackBarHostState.showSnackbar(e.message ?: "Failed to start payment.")
                         } finally {
                             isPlacingOrder = false
                         }
@@ -97,6 +103,25 @@ fun MyOrderScreen(
             },
         )
         SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+
+        checkoutUrl?.let { url ->
+            CheckoutWebView(
+                url = url,
+                completeUrlPrefix = completeUrlPrefix,
+                errorUrlPrefix = errorUrlPrefix,
+                onComplete = {
+                    checkoutUrl = null
+                    shoppingCartRepositoryInterface.clear()
+                    coroutineScope.launch { snackBarHostState.showSnackbar(getString(Res.string.strOrderPlaced)) }
+                },
+                onError = { message ->
+                    checkoutUrl = null
+                    coroutineScope.launch { snackBarHostState.showSnackbar(message) }
+                },
+                onCancel = { checkoutUrl = null },
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
     }
 
     selectedItem?.let { item ->

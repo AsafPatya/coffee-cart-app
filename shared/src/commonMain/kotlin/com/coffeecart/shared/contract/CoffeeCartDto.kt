@@ -81,6 +81,12 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
 data class UploadImageResponse(val url: String)
 
 @Serializable
+data class PaymentAccountResponse(val url: String)
+
+@Serializable
+data class CheckoutResponse(val url: String)
+
+@Serializable
 data class CreateCoffeeCartRequest(
     val name: String,
     val address: String,

@@ -11,4 +11,6 @@ data class CoffeeCart(
     val categories: List<MenuCategory> = emptyList(),
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val paymentAccountId: String? = null,
+    val paymentAccountVerified: Boolean = false,
 )
