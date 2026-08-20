@@ -193,7 +193,11 @@ fun Application.module() {
                 contactId = created.contactId
                 cartStore.setPaymentAccount(cart.id, walletId)
             }
-            val url = rapydClient.createIdvPage(walletId = walletId, contactId = contactId, referenceId = cart.id)
+            val url = rapydClient.createIdvPage(
+                walletId = walletId,
+                contactId = contactId,
+                referenceId = "${cart.id}-${System.currentTimeMillis()}",
+            )
             call.respond(HttpStatusCode.Created, PaymentAccountResponse(url = url))
         }
 
