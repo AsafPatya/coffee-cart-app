@@ -27,10 +27,18 @@ private data class RapydStatus(val status: String, val message: String? = null)
 class RapydClient(private val client: HttpClient) {
 
     /** Creates a Rapyd wallet for a coffee cart owner. Returns the wallet id (ewallet_...) and its primary contact id (cont_...). */
-    suspend fun createWallet(referenceId: String, firstName: String, lastName: String, email: String, phoneNumber: String): WalletCreated {
+    suspend fun createWallet(
+        referenceId: String,
+        firstName: String,
+        lastName: String,
+        email: String,
+        phoneNumber: String,
+        addressLine: String,
+    ): WalletCreated {
         val body = """
             {"first_name":"$firstName","last_name":"$lastName","ewallet_reference_id":"$referenceId","type":"person",
-            "contact":{"first_name":"$firstName","last_name":"$lastName","email":"$email","phone_number":"$phoneNumber","contact_type":"personal"}}
+            "contact":{"first_name":"$firstName","last_name":"$lastName","email":"$email","phone_number":"$phoneNumber",
+            "contact_type":"personal","country":"IL","address":{"name":"$firstName $lastName","line_1":"$addressLine"}}}
         """.trimIndent().replace("\n", "").replace(" ", "")
 
         val data = post("/v1/ewallets", body).jsonObject

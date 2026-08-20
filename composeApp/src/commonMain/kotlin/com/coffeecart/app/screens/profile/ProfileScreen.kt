@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -50,6 +52,7 @@ fun ProfileScreen(
     val cartsList by viewModel.cartsList.collectAsState()
     var onboardingUrl by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+    val snackBarHostState = remember { SnackbarHostState() }
 
     Box(modifier = Modifier.fillMaxSize()) {
         ProfileContent(
@@ -69,10 +72,15 @@ fun ProfileScreen(
             onViewOrdersClick = onViewOrdersClick,
             onConnectPaymentAccountClick = { cartId ->
                 coroutineScope.launch {
-                    onboardingUrl = paymentRepository.connectPaymentAccount(cartId)
+                    try {
+                        onboardingUrl = paymentRepository.connectPaymentAccount(cartId)
+                    } catch (e: Exception) {
+                        snackBarHostState.showSnackbar(e.message ?: "Failed to connect payment account.")
+                    }
                 }
             },
         )
+        SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
 
         onboardingUrl?.let { url ->
             CheckoutWebView(

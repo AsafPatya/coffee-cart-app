@@ -189,6 +189,7 @@ fun Application.module() {
                     lastName = "Owner",
                     email = "owner+${cart.id}@example.com",
                     phoneNumber = "+972000000000",
+                    addressLine = cart.address,
                 )
                 walletId = created.walletId
                 contactId = created.contactId
