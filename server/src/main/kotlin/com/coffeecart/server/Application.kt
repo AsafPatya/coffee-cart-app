@@ -179,9 +179,7 @@ fun Application.module() {
             val contactId: String
             if (existingWalletId != null) {
                 walletId = existingWalletId
-                // TODO: once a wallet already exists we still need its contact id to create a new IDV page —
-                // for now this assumes a fresh wallet each time; revisit once tested against a real sandbox.
-                contactId = ""
+                contactId = rapydClient.getContactId(existingWalletId)
             } else {
                 val created = rapydClient.createWallet(
                     referenceId = cart.id,

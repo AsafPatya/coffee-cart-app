@@ -2,6 +2,7 @@ package com.coffeecart.server.rapyd
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -9,6 +10,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -43,10 +45,18 @@ class RapydClient(private val client: HttpClient) {
 
         val data = post("/v1/ewallets", body).jsonObject
         val walletId = data["id"]?.jsonPrimitive?.content ?: error("Rapyd wallet creation did not return an id")
-        // TODO(confirm against real sandbox response): exact path to the created contact's id —
-        // likely data.contacts[0].id per Rapyd's typical wallet shape.
-        val contactId = data["contacts"]?.jsonObject?.get("id")?.jsonPrimitive?.content ?: ""
+        val contactId = data["contacts"]?.jsonObject?.get("data")?.jsonArray?.firstOrNull()
+            ?.jsonObject?.get("id")?.jsonPrimitive?.content
+            ?: error("Rapyd wallet creation did not return a contact id")
         return WalletCreated(walletId = walletId, contactId = contactId)
+    }
+
+    /** Looks up an existing wallet's primary contact id, for when we already stored the wallet id but not the contact id. */
+    suspend fun getContactId(walletId: String): String {
+        val data = get("/v1/ewallets/$walletId").jsonObject
+        return data["contacts"]?.jsonObject?.get("data")?.jsonArray?.firstOrNull()
+            ?.jsonObject?.get("id")?.jsonPrimitive?.content
+            ?: error("Rapyd wallet $walletId has no contact on file")
     }
 
     /** Creates a Hosted IDV Page for a wallet's contact to complete their own KYC. Returns the URL to send them to. */
@@ -74,11 +84,39 @@ class RapydClient(private val client: HttpClient) {
         return data["redirect_url"]?.jsonPrimitive?.content ?: error("Rapyd checkout creation did not return a redirect_url")
     }
 
-    private suspend fun post(urlPath: String, body: String): JsonElement {
+    private suspend fun post(urlPath: String, body: String): JsonElement = request("post", urlPath, body) {
+        client.post("${RapydConfig.baseUrl}$urlPath") {
+            contentType(ContentType.Application.Json)
+            header("access_key", RapydConfig.accessKey)
+            header("salt", it.salt)
+            header("timestamp", it.timestamp)
+            header("signature", it.signature)
+            setBody(body)
+        }
+    }
+
+    private suspend fun get(urlPath: String): JsonElement = request("get", urlPath, "") {
+        client.get("${RapydConfig.baseUrl}$urlPath") {
+            contentType(ContentType.Application.Json)
+            header("access_key", RapydConfig.accessKey)
+            header("salt", it.salt)
+            header("timestamp", it.timestamp)
+            header("signature", it.signature)
+        }
+    }
+
+    private class SignedHeaders(val salt: String, val timestamp: Long, val signature: String)
+
+    private suspend fun request(
+        method: String,
+        urlPath: String,
+        body: String,
+        call: suspend (SignedHeaders) -> io.ktor.client.statement.HttpResponse,
+    ): JsonElement {
         val salt = generateSalt()
         val timestamp = System.currentTimeMillis() / 1000
         val signature = RapydSigner.sign(
-            method = "post",
+            method = method,
             urlPath = urlPath,
             salt = salt,
             timestamp = timestamp,
@@ -87,15 +125,7 @@ class RapydClient(private val client: HttpClient) {
             secretKey = RapydConfig.secretKey,
         )
 
-        val response = client.post("${RapydConfig.baseUrl}$urlPath") {
-            contentType(ContentType.Application.Json)
-            header("access_key", RapydConfig.accessKey)
-            header("salt", salt)
-            header("timestamp", timestamp)
-            header("signature", signature)
-            setBody(body)
-        }
-
+        val response = call(SignedHeaders(salt, timestamp, signature))
         val envelope = response.body<RapydEnvelope>()
         if (envelope.status.status != "SUCCESS") {
             error("Rapyd request to $urlPath failed: ${envelope.status.message}")
