@@ -108,7 +108,7 @@ class RapydClient(private val client: HttpClient) {
         // 2. Build a strict single-line minified JSON string
         // Wrap formattedAmount in quotes to avoid raw double/int signature mismatch issues
         val body = "{\"amount\":\"$formattedAmount\",\"currency\":\"$currency\",\"country\":\"IL\",\"ewallet\":\"$walletId\",\"complete_payment_url\":\"$completeUrl\",\"error_payment_url\":\"$errorUrl\",\"merchant_reference_id\":\"$orderId\"}"
-        val b1 = "{\"amount\":45,\"currency\":\"ILS\",\"country\":\"IL\",\"ewallet\":\"ewallet_f64e93a83b4830f61c8de72b3644387c\",\"complete_payment_url\":\"https://coffee-cart-app-qa.up.railway.app/payments/complete\",\"error_payment_url\":\"https://coffee-cart-app-qa.up.railway.app/payments/error\",\"merchant_reference_id\":\"c8e49786-3d7e-46db-b60e-771ba9d66b78\"}"
+        val b1 = "{\"amount\":\"45\",\"currency\":\"ILS\",\"country\":\"IL\",\"ewallet\":\"ewallet_f64e93a83b4830f61c8de72b3644387c\",\"complete_payment_url\":\"https://coffee-cart-app-qa.up.railway.app/payments/complete\",\"error_payment_url\":\"https://coffee-cart-app-qa.up.railway.app/payments/error\",\"merchant_reference_id\":\"c8e49786-3d7e-46db-b60e-771ba9d66b78\"}"
         val response = post("/v1/checkout", b1).jsonObject
 
         // 3. Drill into "data" object first (Rapyd wraps the response inside "data")
@@ -150,7 +150,7 @@ class RapydClient(private val client: HttpClient) {
     ): JsonElement {
         val salt = generateSalt()
         val timestamp = System.currentTimeMillis() / 1000
-                val signature = RapydSigner.sign(
+        val signature = RapydSigner.sign(
             method = method,
             urlPath = urlPath,
             salt = salt,
