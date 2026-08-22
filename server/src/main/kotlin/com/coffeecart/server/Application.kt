@@ -213,7 +213,7 @@ fun Application.module() {
             val orderId = call.parameters["orderId"]
             val cart = cartId?.let { cartStore.getById(it) }
             val order = orderId?.let { orderStore.getById(it) }
-            val walletId = cart?.paymentAccountId ?: "ewallet_f64e93a83b4830f61c8de72b3644387c"
+            val walletId = "ewallet_f64e93a83b4830f61c8de72b3644387c"
             println("[Checkout API] Creating checkout: cartId=$cartId, orderId=$orderId, walletId=$walletId")
             if (order == null) {
                 call.respond(HttpStatusCode.BadRequest)
