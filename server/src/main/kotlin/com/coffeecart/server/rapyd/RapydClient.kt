@@ -173,6 +173,12 @@ class RapydClient(private val client: HttpClient) {
 
         val response = call(SignedHeaders(salt, timestamp, signature))
         val envelope = response.body<RapydEnvelope>()
+
+        println("[Rapyd Client] Received response:")
+        println("  Status : ${envelope.status.status}")
+        println("  Message: ${envelope.status.message}")
+        println("  Data   : ${envelope.data}")
+
         if (envelope.status.status != "SUCCESS") {
             error("Rapyd request to $urlPath failed: ${envelope.status.message}")
         }
