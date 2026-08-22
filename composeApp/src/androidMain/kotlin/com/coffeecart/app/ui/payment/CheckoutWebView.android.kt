@@ -3,18 +3,19 @@ package com.coffeecart.app.ui.payment
 import android.annotation.SuppressLint
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.coffeecart.app.theme.Spacing
+import com.coffeecart.app.theme.dp
 
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
@@ -27,9 +28,17 @@ actual fun CheckoutWebView(
     onCancel: () -> Unit,
     modifier: Modifier,
 ) {
-    Box(modifier.fillMaxSize()) {
+    Column(modifier) {
+        IconButton(
+            onClick = onCancel,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(Spacing.Small.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
+        }
         AndroidView(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth().weight(1f),
             factory = { context ->
                 WebView(context).apply {
                     settings.javaScriptEnabled = true
@@ -54,8 +63,5 @@ actual fun CheckoutWebView(
                 }
             },
         )
-        IconButton(onClick = onCancel, modifier = Modifier.align(Alignment.TopStart).padding(8.dp)) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
-        }
     }
 }

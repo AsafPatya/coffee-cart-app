@@ -10,6 +10,7 @@ import com.coffeecart.shared.domain.PaymentRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
 import com.coffeecart.shared.feature.cartlist.CoffeeCartListViewModel
+import com.coffeecart.shared.feature.myorder.MyOrderViewModel
 import com.coffeecart.shared.feature.orderdashboard.OrderDashboardViewModel
 import com.coffeecart.shared.feature.profile.ProfileViewModel
 import io.ktor.client.HttpClient
@@ -36,4 +37,5 @@ val coffeeCartModule = module {
     factory { CoffeeCartDetailsViewModel(get(), get()) }
     factory { ProfileViewModel(get()) }
     factory { OrderDashboardViewModel(get()) }
+    factory { MyOrderViewModel(get(), get(), get()) }
 }

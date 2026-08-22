@@ -1,7 +1,6 @@
 package com.coffeecart.app.ui.payment
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -11,7 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.coffeecart.app.theme.Spacing
+import com.coffeecart.app.theme.dp
 
 // The checkout page itself is cross-origin (Rapyd's domain), so its location can't be read while
 // there — only once it navigates back to our own domain (complete/error URLs) does polling succeed.
@@ -25,7 +25,15 @@ actual fun CheckoutWebView(
     onCancel: () -> Unit,
     modifier: Modifier,
 ) {
-    Box(modifier.fillMaxSize()) {
+    Column(modifier) {
+        IconButton(
+            onClick = onCancel,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(Spacing.Small.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
+        }
         DisposableEffect(url) {
             val handle = embedCheckoutIframe(
                 url,
@@ -35,9 +43,6 @@ actual fun CheckoutWebView(
                 onError = { onError("Payment failed or was cancelled.") },
             )
             onDispose { removeCheckoutIframe(handle) }
-        }
-        IconButton(onClick = onCancel, modifier = Modifier.align(Alignment.TopStart).padding(8.dp)) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
         }
     }
 }
