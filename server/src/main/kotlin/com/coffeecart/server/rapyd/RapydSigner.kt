@@ -45,10 +45,10 @@ object RapydSigner {
         secretKey: String,
     ): String {
         val toSign = if (method.isNotEmpty()) {
-            // Outbound API signature formula: method + url_path + salt + timestamp + access_key + secret_key + body
+            // Outbound formula: method + urlPath + salt + timestamp + accessKey + secretKey + body
             "${method.lowercase()}$urlPath$salt$timestamp$accessKey$secretKey$body"
         } else {
-            // Webhook signature formula: url_path + salt + timestamp + access_key + secret_key + body
+            // Webhook formula: urlPath + salt + timestamp + accessKey + secretKey + body
             "$urlPath$salt$timestamp$accessKey$secretKey$body"
         }
 
@@ -56,10 +56,13 @@ object RapydSigner {
             init(SecretKeySpec(secretKey.toByteArray(Charsets.UTF_8), "HmacSHA256"))
         }
 
-        // Generate raw HMAC bytes directly
-        val rawHmac = mac.doFinal(toSign.toByteArray(Charsets.UTF_8))
+        // 1. Calculate raw HMAC bytes
+        val hmacBytes = mac.doFinal(toSign.toByteArray(Charsets.UTF_8))
 
-        // Base64 encode the raw bytes directly (do NOT convert to hex string first)
-        return Base64.getEncoder().encodeToString(rawHmac)
+        // 2. Convert raw bytes to lower-case Hex string (matches Python's h.hexdigest())
+        val hexString = hmacBytes.joinToString("") { "%02x".format(it) }
+
+        // 3. Base64 URL-safe encode the Hex string (matches Python's base64.urlsafe_b64encode)
+        return Base64.getUrlEncoder().encodeToString(hexString.toByteArray(Charsets.UTF_8))
     }
 }
