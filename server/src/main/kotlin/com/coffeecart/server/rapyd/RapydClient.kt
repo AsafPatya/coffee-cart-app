@@ -121,7 +121,7 @@ class RapydClient(private val client: HttpClient) {
     ): JsonElement {
         val salt = generateSalt()
         val timestamp = System.currentTimeMillis() / 1000
-        val signature = RapydSigner.sign(
+                val signature = RapydSigner.sign(
             method = method,
             urlPath = urlPath,
             salt = salt,
@@ -130,6 +130,17 @@ class RapydClient(private val client: HttpClient) {
             accessKey = RapydConfig.accessKey,
             secretKey = RapydConfig.secretKey,
         )
+
+        println("[Rapyd Client] About to send outbound request:")
+        println("  Method    : ${method.uppercase()}")
+        println("  URL       : ${RapydConfig.baseUrl}$urlPath")
+        if (body.isNotEmpty()) {
+            println("  Body      : $body")
+        }
+        println("  Access Key: ${RapydConfig.accessKey}")
+        println("  Salt      : $salt")
+        println("  Timestamp : $timestamp")
+        println("  Signature : $signature")
 
         val response = call(SignedHeaders(salt, timestamp, signature))
         val envelope = response.body<RapydEnvelope>()

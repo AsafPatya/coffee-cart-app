@@ -221,6 +221,7 @@ fun Application.module() {
             }
             try {
                 val amount = order.items.sumOf { it.product.price * it.quantity }
+                println("[Checkout API] Amount to charge: $amount ILS")
                 val url = rapydClient.createCheckout(
                     walletId = walletId,
                     amountInMainUnits = amount,
@@ -229,6 +230,7 @@ fun Application.module() {
                     completeUrl = "$publicBaseUrl/payments/complete",
                     errorUrl = "$publicBaseUrl/payments/error",
                 )
+                println("[Checkout API] Success! Redirect URL generated: $url")
                 orderStore.setCheckoutUrl(order.id, url)
                 call.respond(HttpStatusCode.Created, CheckoutResponse(url = url))
             } catch (e: Exception) {
