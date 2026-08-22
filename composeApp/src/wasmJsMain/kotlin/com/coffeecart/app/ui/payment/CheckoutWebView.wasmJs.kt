@@ -1,7 +1,6 @@
 package com.coffeecart.app.ui.payment
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -11,7 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import com.coffeecart.app.theme.Spacing
+import com.coffeecart.app.theme.dp
 
 // The checkout page itself is cross-origin (Rapyd's domain), so its location can't be read while
 // there — only once it navigates back to our own domain (complete/error URLs) does polling succeed.
@@ -25,7 +25,15 @@ actual fun CheckoutWebView(
     onCancel: () -> Unit,
     modifier: Modifier,
 ) {
-    Box(modifier.fillMaxSize()) {
+    Column(modifier) {
+        IconButton(
+            onClick = onCancel,
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(Spacing.Small.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
+        }
         DisposableEffect(url) {
             val handle = embedCheckoutIframe(
                 url,
@@ -36,9 +44,6 @@ actual fun CheckoutWebView(
             )
             onDispose { removeCheckoutIframe(handle) }
         }
-        IconButton(onClick = onCancel, modifier = Modifier.align(Alignment.TopStart).padding(8.dp)) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
-        }
     }
 }
 
@@ -47,9 +52,10 @@ actual fun CheckoutWebView(
         "const iframe = document.createElement('iframe');" +
         "iframe.src = url;" +
         "iframe.style.position = 'fixed';" +
-        "iframe.style.top = '0'; iframe.style.left = '0';" +
-        "iframe.style.width = '100%'; iframe.style.height = '100%';" +
-        "iframe.style.border = 'none'; iframe.style.zIndex = '1000';" +
+        "iframe.style.top = '0'; iframe.style.left = '0'; iframe.style.right = '0'; iframe.style.bottom = '0';" +
+        "iframe.style.width = '100vw'; iframe.style.height = '100vh';" +
+        "iframe.style.border = 'none'; iframe.style.zIndex = '2147483647';" +
+        "iframe.allow = 'payment';" +
         "document.body.appendChild(iframe);" +
         "const interval = setInterval(() => {" +
         "  try {" +

@@ -67,61 +67,6 @@ class RapydClient(private val client: HttpClient) {
     }
 
     /** Creates a Checkout Page that routes payment directly to [walletId]. Returns the checkout URL. */
-//    suspend fun createCheckout(
-//        walletId: String,
-//        amountInMainUnits: Double,
-//        currency: String,
-//        orderId: String,
-//        completeUrl: String,
-//        errorUrl: String,
-//    ): String {
-//        val formattedAmount = if (amountInMainUnits % 1.0 == 0.0) {
-//            amountInMainUnits.toInt().toString()
-//        } else {
-//            amountInMainUnits.toString()
-//        }
-//
-//        val body = """
-//            {"amount":$formattedAmount,"currency":"$currency","country":"IL","ewallet":"$walletId",
-//            "complete_payment_url":"$completeUrl","error_payment_url":"$errorUrl","merchant_reference_id":"$orderId"}
-//        """.trimIndent().replace("\n", "").replace(" ", "")
-//
-//        val data = post("/v1/checkout", body).jsonObject
-//        return data["redirect_url"]?.jsonPrimitive?.content ?: error("Rapyd checkout creation did not return a redirect_url")
-//    }
-
-//    suspend fun createCheckout(
-//        walletId: String,
-//        amountInMainUnits: Double,
-//        currency: String,
-//        orderId: String,
-//        completeUrl: String,
-//        errorUrl: String,
-//    ): String {
-//        // 1. Format amount cleanly as a String
-//        val formattedAmount = if (amountInMainUnits % 1.0 == 0.0) {
-//            amountInMainUnits.toInt().toString()
-//        } else {
-//            amountInMainUnits.toString()
-//        }
-//
-//        // 2. Build a strict single-line minified JSON string
-//        // Wrap formattedAmount in quotes to avoid raw double/int signature mismatch issues
-//        val body = "{\"amount\":\"$formattedAmount\",\"currency\":\"$currency\",\"country\":\"IL\",\"ewallet\":\"$walletId\",\"complete_payment_url\":\"$completeUrl\",\"error_payment_url\":\"$errorUrl\",\"merchant_reference_id\":\"$orderId\"}"
-//        val b1 = "{\"amount\":\"45\",\"currency\":\"ILS\",\"country\":\"IL\",\"ewallet\":\"ewallet_f64e93a83b4830f61c8de72b3644387c\",\"complete_payment_url\":\"https://coffee-cart-app-qa.up.railway.app/payments/complete\",\"error_payment_url\":\"https://coffee-cart-app-qa.up.railway.app/payments/error\",\"merchant_reference_id\":\"c8e49786-3d7e-46db-b60e-771ba9d66b78\"}"
-//        val response = post("/v1/checkout", b1).jsonObject
-//
-//        // 3. Drill into "data" object first (Rapyd wraps the response inside "data")
-//
-//
-//
-//        val dataObj = response["data"]?.jsonObject
-//            ?: error("Rapyd checkout creation failed or returned no data block: $response")
-//
-//        return dataObj["redirect_url"]?.jsonPrimitive?.content
-//            ?: error("Rapyd checkout creation did not return a redirect_url")
-//    }
-
     suspend fun createCheckout(
         walletId: String,
         amountInMainUnits: Double,

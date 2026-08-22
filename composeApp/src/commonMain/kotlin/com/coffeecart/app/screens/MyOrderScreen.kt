@@ -28,6 +28,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,10 +45,8 @@ import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.app.ui.payment.CheckoutWebView
 import com.coffeecart.shared.data.remote.ServerEnvironment
-import com.coffeecart.shared.domain.OrderRepository
-import com.coffeecart.shared.domain.PaymentRepository
-import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.domain.ShoppingCartState
+import com.coffeecart.shared.feature.myorder.MyOrderViewModel
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.Product
 import coffeecart.composeapp.generated.resources.Res
@@ -66,40 +65,34 @@ import org.koin.compose.koinInject
 @Composable
 fun MyOrderScreen(
     onExploreCartsClick: () -> Unit,
-    shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface = koinInject(),
-    orderRepository: OrderRepository = koinInject(),
-    paymentRepository: PaymentRepository = koinInject(),
+    viewModel: MyOrderViewModel = koinInject(),
 ) {
-    val state by shoppingCartRepositoryInterface.state.collectAsState()
+    val state by viewModel.cartState.collectAsState()
     var selectedItem by remember { mutableStateOf<OrderItem?>(null) }
-    var isPlacingOrder by remember { mutableStateOf(false) }
-    var checkoutUrl by remember { mutableStateOf<String?>(null) }
+    val isPlacingOrder by viewModel.isPlacingOrder.collectAsState()
+    val checkoutUrl by viewModel.checkoutUrl.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val completeUrlPrefix = "${ServerEnvironment.baseUrl}/payments/complete"
     val errorUrlPrefix = "${ServerEnvironment.baseUrl}/payments/error"
 
+    LaunchedEffect(viewModel) {
+        viewModel.snackBarMessages.collect { message ->
+            launch {
+                snackBarHostState.showSnackbar(message)
+            }
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         MyOrderContent(
             state = state,
             isPlacingOrder = isPlacingOrder,
-            onQuantityChange = { product, quantity -> shoppingCartRepositoryInterface.updateQuantity(product, quantity) },
+            onQuantityChange = { product, quantity -> viewModel.updateQuantity(product, quantity) },
             onExploreCartsClick = onExploreCartsClick,
             onItemClick = { item -> selectedItem = item },
             onPlaceOrderClick = {
-                state.cartId?.let { cartId ->
-                    isPlacingOrder = true
-                    coroutineScope.launch {
-                        try {
-                            val order = orderRepository.submitOrder(cartId, state.items)
-                            checkoutUrl = paymentRepository.createCheckout(cartId, order.id)
-                        } catch (e: Exception) {
-                            snackBarHostState.showSnackbar(e.message ?: "Failed to start payment.")
-                        } finally {
-                            isPlacingOrder = false
-                        }
-                    }
-                }
+                viewModel.placeOrder()
             },
         )
         SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
@@ -110,15 +103,15 @@ fun MyOrderScreen(
                 completeUrlPrefix = completeUrlPrefix,
                 errorUrlPrefix = errorUrlPrefix,
                 onComplete = {
-                    checkoutUrl = null
-                    shoppingCartRepositoryInterface.clear()
-                    coroutineScope.launch { snackBarHostState.showSnackbar(getString(Res.string.strOrderPlaced)) }
+                    coroutineScope.launch {
+                        val message = getString(Res.string.strOrderPlaced)
+                        viewModel.onCheckoutComplete(message)
+                    }
                 },
                 onError = { message ->
-                    checkoutUrl = null
-                    coroutineScope.launch { snackBarHostState.showSnackbar(message) }
+                    viewModel.onCheckoutError(message)
                 },
-                onCancel = { checkoutUrl = null },
+                onCancel = { viewModel.onCheckoutCancel() },
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -129,7 +122,7 @@ fun MyOrderScreen(
             item = item,
             onDismiss = { selectedItem = null },
             onUpdate = { quantity, comment ->
-                shoppingCartRepositoryInterface.updateItem(item.product, quantity, comment)
+                viewModel.updateItem(item.product, quantity, comment)
                 selectedItem = null
             }
         )

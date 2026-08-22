@@ -1,7 +1,7 @@
 package com.coffeecart.app.ui.payment
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -11,7 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
-import androidx.compose.ui.unit.dp
+import com.coffeecart.app.theme.Spacing
+import com.coffeecart.app.theme.dp
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.Foundation.NSURL
 import platform.Foundation.NSURLRequest
@@ -31,7 +32,15 @@ actual fun CheckoutWebView(
     onCancel: () -> Unit,
     modifier: Modifier,
 ) {
-    Box(modifier.fillMaxSize()) {
+    Column(modifier) {
+        IconButton(
+            onClick = onCancel,
+            modifier = Modifier
+                .align(Alignment.Start)
+                .padding(Spacing.Small.dp)
+        ) {
+            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
+        }
         UIKitView(
             factory = {
                 val webView = WKWebView()
@@ -58,10 +67,7 @@ actual fun CheckoutWebView(
                 webView.loadRequest(NSURLRequest(uRL = NSURL(string = url)))
                 webView
             },
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxWidth().weight(1f),
         )
-        IconButton(onClick = onCancel, modifier = Modifier.align(Alignment.TopStart).padding(8.dp)) {
-            Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
-        }
     }
 }
