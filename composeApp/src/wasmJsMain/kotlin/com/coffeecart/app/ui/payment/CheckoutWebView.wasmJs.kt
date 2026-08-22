@@ -29,7 +29,7 @@ actual fun CheckoutWebView(
         IconButton(
             onClick = onCancel,
             modifier = Modifier
-                .align(Alignment.Start)
+                .align(Alignment.End)
                 .padding(Spacing.Small.dp)
         ) {
             Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
@@ -52,9 +52,10 @@ actual fun CheckoutWebView(
         "const iframe = document.createElement('iframe');" +
         "iframe.src = url;" +
         "iframe.style.position = 'fixed';" +
-        "iframe.style.top = '0'; iframe.style.left = '0';" +
-        "iframe.style.width = '100%'; iframe.style.height = '100%';" +
-        "iframe.style.border = 'none'; iframe.style.zIndex = '1000';" +
+        "iframe.style.top = '0'; iframe.style.left = '0'; iframe.style.right = '0'; iframe.style.bottom = '0';" +
+        "iframe.style.width = '100vw'; iframe.style.height = '100vh';" +
+        "iframe.style.border = 'none'; iframe.style.zIndex = '2147483647';" +
+        "iframe.allow = 'payment';" +
         "document.body.appendChild(iframe);" +
         "const interval = setInterval(() => {" +
         "  try {" +
