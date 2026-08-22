@@ -172,6 +172,7 @@ class RapydClient(private val client: HttpClient) {
         println("  Signature : $signature")
 
         val response = call(SignedHeaders(salt, timestamp, signature))
+        println("[Rapyd Client] Response HTTP Status: ${response.status}")
         val envelope = response.body<RapydEnvelope>()
 
         println("[Rapyd Client] Received response:")
