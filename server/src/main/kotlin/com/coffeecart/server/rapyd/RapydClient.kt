@@ -75,8 +75,14 @@ class RapydClient(private val client: HttpClient) {
         completeUrl: String,
         errorUrl: String,
     ): String {
+        val formattedAmount = if (amountInMainUnits % 1.0 == 0.0) {
+            amountInMainUnits.toInt().toString()
+        } else {
+            amountInMainUnits.toString()
+        }
+
         val body = """
-            {"amount":$amountInMainUnits,"currency":"$currency","country":"IL","ewallet":"$walletId",
+            {"amount":$formattedAmount,"currency":"$currency","country":"IL","ewallet":"$walletId",
             "complete_payment_url":"$completeUrl","error_payment_url":"$errorUrl","merchant_reference_id":"$orderId"}
         """.trimIndent().replace("\n", "").replace(" ", "")
 

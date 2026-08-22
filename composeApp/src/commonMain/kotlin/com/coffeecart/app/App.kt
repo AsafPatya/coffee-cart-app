@@ -2,9 +2,12 @@ package com.coffeecart.app
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalLayoutDirection
 import com.coffeecart.app.screens.MainScreen
 import com.coffeecart.app.theme.appTypography
+import com.coffeecart.app.theme.rememberAppLayoutDirection
 import com.coffeecart.shared.di.coffeeCartModule
 import org.koin.compose.KoinApplication
 
@@ -12,9 +15,11 @@ import org.koin.compose.KoinApplication
 @Composable
 fun App() {
     KoinApplication(application = { modules(coffeeCartModule) }) {
-        MaterialTheme(typography = appTypography()) {
-            Surface {
-                MainScreen()
+        CompositionLocalProvider(LocalLayoutDirection provides rememberAppLayoutDirection()) {
+            MaterialTheme(typography = appTypography()) {
+                Surface {
+                    MainScreen()
+                }
             }
         }
     }

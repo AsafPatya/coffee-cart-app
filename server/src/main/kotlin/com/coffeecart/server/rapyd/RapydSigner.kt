@@ -19,7 +19,13 @@ object RapydSigner {
         accessKey: String,
         secretKey: String,
     ): String {
-        val toSign = "${method.lowercase()}$urlPath$salt$timestamp$accessKey$secretKey$body"
+        val toSign = if (method.isNotEmpty()) {
+            // Outbound API signature formula
+            "$accessKey${method.lowercase()}$urlPath$salt$timestamp$secretKey$body"
+        } else {
+            // Webhook signature formula
+            "$urlPath$salt$timestamp$accessKey$secretKey$body"
+        }
         val mac = Mac.getInstance("HmacSHA256").apply {
             init(SecretKeySpec(secretKey.toByteArray(), "HmacSHA256"))
         }

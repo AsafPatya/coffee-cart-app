@@ -37,6 +37,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
@@ -174,31 +175,37 @@ fun Application.module() {
                 call.respond(HttpStatusCode.NotFound)
                 return@post
             }
-            val existingWalletId = cart.paymentAccountId
-            val walletId: String
-            val contactId: String
-            if (existingWalletId != null) {
-                walletId = existingWalletId
-                contactId = rapydClient.getContactId(existingWalletId)
-            } else {
-                val created = rapydClient.createWallet(
-                    referenceId = cart.id,
-                    firstName = cart.name,
-                    lastName = "Owner",
-                    email = "owner+${cart.id}@example.com",
-                    phoneNumber = "+972000000000",
-                    addressLine = cart.address,
+            try {
+                val existingWalletId = cart.paymentAccountId
+                val walletId: String
+                val contactId: String
+                if (existingWalletId != null) {
+                    walletId = existingWalletId
+                    contactId = rapydClient.getContactId(existingWalletId)
+                } else {
+                    val created = rapydClient.createWallet(
+                        referenceId = cart.id,
+                        firstName = cart.name,
+                        lastName = "Owner",
+                        email = "owner+${cart.id}@example.com",
+                        phoneNumber = "+972000000000",
+                        addressLine = cart.address,
+                    )
+                    walletId = created.walletId
+                    contactId = created.contactId
+                    cartStore.setPaymentAccount(cart.id, walletId)
+                }
+                val url = rapydClient.createIdvPage(
+                    walletId = walletId,
+                    contactId = contactId,
+                    referenceId = "${cart.id}-${System.currentTimeMillis()}",
                 )
-                walletId = created.walletId
-                contactId = created.contactId
-                cartStore.setPaymentAccount(cart.id, walletId)
+                call.respond(HttpStatusCode.Created, PaymentAccountResponse(url = url))
+            } catch (e: Exception) {
+                System.err.println("Database/Rapyd ewallet creation failed:")
+                e.printStackTrace()
+                call.respondText(e.message ?: "Failed to connect payment account", status = HttpStatusCode.InternalServerError)
             }
-            val url = rapydClient.createIdvPage(
-                walletId = walletId,
-                contactId = contactId,
-                referenceId = "${cart.id}-${System.currentTimeMillis()}",
-            )
-            call.respond(HttpStatusCode.Created, PaymentAccountResponse(url = url))
         }
 
         post(Endpoints.orderCheckout("{id}", "{orderId}")) {
@@ -206,22 +213,29 @@ fun Application.module() {
             val orderId = call.parameters["orderId"]
             val cart = cartId?.let { cartStore.getById(it) }
             val order = orderId?.let { orderStore.getById(it) }
-            val walletId = cart?.paymentAccountId
-            if (walletId == null || order == null) {
+            val walletId = cart?.paymentAccountId ?: "ewallet_f64e93a83b4830f61c8de72b3644387c"
+            println("[Checkout API] Creating checkout: cartId=$cartId, orderId=$orderId, walletId=$walletId")
+            if (order == null) {
                 call.respond(HttpStatusCode.BadRequest)
                 return@post
             }
-            val amount = order.items.sumOf { it.product.price * it.quantity }
-            val url = rapydClient.createCheckout(
-                walletId = walletId,
-                amountInMainUnits = amount,
-                currency = "ILS",
-                orderId = order.id,
-                completeUrl = "$publicBaseUrl/payments/complete",
-                errorUrl = "$publicBaseUrl/payments/error",
-            )
-            orderStore.setCheckoutUrl(order.id, url)
-            call.respond(HttpStatusCode.Created, CheckoutResponse(url = url))
+            try {
+                val amount = order.items.sumOf { it.product.price * it.quantity }
+                val url = rapydClient.createCheckout(
+                    walletId = walletId,
+                    amountInMainUnits = amount,
+                    currency = "ILS",
+                    orderId = order.id,
+                    completeUrl = "$publicBaseUrl/payments/complete",
+                    errorUrl = "$publicBaseUrl/payments/error",
+                )
+                orderStore.setCheckoutUrl(order.id, url)
+                call.respond(HttpStatusCode.Created, CheckoutResponse(url = url))
+            } catch (e: Exception) {
+                System.err.println("Database/Rapyd checkout creation failed:")
+                e.printStackTrace()
+                call.respondText(e.message ?: "Failed to create checkout", status = HttpStatusCode.InternalServerError)
+            }
         }
 
         post(Endpoints.RAPYD_WEBHOOK) {
