@@ -8,9 +8,11 @@ import com.coffeecart.shared.model.OrderItem
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 class KtorOrderRepository(private val client: HttpClient) : OrderRepository {
@@ -26,4 +28,12 @@ class KtorOrderRepository(private val client: HttpClient) : OrderRepository {
 
     override suspend fun advanceOrder(cartId: String, orderId: String): Order =
         client.post("${ServerEnvironment.baseUrl}${Endpoints.advanceOrder(cartId, orderId)}").body()
+
+    override suspend fun getUnprintedOrders(cartId: String): List<Order> =
+        client.get("${ServerEnvironment.baseUrl}${Endpoints.cartOrders(cartId)}") {
+            parameter("unprinted", "true")
+        }.body()
+
+    override suspend fun markOrderPrinted(cartId: String, orderId: String): Boolean =
+        client.post("${ServerEnvironment.baseUrl}${Endpoints.markOrderPrinted(cartId, orderId)}").status == HttpStatusCode.OK
 }

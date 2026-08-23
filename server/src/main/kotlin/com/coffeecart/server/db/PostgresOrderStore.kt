@@ -8,6 +8,7 @@ import java.util.UUID
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -19,6 +20,16 @@ class PostgresOrderStore {
 
     fun getByCart(cartId: String): List<Order> = transaction {
         OrdersTable.selectAll().where { OrdersTable.cartId eq cartId }.map { it.toOrder() }
+    }
+
+    fun getUnprintedByCart(cartId: String): List<Order> = transaction {
+        OrdersTable.selectAll()
+            .where { (OrdersTable.cartId eq cartId) and (OrdersTable.printed eq false) }
+            .map { it.toOrder() }
+    }
+
+    fun markPrinted(orderId: String): Boolean = transaction {
+        OrdersTable.update({ OrdersTable.id eq orderId }) { it[printed] = true } > 0
     }
 
     fun getById(orderId: String): Order? = transaction {
@@ -73,5 +84,6 @@ class PostgresOrderStore {
         createdAt = this[OrdersTable.createdAt],
         paymentStatus = PaymentStatus.valueOf(this[OrdersTable.paymentStatus]),
         checkoutUrl = this[OrdersTable.checkoutUrl],
+        printed = this[OrdersTable.printed],
     )
 }

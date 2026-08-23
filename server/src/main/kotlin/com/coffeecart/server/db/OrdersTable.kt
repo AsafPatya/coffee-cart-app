@@ -10,6 +10,7 @@ object OrdersTable : Table("orders") {
     val createdAt = long("created_at")
     val paymentStatus = varchar("payment_status", 32).default("PENDING")
     val checkoutUrl = text("checkout_url").nullable()
+    val printed = bool("printed").default(false)
 
     override val primaryKey = PrimaryKey(id)
 }

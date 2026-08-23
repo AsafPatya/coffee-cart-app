@@ -152,10 +152,21 @@ fun Application.module() {
             val cartId = call.parameters["id"]
             if (cartId == null) {
                 call.respond(HttpStatusCode.BadRequest)
-            } else {
-                // Only paid orders are "live" — an order awaiting payment doesn't exist yet from the dashboard's view.
-                call.respond(orderStore.getByCart(cartId).filter { it.paymentStatus == PaymentStatus.PAID })
+                return@get
             }
+            // Only paid orders are "live" — an order awaiting payment doesn't exist yet from the dashboard's view.
+            val paidOrders = if (call.request.queryParameters["unprinted"] == "true") {
+                orderStore.getUnprintedByCart(cartId).filter { it.paymentStatus == PaymentStatus.PAID }
+            } else {
+                orderStore.getByCart(cartId).filter { it.paymentStatus == PaymentStatus.PAID }
+            }
+            call.respond(paidOrders)
+        }
+
+        post(Endpoints.markOrderPrinted("{id}", "{orderId}")) {
+            val orderId = call.parameters["orderId"]
+            val marked = orderId != null && orderStore.markPrinted(orderId)
+            call.respond(if (marked) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
 
         post(Endpoints.advanceOrder("{id}", "{orderId}")) {

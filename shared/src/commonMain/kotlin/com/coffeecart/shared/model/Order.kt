@@ -23,4 +23,5 @@ data class Order(
     val createdAt: Long,
     val paymentStatus: PaymentStatus = PaymentStatus.PENDING,
     val checkoutUrl: String? = null,
+    val printed: Boolean = false,
 )

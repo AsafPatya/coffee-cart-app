@@ -23,5 +23,7 @@ object Endpoints {
     fun paymentAccount(cartId: String): String = "$CARTS/$cartId/payment-account"
 
     fun orderCheckout(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/checkout"
+
+    fun markOrderPrinted(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/mark-printed"
 }
 

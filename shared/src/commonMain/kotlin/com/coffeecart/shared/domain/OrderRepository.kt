@@ -9,4 +9,8 @@ interface OrderRepository {
     suspend fun getOrders(cartId: String): List<Order>
 
     suspend fun advanceOrder(cartId: String, orderId: String): Order
+
+    suspend fun getUnprintedOrders(cartId: String): List<Order>
+
+    suspend fun markOrderPrinted(cartId: String, orderId: String): Boolean
 }
