@@ -85,16 +85,18 @@ fun MyOrderScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        MyOrderContent(
-            state = state,
-            isPlacingOrder = isPlacingOrder,
-            onQuantityChange = { product, quantity -> viewModel.updateQuantity(product, quantity) },
-            onExploreCartsClick = onExploreCartsClick,
-            onItemClick = { item -> selectedItem = item },
-            onPlaceOrderClick = {
-                viewModel.placeOrder()
-            },
-        )
+        if (checkoutUrl == null) {
+            MyOrderContent(
+                state = state,
+                isPlacingOrder = isPlacingOrder,
+                onQuantityChange = { product, quantity -> viewModel.updateQuantity(product, quantity) },
+                onExploreCartsClick = onExploreCartsClick,
+                onItemClick = { item -> selectedItem = item },
+                onPlaceOrderClick = {
+                    viewModel.placeOrder()
+                },
+            )
+        }
         SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
 
         checkoutUrl?.let { url ->
