@@ -1,0 +1,42 @@
+name: Build Print Agent (Windows)
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Build Windows installer
+        run: ./gradlew.bat :printAgent:packageExe
+
+      - name: Locate the built exe
+        id: find_exe
+        shell: bash
+        run: |
+          EXE_PATH=$(find printAgent/build/compose/binaries/main/exe -name "*.exe" | head -n 1)
+          echo "path=$EXE_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoffeeCartPrintAgent-windows-exe
+          path: ${{ steps.find_exe.outputs.path }}
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.find_exe.outputs.path }}
