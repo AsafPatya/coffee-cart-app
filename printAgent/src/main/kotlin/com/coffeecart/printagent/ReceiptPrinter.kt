@@ -36,8 +36,16 @@ fun renderReceiptText(cartName: String, order: Order): String {
     return builder.toString()
 }
 
+private val candidateFlavors = listOf(
+    DocFlavor.BYTE_ARRAY.TEXT_PLAIN_UTF_8,
+    DocFlavor.BYTE_ARRAY.AUTOSENSE,
+)
+
 fun printReceipt(printService: PrintService, receiptText: String) {
-    val doc = SimpleDoc(receiptText, DocFlavor.STRING.TEXT_PLAIN, null)
+    val flavor = candidateFlavors.firstOrNull { printService.isDocFlavorSupported(it) }
+        ?: error("Printer '${printService.name}' doesn't support any recognized text print format")
+    val bytes = receiptText.toByteArray(Charsets.UTF_8)
+    val doc = SimpleDoc(bytes, flavor, null)
     val job = printService.createPrintJob()
     job.print(doc, HashPrintRequestAttributeSet())
 }

@@ -17,12 +17,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class MyOrderViewModel(
-    private val shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface,
+    private val shoppingCartRepository: ShoppingCartRepositoryInterface,
     private val orderRepository: OrderRepository,
     private val paymentRepository: PaymentRepository,
 ) : ViewModel() {
 
-    val cartState: StateFlow<ShoppingCartState> = shoppingCartRepositoryInterface.state
+    val cartState: StateFlow<ShoppingCartState> = shoppingCartRepository.state
 
     private val _isPlacingOrder = MutableStateFlow(false)
     val isPlacingOrder: StateFlow<Boolean> = _isPlacingOrder.asStateFlow()
@@ -63,7 +63,7 @@ class MyOrderViewModel(
     fun onCheckoutComplete(onPlacedMessage: String) {
         viewModelScope.launch {
             _checkoutUrl.value = null
-            shoppingCartRepositoryInterface.clear()
+            shoppingCartRepository.clear()
             _snackBarMessages.emit(onPlacedMessage)
         }
     }
@@ -80,11 +80,11 @@ class MyOrderViewModel(
     }
 
     fun updateQuantity(product: Product, quantity: Int) {
-        shoppingCartRepositoryInterface.updateQuantity(product, quantity)
+        shoppingCartRepository.updateQuantity(product, quantity)
     }
 
     fun updateItem(product: Product, quantity: Int, comment: String) {
-        shoppingCartRepositoryInterface.updateItem(product, quantity, comment)
+        shoppingCartRepository.updateItem(product, quantity, comment)
     }
 }
 
