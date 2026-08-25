@@ -5,10 +5,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class FakeCoffeeCartRepositoryTest {
+class FakeCoffeeCartRepositoryInterfaceTest {
     @Test
     fun `returns three non-empty carts`() = runTest {
-        val repository = FakeCoffeeCartRepository()
+        val repository = FakeCoffeeCartRepositoryInterface()
 
         val carts = repository.getCoffeeCarts()
 
