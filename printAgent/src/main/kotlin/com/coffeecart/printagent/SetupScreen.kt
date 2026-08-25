@@ -25,14 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import javax.print.PrintServiceLookup
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SetupScreen(
-    coffeeCartRepository: CoffeeCartRepository,
+    coffeeCartRepository: CoffeeCartRepositoryInterface,
     onConfigured: (AgentConfig) -> Unit,
 ) {
     var carts by remember { mutableStateOf<List<CoffeeCart>?>(null) }

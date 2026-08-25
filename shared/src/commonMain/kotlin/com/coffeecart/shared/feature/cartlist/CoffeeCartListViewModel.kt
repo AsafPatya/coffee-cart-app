@@ -2,7 +2,7 @@ package com.coffeecart.shared.feature.cartlist
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +16,7 @@ sealed interface CoffeeCartListUiState {
 }
 
 class CoffeeCartListViewModel(
-    private val repository: CoffeeCartRepository,
+    private val repository: CoffeeCartRepositoryInterface,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<CoffeeCartListUiState>(CoffeeCartListUiState.Loading)
     val uiState: StateFlow<CoffeeCartListUiState> = _uiState.asStateFlow()

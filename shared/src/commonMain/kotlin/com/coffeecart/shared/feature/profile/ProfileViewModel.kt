@@ -2,7 +2,7 @@ package com.coffeecart.shared.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
  * ViewModel managing operations and alerts on the Profile tab.
  */
 class ProfileViewModel(
-    private val repository: CoffeeCartRepository,
+    private val repository: CoffeeCartRepositoryInterface,
 ) : ViewModel() {
 
     private val _dialogMessage = MutableStateFlow<String?>(null)

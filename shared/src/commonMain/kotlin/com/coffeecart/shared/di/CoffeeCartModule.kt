@@ -1,10 +1,10 @@
 package com.coffeecart.shared.di
 
 import com.coffeecart.shared.data.repository.ShoppingCartRepository
-import com.coffeecart.shared.data.repository.KtorCoffeeCartRepository
+import com.coffeecart.shared.data.repository.CoffeeCartRepository
 import com.coffeecart.shared.data.repository.KtorOrderRepository
 import com.coffeecart.shared.data.repository.KtorPaymentRepository
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.domain.OrderRepository
 import com.coffeecart.shared.domain.PaymentRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
@@ -29,7 +29,7 @@ val coffeeCartModule = module {
             }
         }
     }
-        single<CoffeeCartRepository> { KtorCoffeeCartRepository(get()) }
+    single<CoffeeCartRepositoryInterface> { CoffeeCartRepository(get()) }
     single<ShoppingCartRepositoryInterface> { ShoppingCartRepository() }
     single<OrderRepository> { KtorOrderRepository(get()) }
     single<PaymentRepository> { KtorPaymentRepository(get()) }

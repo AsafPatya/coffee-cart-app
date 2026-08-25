@@ -34,8 +34,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 /**
- * Details screen displaying the details of the selected coffee cart.
- * Plain content — the top bar (title + back button) is owned by MainScreen's single Scaffold.
+ * Details screen displaying the details of the selected coffee cart.* Plain content — the top bar (title + back button) is owned by AppContainer's single Scaffold.
  */
 @Composable
 fun CoffeeCartDetailsScreen(
