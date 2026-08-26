@@ -86,7 +86,7 @@ class CoffeeCartListViewModelTest {
 
             val state = viewModel.uiState.value
             assertIs<CoffeeCartListUiState.Success>(state)
-            assertEquals(listOf(sampleCart), state.carts)
+            assertEquals(listOf(sampleCart to null), state.carts)
         } finally {
             Dispatchers.resetMain()
         }

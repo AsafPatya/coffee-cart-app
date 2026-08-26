@@ -26,4 +26,5 @@
     <string name="strEditCoffeeCart">ערוך עגלת קפה</string>
     <string name="strOrders">הזמנות</string>
     <string name="strBack">חזור</string>
+    <string name="strClickCartToStartOrder">לחץ על עגלת קפה כדי להתחיל הזמנה חדשה</string>
 </resources>

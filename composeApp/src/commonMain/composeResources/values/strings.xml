@@ -26,4 +26,5 @@
     <string name="strEditCoffeeCart">Edit Coffee Cart</string>
     <string name="strOrders">Orders</string>
     <string name="strBack">Back</string>
+    <string name="strClickCartToStartOrder">Click on Coffee cart to start new order</string>
 </resources>
