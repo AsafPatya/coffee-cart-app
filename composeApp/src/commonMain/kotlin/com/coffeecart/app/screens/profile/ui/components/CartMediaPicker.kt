@@ -29,15 +29,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
+import androidx.compose.runtime.collectAsState
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
-import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
+import com.coffeecart.shared.feature.profile.CartMediaPickerViewModel
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.mp.KoinPlatform
 
 /**
  * A highly reusable media selection/capture picker offering FileKit's real system file picker
@@ -53,19 +55,22 @@ fun CartMediaPicker(
     onImageUrlChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     title: String = "Select Cart Image",
-    repository: CoffeeCartRepositoryInterface = koinInject(),
+    viewModel: CartMediaPickerViewModel? = if (KoinPlatform.getKoinOrNull() != null) koinInject() else null,
 ) {
-    var pickedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
-    var isUploading by remember { mutableStateOf(false) }
+    val vmPickedImageBytes by (viewModel?.pickedImageBytes?.collectAsState() ?: remember { mutableStateOf(null) })
+    val vmIsUploading by (viewModel?.isUploading?.collectAsState() ?: remember { mutableStateOf(false) })
+    var localPickedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
+    var localIsUploading by remember { mutableStateOf(false) }
+
+    val pickedImageBytes = vmPickedImageBytes ?: localPickedImageBytes
+    val isUploading = vmIsUploading || localIsUploading
     val coroutineScope = rememberCoroutineScope()
 
     fun uploadAndApply(bytes: ByteArray, fileName: String) {
-        pickedImageBytes = bytes
-        isUploading = true
-        coroutineScope.launch {
-            val url = repository.uploadImage(bytes, fileName)
-            onImageUrlChange(url)
-            isUploading = false
+        if (viewModel != null) {
+            viewModel.uploadImage(bytes, fileName, onImageUrlChange)
+        } else {
+            localPickedImageBytes = bytes
         }
     }
 
