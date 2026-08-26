@@ -1,4 +1,4 @@
-package com.coffeecart.app.nav
+package com.coffeecart.app.appcontainer
 
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strHome
@@ -8,11 +8,35 @@ import coffeecart.composeapp.generated.resources.strProfile
 import org.jetbrains.compose.resources.StringResource
 
 /** The four bottom-nav tabs. Each is its own route; real screens replace the placeholders later. */
-enum class Destination(val route: String, val label: StringResource) {
+enum class Destination(
+    val route: String,
+    val label: StringResource,
+    val activeSubRoutes: List<String> = emptyList()
+) {
     Home("home", Res.string.strHome),
-    CoffeeCart("coffee_carts", Res.string.strCoffeeCarts),
+    CoffeeCart(
+        "coffee_carts",
+        Res.string.strCoffeeCarts,
+        listOf(
+            Routes.COFFEE_CART_DETAILS,
+            Routes.COFFEE_CART_MENU_CATEGORIES,
+            Routes.COFFEE_CART_CATEGORY_PRODUCTS
+        )
+    ),
     Orders("orders", Res.string.strMyOrder),
-    Profile("profile", Res.string.strProfile),
+    Profile(
+        "profile",
+        Res.string.strProfile,
+        listOf(
+            Routes.COFFEE_CART_ADD_CATEGORY_WIZARD,
+            Routes.COFFEE_CART_EDIT
+        )
+    );
+
+    fun isRouteActive(currentRoute: String?): Boolean {
+        if (currentRoute == null) return false
+        return currentRoute == route || activeSubRoutes.contains(currentRoute)
+    }
 }
 
 /** Sibling non-tab route patterns and navigation path builders. */

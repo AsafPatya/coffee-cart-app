@@ -20,4 +20,10 @@
     <string name="strUpdateItem">Update Item</string>
     <string name="strPlaceOrder">Place Order</string>
     <string name="strOrderPlaced">Order placed!</string>
+    <string name="strMenu">Menu</string>
+    <string name="strProducts">Products</string>
+    <string name="strAddMenuCategory">Add Menu Category</string>
+    <string name="strEditCoffeeCart">Edit Coffee Cart</string>
+    <string name="strOrders">Orders</string>
+    <string name="strBack">Back</string>
 </resources>

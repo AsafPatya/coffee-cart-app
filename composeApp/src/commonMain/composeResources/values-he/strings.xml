@@ -20,4 +20,10 @@
     <string name="strUpdateItem">עדכן פריט</string>
     <string name="strPlaceOrder">בצע הזמנה</string>
     <string name="strOrderPlaced">ההזמנה נשלחה!</string>
+    <string name="strMenu">תפריט</string>
+    <string name="strProducts">מוצרים</string>
+    <string name="strAddMenuCategory">הוסף קטגוריית תפריט</string>
+    <string name="strEditCoffeeCart">ערוך עגלת קפה</string>
+    <string name="strOrders">הזמנות</string>
+    <string name="strBack">חזור</string>
 </resources>
