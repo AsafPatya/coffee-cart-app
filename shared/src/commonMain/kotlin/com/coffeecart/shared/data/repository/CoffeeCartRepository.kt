@@ -7,7 +7,7 @@ import com.coffeecart.shared.contract.UploadImageResponse
 import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
 import com.coffeecart.shared.data.remote.ServerEnvironment
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -26,9 +26,9 @@ import io.ktor.http.contentType
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-class KtorCoffeeCartRepository(
+class CoffeeCartRepository(
     private val client: HttpClient,
-) : CoffeeCartRepository {
+) : CoffeeCartRepositoryInterface {
     private val mutex = Mutex()
     private var cachedCarts: List<CoffeeCart>? = null
 

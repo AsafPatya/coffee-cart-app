@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
@@ -53,7 +53,7 @@ fun CartMediaPicker(
     onImageUrlChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     title: String = "Select Cart Image",
-    repository: CoffeeCartRepository = koinInject(),
+    repository: CoffeeCartRepositoryInterface = koinInject(),
 ) {
     var pickedImageBytes by remember { mutableStateOf<ByteArray?>(null) }
     var isUploading by remember { mutableStateOf(false) }

@@ -1,6 +1,6 @@
 package com.coffeecart.shared.feature.cartlist
 
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -15,7 +15,7 @@ import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
 
-private class SucceedingRepository(private val carts: List<CoffeeCart>) : CoffeeCartRepository {
+private class SucceedingRepositoryInterface(private val carts: List<CoffeeCart>) : CoffeeCartRepositoryInterface {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = carts
     
     override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart {
@@ -46,7 +46,7 @@ private class SucceedingRepository(private val carts: List<CoffeeCart>) : Coffee
     }
 }
 
-private class FailingRepository(private val exception: Exception) : CoffeeCartRepository {
+private class FailingRepositoryInterface(private val exception: Exception) : CoffeeCartRepositoryInterface {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = throw exception
 
     override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart = throw exception
@@ -81,12 +81,12 @@ class CoffeeCartListViewModelTest {
         val testDispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(testDispatcher)
         try {
-            val viewModel = CoffeeCartListViewModel(SucceedingRepository(listOf(sampleCart)))
+            val viewModel = CoffeeCartListViewModel(SucceedingRepositoryInterface(listOf(sampleCart)))
             advanceUntilIdle()
 
             val state = viewModel.uiState.value
             assertIs<CoffeeCartListUiState.Success>(state)
-            assertEquals(listOf(sampleCart), state.carts)
+            assertEquals(listOf(sampleCart to null), state.carts)
         } finally {
             Dispatchers.resetMain()
         }
@@ -98,7 +98,7 @@ class CoffeeCartListViewModelTest {
         val testDispatcher = StandardTestDispatcher(testScheduler)
         Dispatchers.setMain(testDispatcher)
         try {
-            val viewModel = CoffeeCartListViewModel(FailingRepository(RuntimeException("boom")))
+            val viewModel = CoffeeCartListViewModel(FailingRepositoryInterface(RuntimeException("boom")))
             advanceUntilIdle()
 
             val state = viewModel.uiState.value

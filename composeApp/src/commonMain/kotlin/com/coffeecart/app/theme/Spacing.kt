@@ -5,7 +5,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * Named spacing scale. Use this instead of raw `.dp` literals in UI code, so every spacing value
- * in the app traces back to one of these nine steps.
+ * in the app traces back to one of these steps.
  */
 enum class Spacing {
     XXXSmall,

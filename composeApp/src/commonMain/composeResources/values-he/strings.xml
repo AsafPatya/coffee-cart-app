@@ -20,4 +20,16 @@
     <string name="strUpdateItem">עדכן פריט</string>
     <string name="strPlaceOrder">בצע הזמנה</string>
     <string name="strOrderPlaced">ההזמנה נשלחה!</string>
+    <string name="strMenu">תפריט</string>
+    <string name="strProducts">מוצרים</string>
+    <string name="strAddMenuCategory">הוסף קטגוריית תפריט</string>
+    <string name="strEditCoffeeCart">ערוך עגלת קפה</string>
+    <string name="strOrders">הזמנות</string>
+    <string name="strBack">חזור</string>
+    <string name="strClickCartToStartOrder">לחץ על עגלת קפה כדי להתחיל הזמנה חדשה</string>
+    <string name="strKosher">כשר</string>
+    <string name="strOpenNow">פתוח עכשיו</string>
+    <string name="strCartPage">דף העגלה</string>
+    <string name="strOpeningHours">שעות פתיחה: א-ה: 08:00-18:00, ו: 08:00-15:00</string>
+    <string name="strNavigateNow">נווט עכשיו</string>
 </resources>

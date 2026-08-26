@@ -3,7 +3,7 @@ package com.coffeecart.shared.feature.cartdetails
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.coffeecart.shared.domain.AddProductResult
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.shared.model.MenuCategory
@@ -20,7 +20,7 @@ sealed interface CoffeeCartDetailsUiState {
 }
 
 class CoffeeCartDetailsViewModel(
-    private val repository: CoffeeCartRepository,
+    private val repository: CoffeeCartRepositoryInterface,
     private val shoppingCartRepositoryInterface: ShoppingCartRepositoryInterface,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<CoffeeCartDetailsUiState>(CoffeeCartDetailsUiState.Loading)

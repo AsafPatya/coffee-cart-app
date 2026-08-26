@@ -1,4 +1,4 @@
-package com.coffeecart.app.ui
+package com.coffeecart.app.appcontainer
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
-import com.coffeecart.app.nav.Destination
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -28,17 +27,7 @@ fun BottomBar(
 ) {
     NavigationBar {
         Destination.entries.forEach { destination ->
-            val isSelected = when (destination) {
-                Destination.Home -> currentRoute == Destination.Home.route
-                Destination.CoffeeCart -> currentRoute == Destination.CoffeeCart.route ||
-                        currentRoute?.startsWith("coffee_cart_details") == true ||
-                        currentRoute?.startsWith("coffee_cart_menu_categories") == true ||
-                        currentRoute?.startsWith("coffee_cart_category_products") == true
-                Destination.Orders -> currentRoute == Destination.Orders.route
-                Destination.Profile -> currentRoute == Destination.Profile.route ||
-                        currentRoute?.startsWith("coffee_cart_add_category_wizard") == true ||
-                        currentRoute?.startsWith("coffee_cart_edit") == true
-            }
+            val isSelected = destination.isRouteActive(currentRoute)
             NavigationBarItem(
                 selected = isSelected,
                 onClick = { onNavigate(destination) },
@@ -80,4 +69,3 @@ private fun BottomBarPreview() {
         onNavigate = {},
     )
 }
-

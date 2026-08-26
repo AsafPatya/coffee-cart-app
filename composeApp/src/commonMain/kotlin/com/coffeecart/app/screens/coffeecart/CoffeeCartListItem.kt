@@ -14,23 +14,25 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
+import coffeecart.composeapp.generated.resources.Res
+import coffeecart.composeapp.generated.resources.strKm
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.shared.model.CoffeeCart
-import com.coffeecart.app.theme.dp as spacingDp
-import coffeecart.composeapp.generated.resources.Res
-import coffeecart.composeapp.generated.resources.strKm
 import org.jetbrains.compose.resources.stringResource
+import com.coffeecart.app.theme.dp as spacingDp
 
 @Composable
-fun CoffeeCartListItem(cart: CoffeeCart, distanceKm: Double? = null, onClick: () -> Unit) {
+fun CoffeeCartListItem(cart: CoffeeCart, formattedDistance: String? = null, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Spacing.Large.spacingDp),
@@ -52,9 +54,8 @@ fun CoffeeCartListItem(cart: CoffeeCart, distanceKm: Double? = null, onClick: ()
                 Spacer(Modifier.height(Spacing.XXSmall.spacingDp))
                 Text(cart.address, style = MaterialTheme.typography.bodyMedium)
             }
-            if (distanceKm != null) {
+            if (formattedDistance != null) {
                 Spacer(Modifier.width(Spacing.Small.spacingDp))
-                val formattedDistance = "${(distanceKm * 10).toInt() / 10.0}"
                 Text(
                     "$formattedDistance ${stringResource(Res.string.strKm)}",
                     style = MaterialTheme.typography.bodySmall,
@@ -75,8 +76,26 @@ private fun CoffeeCartListItemPreview() {
     )
     CoffeeCartListItem(
         cart = stubCart,
-        distanceKm = 1.2,
+        formattedDistance = "1.2",
         onClick = {},
     )
+}
+
+@Preview
+@Composable
+private fun CoffeeCartListItemHebrewPreview() {
+    val stubCart = CoffeeCart(
+        id = "1",
+        name = "עגלת אספרסו מרכז העיר",
+        address = "רחוב הרצל 123",
+        imageUrl = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
+    )
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        CoffeeCartListItem(
+            cart = stubCart,
+            formattedDistance = "1.2",
+            onClick = {},
+        )
+    }
 }
 

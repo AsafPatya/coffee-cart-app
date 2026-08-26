@@ -1,12 +1,12 @@
 package com.coffeecart.shared.data.repository
 
-import com.coffeecart.shared.domain.CoffeeCartRepository
+import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.shared.model.MenuCategory
 import com.coffeecart.shared.model.Product
 import kotlinx.coroutines.delay
 
-class FakeCoffeeCartRepository : CoffeeCartRepository {
+class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
     private val carts = mutableListOf(
         CoffeeCart(
             id = "1",

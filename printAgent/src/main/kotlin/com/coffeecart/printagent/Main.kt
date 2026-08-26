@@ -9,7 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import com.coffeecart.shared.data.repository.KtorCoffeeCartRepository
+import com.coffeecart.shared.data.repository.CoffeeCartRepository
 import com.coffeecart.shared.data.repository.KtorOrderRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -22,7 +22,7 @@ fun main() = application {
             json(Json { ignoreUnknownKeys = true })
         }
     }
-    val coffeeCartRepository = KtorCoffeeCartRepository(httpClient)
+    val coffeeCartRepository = CoffeeCartRepository(httpClient)
     val orderRepository = KtorOrderRepository(httpClient)
 
     Window(onCloseRequest = ::exitApplication, title = "Coffee Cart Print Agent") {
@@ -35,8 +35,8 @@ fun main() = application {
 }
 
 @Composable
-private fun App(
-    coffeeCartRepository: com.coffeecart.shared.domain.CoffeeCartRepository,
+fun App(
+    coffeeCartRepository: com.coffeecart.shared.domain.CoffeeCartRepositoryInterface,
     orderRepository: com.coffeecart.shared.domain.OrderRepository,
 ) {
     var config by remember { mutableStateOf(loadAgentConfig()) }

@@ -20,4 +20,16 @@
     <string name="strUpdateItem">Update Item</string>
     <string name="strPlaceOrder">Place Order</string>
     <string name="strOrderPlaced">Order placed!</string>
+    <string name="strMenu">Menu</string>
+    <string name="strProducts">Products</string>
+    <string name="strAddMenuCategory">Add Menu Category</string>
+    <string name="strEditCoffeeCart">Edit Coffee Cart</string>
+    <string name="strOrders">Orders</string>
+    <string name="strBack">Back</string>
+    <string name="strClickCartToStartOrder">Click on Coffee cart to start new order</string>
+    <string name="strKosher">Kosher</string>
+    <string name="strOpenNow">Open Now</string>
+    <string name="strCartPage">Cart Page</string>
+    <string name="strOpeningHours">Opening Hours: Sun-Thu: 08:00-18:00, Fri: 08:00-15:00</string>
+    <string name="strNavigateNow">Navigate Now</string>
 </resources>

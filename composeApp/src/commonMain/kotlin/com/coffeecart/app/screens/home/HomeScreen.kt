@@ -1,4 +1,4 @@
-package com.coffeecart.app.screens
+package com.coffeecart.app.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /** Landing tab: full-bleed hero background, title, and a CTA into the coffee cart directory. */
 @Composable
-fun HomeScreen(onNewOrderClick: () -> Unit) {
+fun HomeScreen(onCtaButtonClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(Res.drawable.coffee_cart_quick_order),
@@ -53,7 +53,7 @@ fun HomeScreen(onNewOrderClick: () -> Unit) {
             )
 
             Button(
-                onClick = onNewOrderClick,
+                onClick = onCtaButtonClick,
                 modifier = Modifier.padding(top = Spacing.XXLarge.dp),
             ) {
                 Text(stringResource(Res.string.strClickHere))
@@ -65,5 +65,5 @@ fun HomeScreen(onNewOrderClick: () -> Unit) {
 @Preview(locale = "iw")
 @Composable
 private fun HomeScreenPreview() {
-    HomeScreen(onNewOrderClick = {})
+    HomeScreen(onCtaButtonClick = {})
 }

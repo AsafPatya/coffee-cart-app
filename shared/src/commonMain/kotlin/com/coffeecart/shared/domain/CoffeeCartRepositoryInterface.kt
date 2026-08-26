@@ -2,7 +2,7 @@ package com.coffeecart.shared.domain
 
 import com.coffeecart.shared.model.CoffeeCart
 
-interface CoffeeCartRepository {
+interface CoffeeCartRepositoryInterface {
     suspend fun getCoffeeCarts(): List<CoffeeCart>
     suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart
     suspend fun updateCoffeeCart(
