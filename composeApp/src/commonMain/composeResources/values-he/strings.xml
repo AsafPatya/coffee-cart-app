@@ -27,4 +27,9 @@
     <string name="strOrders">הזמנות</string>
     <string name="strBack">חזור</string>
     <string name="strClickCartToStartOrder">לחץ על עגלת קפה כדי להתחיל הזמנה חדשה</string>
+    <string name="strKosher">כשר</string>
+    <string name="strOpenNow">פתוח עכשיו</string>
+    <string name="strCartPage">דף העגלה</string>
+    <string name="strOpeningHours">שעות פתיחה: א-ה: 08:00-18:00, ו: 08:00-15:00</string>
+    <string name="strNavigateNow">נווט עכשיו</string>
 </resources>

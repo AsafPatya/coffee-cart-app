@@ -53,7 +53,7 @@ fun AppNavHost(
             CoffeeCartDetailsScreen(
                 cartId = cartId,
                 onCartNameLoaded = onCartNameLoaded,
-                onViewCategoriesClick = { id -> navController.navigate(Routes.coffeeCartMenuCategories(id)) }
+                onCtaClick = { id -> navController.navigate(Routes.coffeeCartMenuCategories(id)) }
             )
         }
         composable(Routes.COFFEE_CART_MENU_CATEGORIES) { backStackEntry ->
