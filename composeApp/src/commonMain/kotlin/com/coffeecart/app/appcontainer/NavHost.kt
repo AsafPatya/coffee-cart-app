@@ -18,6 +18,7 @@ import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
 import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
+import com.coffeecart.app.screens.profile.CoffeeCartEditCategoryScreen
 import com.coffeecart.app.screens.profile.EditCartScreen
 import com.coffeecart.app.screens.profile.OrderDashboardScreen
 import com.coffeecart.app.screens.profile.ProfileScreen
@@ -87,6 +88,30 @@ fun AppNavHost(
                 }
             )
         }
+        composable(Routes.COFFEE_CART_SELECT_CATEGORY_TO_EDIT) { backStackEntry ->
+            val cartId = backStackEntry.arguments?.read {
+                getStringOrNull("cartId")
+            } ?: ""
+            CoffeeCartMenuCategoriesScreen(
+                cartId = cartId,
+                onCategoryClick = { categoryName ->
+                    navController.navigate(Routes.coffeeCartEditCategory(cartId, categoryName))
+                }
+            )
+        }
+        composable(Routes.COFFEE_CART_EDIT_CATEGORY) { backStackEntry ->
+            val cartId = backStackEntry.arguments?.read {
+                getStringOrNull("cartId")
+            } ?: ""
+            val categoryName = backStackEntry.arguments?.read {
+                getStringOrNull("categoryName")
+            } ?: ""
+            CoffeeCartEditCategoryScreen(
+                cartId = cartId,
+                categoryName = categoryName,
+                onSuccess = { navController.popBackStack() }
+            )
+        }
         composable(Routes.COFFEE_CART_EDIT) { backStackEntry ->
             val cartId = backStackEntry.arguments?.read {
                 getStringOrNull("cartId")
@@ -118,6 +143,9 @@ fun AppNavHost(
             ProfileScreen(
                 onAddCategoryClick = { cartId ->
                     navController.navigate(Routes.coffeeCartAddCategoryWizard(cartId))
+                },
+                onEditCategoryClick = { cartId ->
+                    navController.navigate(Routes.coffeeCartSelectCategoryToEdit(cartId))
                 },
                 onEditCartClick = { cartId ->
                     navController.navigate(Routes.coffeeCartEdit(cartId))

@@ -29,7 +29,9 @@ enum class Destination(
         Res.string.strProfile,
         listOf(
             Routes.COFFEE_CART_ADD_CATEGORY_WIZARD,
-            Routes.COFFEE_CART_EDIT
+            Routes.COFFEE_CART_EDIT,
+            Routes.COFFEE_CART_SELECT_CATEGORY_TO_EDIT,
+            Routes.COFFEE_CART_EDIT_CATEGORY
         )
     );
 
@@ -55,6 +57,12 @@ object Routes {
 
     const val COFFEE_CART_EDIT = "coffee_cart_edit/{cartId}"
     fun coffeeCartEdit(cartId: String): String = "coffee_cart_edit/$cartId"
+
+    const val COFFEE_CART_SELECT_CATEGORY_TO_EDIT = "coffee_cart_select_category_to_edit/{cartId}"
+    fun coffeeCartSelectCategoryToEdit(cartId: String): String = "coffee_cart_select_category_to_edit/$cartId"
+
+    const val COFFEE_CART_EDIT_CATEGORY = "coffee_cart_edit_category/{cartId}/{categoryName}"
+    fun coffeeCartEditCategory(cartId: String, categoryName: String): String = "coffee_cart_edit_category/$cartId/$categoryName"
 
     const val ORDER_DASHBOARD = "order_dashboard/{cartId}"
     fun orderDashboard(cartId: String): String = "order_dashboard/$cartId"

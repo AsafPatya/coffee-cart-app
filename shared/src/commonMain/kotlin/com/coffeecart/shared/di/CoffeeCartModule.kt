@@ -13,6 +13,7 @@ import com.coffeecart.shared.feature.cartlist.CoffeeCartListViewModel
 import com.coffeecart.shared.feature.myorder.MyOrderViewModel
 import com.coffeecart.shared.feature.orderdashboard.OrderDashboardViewModel
 import com.coffeecart.shared.feature.profile.ProfileViewModel
+import com.coffeecart.shared.feature.profile.CartMediaPickerViewModel
 import com.coffeecart.shared.feature.appcontainer.AppContainerViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -37,6 +38,7 @@ val coffeeCartModule = module {
     factory { CoffeeCartListViewModel(get()) }
     factory { CoffeeCartDetailsViewModel(get(), get()) }
     factory { ProfileViewModel(get()) }
+    factory { CartMediaPickerViewModel(get()) }
     factory { OrderDashboardViewModel(get()) }
     factory { MyOrderViewModel(get(), get(), get()) }
     factory { AppContainerViewModel(get()) }

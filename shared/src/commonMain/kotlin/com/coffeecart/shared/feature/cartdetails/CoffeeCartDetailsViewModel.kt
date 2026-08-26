@@ -75,5 +75,37 @@ class CoffeeCartDetailsViewModel(
             }
         }
     }
+
+    /** Replaces the category originally named [originalCategoryName] with [updatedCategory] (which may itself carry a new name). */
+    fun editCategory(
+        cartId: String,
+        originalCategoryName: String,
+        updatedCategory: MenuCategory,
+        onResult: (Boolean) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val carts = repository.getCoffeeCarts()
+                val cart = carts.find { it.id == cartId }
+                if (cart != null) {
+                    val updatedCategories = cart.categories.map { existing ->
+                        if (existing.name == originalCategoryName) updatedCategory else existing
+                    }
+                    val updatedCart = cart.copy(categories = updatedCategories)
+                    val success = repository.updateCoffeeCartFull(updatedCart)
+                    if (success) {
+                        _uiState.value = CoffeeCartDetailsUiState.Success(updatedCart)
+                        onResult(true)
+                    } else {
+                        onResult(false)
+                    }
+                } else {
+                    onResult(false)
+                }
+            } catch (e: Exception) {
+                onResult(false)
+            }
+        }
+    }
 }
 
