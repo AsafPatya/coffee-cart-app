@@ -7,5 +7,6 @@ data class MenuCategory(
     val name: String,
     val imageUrl: String,
     val products: List<Product> = emptyList(),
+    val description: String = "",
 )
 

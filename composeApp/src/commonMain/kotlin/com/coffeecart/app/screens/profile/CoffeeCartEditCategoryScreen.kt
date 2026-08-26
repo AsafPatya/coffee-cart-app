@@ -161,6 +161,7 @@ fun CoffeeCartEditCategoryForm(
     onSaveCategory: (MenuCategory) -> Unit,
 ) {
     var categoryName by remember { mutableStateOf(initialCategory.name) }
+    var categoryDescription by remember { mutableStateOf(initialCategory.description) }
     var categoryImageUrl by remember { mutableStateOf(initialCategory.imageUrl) }
 
     // Product inputs — also used when editing an existing product in place (see editingProductIndex).
@@ -217,6 +218,16 @@ fun CoffeeCartEditCategoryForm(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             modifier = Modifier.fillMaxWidth().padding(top = Spacing.Medium.dp)
+        )
+
+        OutlinedTextField(
+            value = categoryDescription,
+            onValueChange = { categoryDescription = it },
+            label = { Text("Category Description (optional)") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            modifier = Modifier.fillMaxWidth()
         )
 
         CartMediaPicker(
@@ -410,7 +421,8 @@ fun CoffeeCartEditCategoryForm(
                 val finalCategory = MenuCategory(
                     name = categoryName.trim(),
                     imageUrl = categoryImageUrl,
-                    products = products.toList()
+                    products = products.toList(),
+                    description = categoryDescription.trim(),
                 )
                 onSaveCategory(finalCategory)
             },
@@ -448,7 +460,8 @@ private fun CoffeeCartEditCategoryScreenPreview() {
             imageUrl = "https://picsum.photos/seed/cat1/400",
             products = listOf(
                 Product(name = "Espresso", price = 8.0, description = "Short & strong", imageUrl = "https://picsum.photos/seed/espresso/400")
-            )
+            ),
+            description = "Freshly baked pastries and specialty coffee drinks",
         ),
         isSaving = false,
         onSaveCategory = {}

@@ -150,6 +150,7 @@ fun CoffeeCartAddCategoryForm(
 ) {
     // Category States
     var categoryName by remember { mutableStateOf("") }
+    var categoryDescription by remember { mutableStateOf("") }
     var categoryImageUrl by remember { mutableStateOf("") }
 
     // Product inputs
@@ -198,6 +199,16 @@ fun CoffeeCartAddCategoryForm(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             modifier = Modifier.fillMaxWidth().padding(top = Spacing.Medium.dp)
+        )
+
+        OutlinedTextField(
+            value = categoryDescription,
+            onValueChange = { categoryDescription = it },
+            label = { Text("Category Description (optional)") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+            modifier = Modifier.fillMaxWidth()
         )
 
         CartMediaPicker(
@@ -397,7 +408,8 @@ fun CoffeeCartAddCategoryForm(
                 val finalCategory = MenuCategory(
                     name = categoryName.trim(),
                     imageUrl = categoryImageUrl,
-                    products = finalProducts.toList()
+                    products = finalProducts.toList(),
+                    description = categoryDescription.trim(),
                 )
                 onSaveCategory(finalCategory)
             },

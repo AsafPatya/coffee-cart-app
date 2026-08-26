@@ -20,6 +20,7 @@ enum class Spacing {
     XXXXLarge,
     HeroHeight,
     MapHeight,
+    CategoryCardHeight,
 }
 
 val Spacing.dp: Dp
@@ -36,4 +37,5 @@ val Spacing.dp: Dp
         Spacing.XXXXLarge -> 48.dp
         Spacing.HeroHeight -> 240.dp
         Spacing.MapHeight -> 200.dp
+        Spacing.CategoryCardHeight -> 160.dp
     }
