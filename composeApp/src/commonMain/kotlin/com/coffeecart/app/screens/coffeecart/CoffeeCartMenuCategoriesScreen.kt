@@ -6,12 +6,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -39,7 +41,7 @@ import com.coffeecart.shared.model.MenuCategory
 import org.koin.compose.koinInject
 
 /**
- * Screen displaying the menu categories of the selected coffee cart.
+ * Screen displaying the menu categories of the selected coffee cart as a two-column square grid.
  */
 @Composable
 fun CoffeeCartMenuCategoriesScreen(
@@ -78,38 +80,27 @@ private fun CoffeeCartMenuCategoriesContent(
     categories: List<MenuCategory>,
     onCategoryClick: (String) -> Unit,
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = Spacing.Large.dp),
-    ) {
-        Spacer(modifier = Modifier.height(Spacing.Small.dp))
-
-        if (categories.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = "No categories available.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+    if (categories.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(
+                text = "No categories available.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    } else {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(Spacing.Large.dp),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Medium.dp),
+            verticalArrangement = Arrangement.spacedBy(Spacing.Medium.dp),
+        ) {
+            items(categories) { category ->
+                MenuCategoryCard(
+                    category = category,
+                    onClick = { onCategoryClick(category.name) }
                 )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().weight(1f),
-                contentPadding = PaddingValues(bottom = Spacing.Large.dp),
-                verticalArrangement = Arrangement.spacedBy(Spacing.Large.dp),
-            ) {
-                items(categories) { category ->
-                    MenuCategoryCard(
-                        category = category,
-                        onClick = { onCategoryClick(category.name) }
-                    )
-                }
             }
         }
     }
@@ -125,7 +116,7 @@ private fun MenuCategoryCard(
         shape = RoundedCornerShape(Spacing.Large.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .height(Spacing.CategoryCardHeight.dp),
+            .aspectRatio(1f),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (category.imageUrl.isNotEmpty()) {
@@ -141,7 +132,7 @@ private fun MenuCategoryCard(
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .background(Color.White.copy(alpha = 0.88f))
-                    .padding(Spacing.Medium.dp),
+                    .padding(Spacing.Small.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Column(
@@ -150,7 +141,7 @@ private fun MenuCategoryCard(
                 ) {
                     Text(
                         text = category.name,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
                     )
@@ -158,11 +149,10 @@ private fun MenuCategoryCard(
                         Spacer(modifier = Modifier.height(Spacing.XXXSmall.dp))
                         Text(
                             text = category.description,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             color = Color.DarkGray,
                         )
                     }
-                    Spacer(modifier = Modifier.height(Spacing.XXXSmall.dp))
                 }
             }
         }
@@ -177,7 +167,7 @@ private fun CoffeeCartMenuCategoriesScreenSuccessPreview() {
         com.coffeecart.shared.model.Product("קפוצ׳ינו גדול", 16.0, "אספרסו כפול עם חלב מוקצף", ""),
     )
     val placeholder = listOf(
-        MenuCategory("המתוקים שלנו", "https://picsum.photos/seed/cat1/600/300", sampleProducts, description = "מאפים ומתוקים טריים מהתנור"),
+        MenuCategory("המתוקים שלנו", "https://picsum.photos/seed/cat1/600/300", sampleProducts, description = "מאפים ומתוקים טריים"),
         MenuCategory("המלוחים שלנו", "https://picsum.photos/seed/cat2/600/300"),
         MenuCategory("מה שותים", "https://picsum.photos/seed/cat3/600/300", sampleProducts),
         MenuCategory("ארוחות בוקר", "https://picsum.photos/seed/cat4/600/300"),
@@ -196,7 +186,7 @@ private fun CoffeeCartMenuCategoriesScreenHebrewPreview() {
         com.coffeecart.shared.model.Product("קפוצ׳ינו גדול", 16.0, "אספרסו כפול עם חלב מוקצף", ""),
     )
     val placeholder = listOf(
-        MenuCategory("המתוקים שלנו", "https://picsum.photos/seed/cat1/600/300", sampleProducts, description = "מאפים ומתוקים טריים מהתנור"),
+        MenuCategory("המתוקים שלנו", "https://picsum.photos/seed/cat1/600/300", sampleProducts, description = "מאפים ומתוקים טריים"),
         MenuCategory("המלוחים שלנו", "https://picsum.photos/seed/cat2/600/300"),
         MenuCategory("מה שותים", "https://picsum.photos/seed/cat3/600/300", sampleProducts),
         MenuCategory("ארוחות בוקר", "https://picsum.photos/seed/cat4/600/300"),
