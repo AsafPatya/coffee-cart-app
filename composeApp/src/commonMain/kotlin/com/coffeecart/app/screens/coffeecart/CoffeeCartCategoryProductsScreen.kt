@@ -1,6 +1,5 @@
 package com.coffeecart.app.screens.coffeecart
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,20 +11,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddShoppingCart
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -34,6 +32,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -44,9 +43,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
@@ -57,6 +63,7 @@ import com.coffeecart.shared.model.Product
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strAddedToBasket
 import coffeecart.composeapp.generated.resources.strAddToCart
+import coffeecart.composeapp.generated.resources.strClickProductToAddToCart
 import coffeecart.composeapp.generated.resources.strComments
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.getString
@@ -212,7 +219,7 @@ private fun ProductDetailsBottomSheet(
 private fun formatPrice(price: Double): String {
     val cents = price.toString().substringAfter(".", "00").padEnd(2, '0').take(2)
     val dollars = price.toString().substringBefore(".")
-    return "$$dollars.$cents"
+    return "₪$dollars.$cents"
 }
 
 @Composable
@@ -222,77 +229,120 @@ private fun CoffeeCartCategoryProductsContent(products: List<Product>, onProduct
             Text(text = "No products available in this category.", style = MaterialTheme.typography.bodyLarge)
         }
     } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(Spacing.Large.dp),
-            verticalArrangement = Arrangement.spacedBy(Spacing.Medium.dp)
+        val backgroundColor = MaterialTheme.colorScheme.background
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
-            items(products) { product ->
-                ProductListItem(product = product, onClick = { onProductClick(product) })
-                HorizontalDivider(
-                    modifier = Modifier.padding(top = Spacing.Medium.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .drawWithContent {
+                        drawContent()
+                        val fadeHeight = Spacing.Small.dp.toPx()
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(backgroundColor, Color.Transparent),
+                                startY = 0f,
+                                endY = fadeHeight
+                            )
+                        )
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, backgroundColor),
+                                startY = size.height - fadeHeight,
+                                endY = size.height
+                            )
+                        )
+                    },
+                contentPadding = PaddingValues(
+                    top = Spacing.Medium.dp,
+                    bottom = Spacing.Medium.dp,
+                    start = Spacing.Large.dp,
+                    end = Spacing.Large.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(Spacing.Medium.dp)
+            ) {
+                items(products) { product ->
+                    ProductListItem(product = product, onClick = { onProductClick(product) })
+                }
             }
+            Text(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                text = stringResource(Res.string.strClickProductToAddToCart),
+                style = MaterialTheme.typography.titleMedium,
+            )
         }
     }
 }
 
 @Composable
 private fun ProductListItem(product: Product, onClick: () -> Unit) {
-    Row(
+    val cardShape = RoundedCornerShape(Spacing.Large.dp)
+    Card(
+        onClick = onClick,
+        shape = cardShape,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = Spacing.Small.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .shadow(
+                elevation = Spacing.Small.dp,
+                shape = cardShape,
+                clip = false
+            ),
     ) {
-        // 1. Image
-        AsyncImage(
-            model = product.imageUrl,
-            contentDescription = product.name,
+        Row(
             modifier = Modifier
-                .size(Spacing.XXXLarge.dp + Spacing.XXXLarge.dp) // 64.dp
-                .clip(MaterialTheme.shapes.small),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.width(Spacing.Medium.dp))
-
-        // 2. Column of Name and Description
-        Column(
-            modifier = Modifier.weight(1f)
+                .fillMaxWidth()
+                .padding(Spacing.Large.dp),
+            verticalAlignment = Alignment.Top,
         ) {
-            Text(
-                text = product.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(Spacing.XXSmall.dp))
-            Text(
-                text = product.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = Spacing.Medium.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column {
+                    Text(
+                        text = product.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    if (product.description.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(Spacing.XXSmall.dp))
+                        Text(
+                            text = product.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
 
-        Spacer(modifier = Modifier.width(Spacing.Medium.dp))
+                Spacer(modifier = Modifier.height(Spacing.Large.dp))
 
-        // 3. Price at the end
-        val cents = product.price.toString().substringAfter(".", "00").padEnd(2, '0').take(2)
-        val dollars = product.price.toString().substringBefore(".")
-        val formattedPrice = "$$dollars.$cents"
+                Text(
+                    text = formatPrice(product.price),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
 
-        Text(
-            text = formattedPrice,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-
-        IconButton(onClick = onClick) {
-            Icon(imageVector = Icons.Default.AddShoppingCart, contentDescription = "View product")
+            if (product.imageUrl.isNotEmpty()) {
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.name,
+                    modifier = Modifier
+                        .size(Spacing.XXXXXLarge.dp)
+                        .clip(RoundedCornerShape(Spacing.Large.dp))
+                        .align(Alignment.CenterVertically),
+                    contentScale = ContentScale.Crop
+                )
+            }
         }
     }
 }
@@ -315,5 +365,27 @@ private fun CoffeeCartCategoryProductsScreenPreview() {
         )
     )
     CoffeeCartCategoryProductsContent(products = placeholder, onProductClick = {})
+}
+
+@Preview
+@Composable
+private fun CoffeeCartCategoryProductsScreenHebrewPreview() {
+    val placeholder = listOf(
+        Product(
+            name = "קרואסון וקפה",
+            price = 25.00,
+            description = "קרואסון חמאה וקפה פילטר",
+            imageUrl = "https://picsum.photos/seed/croissant/200"
+        ),
+        Product(
+            name = "סמוזי פיר��ת יער",
+            price = 25.00,
+            description = "סמוזי פירות יער",
+            imageUrl = "https://picsum.photos/seed/smoothie/200"
+        ),
+    )
+    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+        CoffeeCartCategoryProductsContent(products = placeholder, onProductClick = {})
+    }
 }
 

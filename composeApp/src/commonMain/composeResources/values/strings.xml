@@ -27,6 +27,7 @@
     <string name="strOrders">Orders</string>
     <string name="strBack">Back</string>
     <string name="strClickCartToStartOrder">Click on Coffee cart to start new order</string>
+    <string name="strClickProductToAddToCart">Click on a product to add to shopping cart</string>
     <string name="strKosher">Kosher</string>
     <string name="strOpenNow">Open Now</string>
     <string name="strCartPage">Cart Page</string>

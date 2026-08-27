@@ -27,6 +27,7 @@
     <string name="strOrders">הזמנות</string>
     <string name="strBack">חזור</string>
     <string name="strClickCartToStartOrder">לחץ על עגלת קפה כדי להתחיל הזמנה חדשה</string>
+    <string name="strClickProductToAddToCart">לחץ על מוצר כדי להוסיף לסל הקניות</string>
     <string name="strKosher">כשר</string>
     <string name="strOpenNow">פתוח עכשיו</string>
     <string name="strCartPage">דף העגלה</string>

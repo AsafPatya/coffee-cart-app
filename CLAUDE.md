@@ -42,6 +42,8 @@ Scale (9 steps, XXXSmall to XXXLarge):
 | XLarge | 20.dp |
 | XXLarge | 24.dp |
 | XXXLarge | 32.dp |
+| XXXXLarge | 48.dp |
+| XXXXXLarge | 96.dp |
 
 If a design genuinely needs a value outside this scale, that's a signal to add a new named step
 to `Spacing`, not to write a one-off `.dp` literal.
