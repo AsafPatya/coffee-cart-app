@@ -26,18 +26,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
+import coffeecart.composeapp.generated.resources.Res
+import coffeecart.composeapp.generated.resources.strNoCategoriesAvailable
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsUiState
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
 import com.coffeecart.shared.model.MenuCategory
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 /**
@@ -83,7 +87,7 @@ private fun CoffeeCartMenuCategoriesContent(
     if (categories.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(
-                text = "No categories available.",
+                text = stringResource(Res.string.strNoCategoriesAvailable),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -111,12 +115,18 @@ private fun MenuCategoryCard(
     category: MenuCategory,
     onClick: () -> Unit,
 ) {
+    val shape = RoundedCornerShape(Spacing.Large.dp)
     Card(
         onClick = onClick,
-        shape = RoundedCornerShape(Spacing.Large.dp),
+        shape = shape,
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(1f),
+            .aspectRatio(1f)
+            .shadow(
+                elevation = Spacing.Small.dp,
+                shape = shape,
+                clip = false
+            ),
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             if (category.imageUrl.isNotEmpty()) {

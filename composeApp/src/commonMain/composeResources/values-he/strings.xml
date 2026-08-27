@@ -33,4 +33,5 @@
     <string name="strOpeningHours">שעות פתיחה: א-ה: 08:00-18:00, ו: 08:00-15:00</string>
     <string name="strNavigateNow">נווט עכשיו</string>
     <string name="strSearchCategory">חיפוש בתפריט...</string>
+    <string name="strNoCategoriesAvailable">אין קטגוריות זמינות</string>
 </resources>
