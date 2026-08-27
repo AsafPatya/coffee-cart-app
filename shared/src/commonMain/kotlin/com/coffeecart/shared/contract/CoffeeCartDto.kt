@@ -18,6 +18,7 @@ data class MenuCategoryDto(
     val name: String,
     val imageUrl: String,
     val products: List<ProductDto> = emptyList(),
+    val description: String = "",
 )
 
 @Serializable
@@ -49,12 +50,14 @@ fun MenuCategoryDto.toModel(): MenuCategory = MenuCategory(
     name = name,
     imageUrl = imageUrl,
     products = products.map { it.toModel() },
+    description = description,
 )
 
 fun MenuCategory.toDto(): MenuCategoryDto = MenuCategoryDto(
     name = name,
     imageUrl = imageUrl,
     products = products.map { it.toDto() },
+    description = description,
 )
 
 fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
