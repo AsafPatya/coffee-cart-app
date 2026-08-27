@@ -176,6 +176,16 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
         return true
     }
 
+    override suspend fun deleteCategory(cartId: String, categoryName: String): Boolean {
+        delay(200)
+        val cart = carts.find { it.id == cartId } ?: return false
+        val updatedCategories = cart.categories.filter { it.name != categoryName }
+        val updatedCart = cart.copy(categories = updatedCategories)
+        val idx = carts.indexOfFirst { it.id == cartId }
+        carts[idx] = updatedCart
+        return true
+    }
+
     override suspend fun uploadImage(bytes: ByteArray, fileName: String): String {
         delay(200)
         return "https://picsum.photos/seed/${kotlin.math.abs(bytes.hashCode())}/400"

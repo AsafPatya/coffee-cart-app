@@ -41,6 +41,10 @@ private class SucceedingRepositoryInterface(private val carts: List<CoffeeCart>)
         error("Not used in this test suite")
     }
 
+    override suspend fun deleteCategory(cartId: String, categoryName: String): Boolean {
+        error("Not used in this test suite")
+    }
+
     override suspend fun uploadImage(bytes: ByteArray, fileName: String): String {
         error("Not used in this test suite")
     }
@@ -63,6 +67,8 @@ private class FailingRepositoryInterface(private val exception: Exception) : Cof
     override suspend fun removeCoffeeCart(id: String): Boolean = throw exception
 
     override suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean = throw exception
+
+    override suspend fun deleteCategory(cartId: String, categoryName: String): Boolean = throw exception
 
     override suspend fun uploadImage(bytes: ByteArray, fileName: String): String = throw exception
 }

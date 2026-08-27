@@ -99,6 +99,17 @@ class CoffeeCartRepository(
         return success
     }
 
+    override suspend fun deleteCategory(cartId: String, categoryName: String): Boolean {
+        val response = client.delete("${ServerEnvironment.baseUrl}${Endpoints.deleteCategory(cartId, categoryName)}")
+        val success = response.status == HttpStatusCode.OK || response.status == HttpStatusCode.NoContent
+        if (success) {
+            mutex.withLock {
+                cachedCarts = null
+            }
+        }
+        return success
+    }
+
     override suspend fun uploadImage(bytes: ByteArray, fileName: String): String {
         val response = client.submitFormWithBinaryData(
             url = "${ServerEnvironment.baseUrl}${Endpoints.IMAGES_UPLOAD}",

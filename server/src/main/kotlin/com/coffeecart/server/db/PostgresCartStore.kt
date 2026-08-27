@@ -77,6 +77,13 @@ class PostgresCartStore {
         } > 0
     }
 
+    fun deleteCategory(cartId: String, categoryName: String): Boolean = transaction {
+        val cart = getById(cartId) ?: return@transaction false
+        val updatedCategories = cart.categories.filter { it.name != categoryName }
+        val updatedCart = cart.copy(categories = updatedCategories)
+        updateFull(updatedCart)
+    }
+
     private fun seedIfEmpty() = transaction {
         if (CoffeeCartsTable.selectAll().empty()) {
             listOf(

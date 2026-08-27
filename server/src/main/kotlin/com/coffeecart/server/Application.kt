@@ -131,6 +131,13 @@ fun Application.module() {
             call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
         }
 
+        delete(Endpoints.CART_CATEGORY_DELETE) {
+            val id = call.parameters["id"]
+            val categoryName = call.parameters["categoryName"]
+            val removed = id != null && categoryName != null && cartStore.deleteCategory(id, categoryName)
+            call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
+        }
+
         put(Endpoints.CARTS_ID) {
             val id = call.parameters["id"]
             val request = call.receive<CoffeeCartDto>()

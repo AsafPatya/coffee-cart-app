@@ -36,7 +36,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 enum class ProfileAction {
-    NONE, EDIT, REMOVE, ADD_CATEGORY, EDIT_CATEGORY, VIEW_ORDERS, CONNECT_PAYMENT_ACCOUNT
+    NONE, EDIT, REMOVE, ADD_CATEGORY, EDIT_CATEGORY, DELETE_CATEGORY, VIEW_ORDERS, CONNECT_PAYMENT_ACCOUNT
 }
 
 /** Screen enabling operational calls (GET/POST/DELETE) for coffee carts. */
@@ -190,6 +190,16 @@ fun ProfileContent(
             Button(
                 onClick = {
                     onGetClick()
+                    activeAction = ProfileAction.DELETE_CATEGORY
+                },
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Delete Category")
+            }
+
+            Button(
+                onClick = {
+                    onGetClick()
                     activeAction = ProfileAction.VIEW_ORDERS
                 },
                 modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
@@ -233,7 +243,7 @@ fun ProfileContent(
                         ProfileAction.EDIT -> onEditCartClick(cart.id)
                         ProfileAction.REMOVE -> selectedCartForDelete = cart
                         ProfileAction.ADD_CATEGORY -> onAddCategoryClick(cart.id)
-                        ProfileAction.EDIT_CATEGORY -> onEditCategoryClick(cart.id)
+                        ProfileAction.EDIT_CATEGORY, ProfileAction.DELETE_CATEGORY -> onEditCategoryClick(cart.id)
                         ProfileAction.VIEW_ORDERS -> onViewOrdersClick(cart.id)
                         ProfileAction.CONNECT_PAYMENT_ACCOUNT -> onConnectPaymentAccountClick(cart.id)
                         else -> {}

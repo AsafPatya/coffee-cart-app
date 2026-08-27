@@ -15,6 +15,7 @@ interface CoffeeCartRepositoryInterface {
     ): Boolean
     suspend fun removeCoffeeCart(id: String): Boolean
     suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean
+    suspend fun deleteCategory(cartId: String, categoryName: String): Boolean
 
     /** Uploads image bytes and returns the URL it's now servable from. Not tied to any particular cart. */
     suspend fun uploadImage(bytes: ByteArray, fileName: String): String

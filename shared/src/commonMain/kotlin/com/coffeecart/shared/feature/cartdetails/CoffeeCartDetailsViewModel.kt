@@ -102,7 +102,31 @@ class CoffeeCartDetailsViewModel(
                 } else {
                     onResult(false)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
+                onResult(false)
+            }
+        }
+    }
+
+    fun deleteCategory(
+        cartId: String,
+        categoryName: String,
+        onResult: (Boolean) -> Unit,
+    ) {
+        viewModelScope.launch {
+            try {
+                val success = repository.deleteCategory(cartId, categoryName)
+                if (success) {
+                    val carts = repository.getCoffeeCarts()
+                    val cart = carts.find { it.id == cartId }
+                    if (cart != null) {
+                        _uiState.value = CoffeeCartDetailsUiState.Success(cart)
+                    }
+                    onResult(true)
+                } else {
+                    onResult(false)
+                }
+            } catch (_: Exception) {
                 onResult(false)
             }
         }

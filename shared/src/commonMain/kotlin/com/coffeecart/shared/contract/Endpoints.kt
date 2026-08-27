@@ -6,6 +6,7 @@ package com.coffeecart.shared.contract
 object Endpoints {
     const val CARTS = "/carts"
     const val CARTS_ID = "/carts/{id}"
+    const val CART_CATEGORY_DELETE = "/carts/{id}/categories/{categoryName}"
 
     /**
      * Returns the dynamic path for a specific coffee cart resource.
@@ -13,6 +14,8 @@ object Endpoints {
     const val IMAGES_UPLOAD = "/images/upload"
 
     fun cartById(id: String): String = "$CARTS/$id"
+
+    fun deleteCategory(cartId: String, categoryName: String): String = "$CARTS/$cartId/categories/$categoryName"
 
     fun cartOrders(cartId: String): String = "$CARTS/$cartId/orders"
 

@@ -1,5 +1,6 @@
 package com.coffeecart.app.screens.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,13 +18,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.screens.profile.ui.components.CartMediaPicker
+import com.coffeecart.app.theme.BorderWidth
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsUiState
@@ -112,6 +117,20 @@ fun CoffeeCartEditCategoryScreen(
                                 showErrorDialog = "Failed to update category. Please try again."
                             }
                         }
+                    },
+                    onDeleteCategory = {
+                        isSaving = true
+                        viewModel.deleteCategory(
+                            cartId = cartId,
+                            categoryName = categoryName,
+                        ) { success ->
+                            isSaving = false
+                            if (success) {
+                                showSuccessDialog = true
+                            } else {
+                                showErrorDialog = "Failed to delete category. Please try again."
+                            }
+                        }
                     }
                 )
             }
@@ -159,6 +178,7 @@ fun CoffeeCartEditCategoryForm(
     initialCategory: MenuCategory,
     isSaving: Boolean,
     onSaveCategory: (MenuCategory) -> Unit,
+    onDeleteCategory: (() -> Unit)? = null,
 ) {
     var categoryName by remember { mutableStateOf(initialCategory.name) }
     var categoryDescription by remember { mutableStateOf(initialCategory.description) }
@@ -432,6 +452,46 @@ fun CoffeeCartEditCategoryForm(
                 CircularProgressIndicator(modifier = Modifier.size(Spacing.Large.dp), color = MaterialTheme.colorScheme.onPrimary)
             } else {
                 Text("Save Changes")
+            }
+        }
+
+        if (onDeleteCategory != null) {
+            var showConfirmDeleteCategoryDialog by remember { mutableStateOf(false) }
+
+            OutlinedButton(
+                enabled = !isSaving,
+                onClick = { showConfirmDeleteCategoryDialog = true },
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                border = BorderStroke(BorderWidth.XXXSmall.dp, MaterialTheme.colorScheme.error),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete category")
+                Spacer(modifier = Modifier.width(Spacing.Small.dp))
+                Text("Delete Category")
+            }
+
+            if (showConfirmDeleteCategoryDialog) {
+                AlertDialog(
+                    onDismissRequest = { showConfirmDeleteCategoryDialog = false },
+                    title = { Text("Delete Category") },
+                    text = { Text("Are you sure you want to delete the category '${initialCategory.name}'?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showConfirmDeleteCategoryDialog = false
+                                onDeleteCategory()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Delete")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showConfirmDeleteCategoryDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
             }
         }
     }
