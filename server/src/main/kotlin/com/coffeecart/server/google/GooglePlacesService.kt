@@ -15,6 +15,7 @@ class GooglePlacesService(
     private val json = Json { ignoreUnknownKeys = true }
 
     suspend fun fetchOpeningHours(placeId: String): String? {
+        println("[GooglePlacesService] apiKey=$apiKey")
         if (apiKey.isNullOrBlank() || placeId.isBlank()) {
             return null
         }

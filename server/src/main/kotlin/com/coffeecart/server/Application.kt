@@ -125,8 +125,10 @@ fun Application.module() {
             val request = call.receive<CreateCoffeeCartRequest>()
             var cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl, placeId = request.placeId)
             val placeId = request.placeId
+            println("[Cart API] Creating cart with placeId=$placeId")
             if (!placeId.isNullOrBlank()) {
                 val hours = googlePlacesService.fetchOpeningHours(placeId)
+                println("[Cart API] Fetched opening hours for placeId=$placeId: $hours")
                 if (hours != null) {
                     cartStore.updateOpeningHours(cart.id, hours)
                     cart = cart.copy(openingHours = hours)
@@ -154,8 +156,10 @@ fun Application.module() {
             val model = request.toModel()
             val placeId = model.placeId
             var hours = model.openingHours
+            println("[Cart API] Updating cart id=$id with placeId=$placeId")
             if (!placeId.isNullOrBlank()) {
                 val fetchedHours = googlePlacesService.fetchOpeningHours(placeId)
+                println("[Cart API] Fetched opening hours for placeId=$placeId: $fetchedHours")
                 if (fetchedHours != null) {
                     hours = fetchedHours
                 }
