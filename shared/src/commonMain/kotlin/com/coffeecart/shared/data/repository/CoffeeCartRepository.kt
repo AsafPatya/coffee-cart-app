@@ -3,6 +3,7 @@ package com.coffeecart.shared.data.repository
 import com.coffeecart.shared.contract.CoffeeCartDto
 import com.coffeecart.shared.contract.CreateCoffeeCartRequest
 import com.coffeecart.shared.contract.Endpoints
+import com.coffeecart.shared.contract.PlaceDetailsDto
 import com.coffeecart.shared.contract.UploadImageResponse
 import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
@@ -39,6 +40,15 @@ class CoffeeCartRepository(
         carts
     }
 
+    override suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto? {
+        val response = client.get("${ServerEnvironment.baseUrl}${Endpoints.placeDetails(placeId)}")
+        return if (response.status == HttpStatusCode.OK) {
+            response.body<PlaceDetailsDto>()
+        } else {
+            null
+        }
+    }
+
     override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
         val cart = client.post("${ServerEnvironment.baseUrl}${Endpoints.CARTS}") {
             contentType(ContentType.Application.Json)
@@ -63,7 +73,7 @@ class CoffeeCartRepository(
         // otherwise this name/address/image-only edit would silently wipe them out.
         val existingCart = getCoffeeCarts().find { it.id == id }
         val existingCategories = existingCart?.categories.orEmpty()
-        val existingOpeningHours = existingCart?.openingHours
+        val existingOpeningHours = existingCart?.openingHours.orEmpty()
         return updateCoffeeCartFull(
             CoffeeCart(
                 id = id,

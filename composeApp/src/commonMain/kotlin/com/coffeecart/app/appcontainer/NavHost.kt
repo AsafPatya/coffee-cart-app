@@ -17,6 +17,7 @@ import com.coffeecart.app.screens.coffeecart.ProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
 import com.coffeecart.app.screens.coffeecart.CategoriesScreen
+import com.coffeecart.app.screens.profile.AddCartFromGoogleScreen
 import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.screens.profile.CoffeeCartEditCategoryScreen
 import com.coffeecart.app.screens.profile.EditCartScreen
@@ -153,6 +154,18 @@ fun AppNavHost(
                 },
                 onViewOrdersClick = { cartId ->
                     navController.navigate(Routes.orderDashboard(cartId))
+                },
+                onAddCartFromGoogleClick = {
+                    navController.navigate(Routes.COFFEE_CART_ADD_FROM_GOOGLE)
+                }
+            )
+        }
+        composable(Routes.COFFEE_CART_ADD_FROM_GOOGLE) {
+            val profileViewModel: ProfileViewModel = koinInject()
+            AddCartFromGoogleScreen(
+                onSuccess = { navController.popBackStack() },
+                onConfirmAdd = { name, address, imageUrl, placeId ->
+                    profileViewModel.addCoffeeCart(name, address, imageUrl, placeId)
                 }
             )
         }

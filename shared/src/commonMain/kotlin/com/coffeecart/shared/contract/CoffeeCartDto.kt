@@ -30,7 +30,7 @@ data class CoffeeCartDto(
     val categories: List<MenuCategoryDto> = emptyList(),
     val latitude: Double? = null,
     val longitude: Double? = null,
-    val openingHours: String? = null,
+    val openingHours: List<String> = emptyList(),
     val placeId: String? = null,
 )
 

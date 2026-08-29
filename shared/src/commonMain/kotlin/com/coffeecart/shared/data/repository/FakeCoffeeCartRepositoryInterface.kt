@@ -1,5 +1,6 @@
 package com.coffeecart.shared.data.repository
 
+import com.coffeecart.shared.contract.PlaceDetailsDto
 import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.shared.model.MenuCategory
@@ -133,6 +134,18 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> {
         delay(500)
         return carts.toList()
+    }
+
+    override suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto? {
+        delay(200)
+        return PlaceDetailsDto(
+            name = "Google Coffee Cart $placeId",
+            formattedAddress = "Google Street 100",
+            openingHours = listOf("Mon-Fri: 08:00 - 18:00"),
+            latitude = 32.0853,
+            longitude = 34.7818,
+            photoUrls = listOf("https://picsum.photos/seed/google/800"),
+        )
     }
 
     override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {

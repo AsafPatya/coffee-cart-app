@@ -3,6 +3,7 @@ package com.coffeecart.server
 import com.coffeecart.server.db.DatabaseFactory
 import com.coffeecart.server.db.PostgresCartStore
 import com.coffeecart.server.db.PostgresOrderStore
+import com.coffeecart.server.google.toDto
 import com.coffeecart.server.google.GooglePlacesService
 import com.coffeecart.server.rapyd.RapydClient
 import com.coffeecart.server.rapyd.RapydConfig
@@ -121,6 +122,21 @@ fun Application.module() {
             call.respond(cartStore.getAll().map { it.toDto() })
         }
 
+        get(Endpoints.PLACES + "/details") {
+            val placeId = call.request.queryParameters["placeId"]
+            println("[Places API] Fetching place details for placeId=$placeId")
+            if (placeId.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val details = googlePlacesService.fetchPlaceDetails(placeId)
+            if (details != null) {
+                call.respond(details.toDto())
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
+
         post(Endpoints.CARTS) {
             val request = call.receive<CreateCoffeeCartRequest>()
             var cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl, placeId = request.placeId)
@@ -131,7 +147,7 @@ fun Application.module() {
                 println("[Cart API] Fetched details for placeId=$placeId: $details")
                 if (details != null) {
                     val updatedCart = cart.copy(
-                        openingHours = details.openingHours ?: cart.openingHours,
+                        openingHours = if (details.openingHours.isNotEmpty()) details.openingHours else cart.openingHours,
                         latitude = details.latitude ?: cart.latitude,
                         longitude = details.longitude ?: cart.longitude,
                     )
@@ -168,7 +184,7 @@ fun Application.module() {
                 val details = googlePlacesService.fetchPlaceDetails(placeId)
                 println("[Cart API] Fetched details for placeId=$placeId: $details")
                 if (details != null) {
-                    if (details.openingHours != null) hours = details.openingHours
+                    if (details.openingHours.isNotEmpty()) hours = details.openingHours
                     if (details.latitude != null) lat = details.latitude
                     if (details.longitude != null) lng = details.longitude
                 }

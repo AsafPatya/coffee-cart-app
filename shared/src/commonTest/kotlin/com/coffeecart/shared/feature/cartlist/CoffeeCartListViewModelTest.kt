@@ -1,10 +1,12 @@
 package com.coffeecart.shared.feature.cartlist
 
+import com.coffeecart.shared.contract.PlaceDetailsDto
 import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.model.CoffeeCart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -17,8 +19,9 @@ import kotlin.test.assertIs
 
 private class SucceedingRepositoryInterface(private val carts: List<CoffeeCart>) : CoffeeCartRepositoryInterface {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = carts
-    
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart {
+    override suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto? = error("Not used in this test suite")
+
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
         error("Not used in this test suite")
     }
 
@@ -27,6 +30,7 @@ private class SucceedingRepositoryInterface(private val carts: List<CoffeeCart>)
         name: String,
         address: String,
         imageUrl: String,
+        placeId: String?,
         latitude: Double?,
         longitude: Double?,
     ): Boolean {
@@ -52,14 +56,16 @@ private class SucceedingRepositoryInterface(private val carts: List<CoffeeCart>)
 
 private class FailingRepositoryInterface(private val exception: Exception) : CoffeeCartRepositoryInterface {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = throw exception
+    override suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto? = throw exception
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart = throw exception
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart = throw exception
 
     override suspend fun updateCoffeeCart(
         id: String,
         name: String,
         address: String,
         imageUrl: String,
+        placeId: String?,
         latitude: Double?,
         longitude: Double?,
     ): Boolean = throw exception
@@ -84,11 +90,10 @@ class CoffeeCartListViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `starts loading then succeeds with carts from repository`() = runTest {
-        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         Dispatchers.setMain(testDispatcher)
         try {
             val viewModel = CoffeeCartListViewModel(SucceedingRepositoryInterface(listOf(sampleCart)))
-            advanceUntilIdle()
 
             val state = viewModel.uiState.value
             assertIs<CoffeeCartListUiState.Success>(state)
@@ -101,11 +106,10 @@ class CoffeeCartListViewModelTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun `becomes an error state when the repository throws`() = runTest {
-        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         Dispatchers.setMain(testDispatcher)
         try {
             val viewModel = CoffeeCartListViewModel(FailingRepositoryInterface(RuntimeException("boom")))
-            advanceUntilIdle()
 
             val state = viewModel.uiState.value
             assertIs<CoffeeCartListUiState.Error>(state)

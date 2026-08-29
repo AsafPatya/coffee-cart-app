@@ -1,5 +1,7 @@
 package com.coffeecart.app.screens.profile
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,6 +50,7 @@ fun ProfileScreen(
     onEditCategoryClick: (String) -> Unit,
     onEditCartClick: (String) -> Unit,
     onViewOrdersClick: (String) -> Unit,
+    onAddCartFromGoogleClick: () -> Unit = {},
 ) {
     val dialogMessage by viewModel.dialogMessage.collectAsState()
     val cartsList by viewModel.cartsList.collectAsState()
@@ -72,6 +75,7 @@ fun ProfileScreen(
             onEditCategoryClick = onEditCategoryClick,
             onEditCartClick = onEditCartClick,
             onViewOrdersClick = onViewOrdersClick,
+            onAddCartFromGoogleClick = onAddCartFromGoogleClick,
             onConnectPaymentAccountClick = { cartId ->
                 coroutineScope.launch {
                     try {
@@ -113,6 +117,7 @@ fun ProfileContent(
     onEditCartClick: (String) -> Unit,
     onViewOrdersClick: (String) -> Unit,
     onConnectPaymentAccountClick: (String) -> Unit,
+    onAddCartFromGoogleClick: () -> Unit = {},
 ) {
     var activeAction by remember { mutableStateOf(ProfileAction.NONE) }
     var selectedCartForDelete by remember { mutableStateOf<CoffeeCart?>(null) }
@@ -121,7 +126,7 @@ fun ProfileContent(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(Spacing.XXLarge.dp),
+            modifier = Modifier.fillMaxSize().padding(Spacing.XXLarge.dp).verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
@@ -140,6 +145,13 @@ fun ProfileContent(
                 modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
             ) {
                 Text("Add Coffee Cart")
+            }
+
+            Button(
+                onClick = onAddCartFromGoogleClick,
+                modifier = Modifier.fillMaxWidth().padding(vertical = Spacing.Small.dp)
+            ) {
+                Text("Add Cart with Google Info")
             }
 
             Button(

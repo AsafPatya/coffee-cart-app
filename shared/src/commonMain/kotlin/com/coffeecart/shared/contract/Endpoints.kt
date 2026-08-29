@@ -26,5 +26,9 @@ object Endpoints {
     fun orderCheckout(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/checkout"
 
     fun markOrderPrinted(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/mark-printed"
+
+    const val PLACES = "/places"
+
+    fun placeDetails(placeId: String): String = "$PLACES/details?placeId=$placeId"
 }
 

@@ -28,6 +28,7 @@ enum class Destination(
         "profile",
         Res.string.strProfile,
         listOf(
+            Routes.COFFEE_CART_ADD_FROM_GOOGLE,
             Routes.COFFEE_CART_ADD_CATEGORY_WIZARD,
             Routes.COFFEE_CART_EDIT,
             Routes.COFFEE_CART_SELECT_CATEGORY_TO_EDIT,
@@ -66,5 +67,7 @@ object Routes {
 
     const val ORDER_DASHBOARD = "order_dashboard/{cartId}"
     fun orderDashboard(cartId: String): String = "order_dashboard/$cartId"
+
+    const val COFFEE_CART_ADD_FROM_GOOGLE = "coffee_cart_add_from_google"
 }
 

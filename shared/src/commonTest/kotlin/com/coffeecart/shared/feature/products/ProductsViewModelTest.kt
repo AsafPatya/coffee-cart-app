@@ -19,8 +19,9 @@ import kotlin.test.assertIs
 @OptIn(ExperimentalCoroutinesApi::class)
 private class TestCoffeeCartRepository(private val carts: List<CoffeeCart>) : CoffeeCartRepositoryInterface {
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = carts
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart = error("Not used")
-    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String, latitude: Double?, longitude: Double?): Boolean = error("Not used")
+    override suspend fun fetchPlaceDetails(placeId: String) = error("Not used")
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart = error("Not used")
+    override suspend fun updateCoffeeCart(id: String, name: String, address: String, imageUrl: String, placeId: String?, latitude: Double?, longitude: Double?): Boolean = error("Not used")
     override suspend fun removeCoffeeCart(id: String): Boolean = error("Not used")
     override suspend fun updateCoffeeCartFull(cart: CoffeeCart): Boolean = error("Not used")
     override suspend fun deleteCategory(cartId: String, categoryName: String): Boolean = error("Not used")

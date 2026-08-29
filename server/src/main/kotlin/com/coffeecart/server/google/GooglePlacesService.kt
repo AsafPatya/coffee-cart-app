@@ -1,5 +1,6 @@
 package com.coffeecart.server.google
 
+import com.coffeecart.shared.contract.PlaceDetailsDto
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -11,7 +12,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 data class PlaceDetails(
-    val openingHours: String? = null,
+    val openingHours: List<String> = emptyList(),
     val name: String? = null,
     val formattedAddress: String? = null,
     val phoneNumber: String? = null,
@@ -21,6 +22,19 @@ data class PlaceDetails(
     val userRatingsTotal: Int? = null,
     val website: String? = null,
     val photoUrls: List<String> = emptyList(),
+)
+
+fun PlaceDetails.toDto(): PlaceDetailsDto = PlaceDetailsDto(
+    openingHours = openingHours,
+    name = name,
+    formattedAddress = formattedAddress,
+    phoneNumber = phoneNumber,
+    latitude = latitude,
+    longitude = longitude,
+    rating = rating,
+    userRatingsTotal = userRatingsTotal,
+    website = website,
+    photoUrls = photoUrls,
 )
 
 class GooglePlacesService(
@@ -54,10 +68,11 @@ class GooglePlacesService(
 
             val openingHoursObj = resultObj[GooglePlacesConfig.FIELD_OPENING_HOURS]?.jsonObject
             val weekdayTextArray = openingHoursObj?.get("weekday_text")?.jsonArray
-            val openingHours = if (weekdayTextArray != null && weekdayTextArray.isNotEmpty()) {
-                weekdayTextArray.joinToString("\n") { it.jsonPrimitive.content }
-            } else null
-            println("[GooglePlacesService] Opening hours for placeId=$placeId:\n$openingHours")
+            val openingHours = weekdayTextArray?.mapNotNull { it.jsonPrimitive.content }
+                ?.filter { line ->
+                    !line.contains("סגור", ignoreCase = true) && !line.contains("Closed", ignoreCase = true)
+                } ?: emptyList()
+            println("[GooglePlacesService] Opening hours for placeId=$placeId: $openingHours")
 
             val locationObj = resultObj[GooglePlacesConfig.FIELD_GEOMETRY]?.jsonObject?.get("location")?.jsonObject
             val latitude = locationObj?.get("lat")?.jsonPrimitive?.doubleOrNull
@@ -94,8 +109,8 @@ class GooglePlacesService(
     suspend fun fetchOpeningHours(
         placeId: String,
         language: String? = GooglePlacesConfig.DEFAULT_LANGUAGE,
-    ): String? {
-        return fetchPlaceDetails(placeId, language)?.openingHours
+    ): List<String> {
+        return fetchPlaceDetails(placeId, language)?.openingHours ?: emptyList()
     }
 }
 

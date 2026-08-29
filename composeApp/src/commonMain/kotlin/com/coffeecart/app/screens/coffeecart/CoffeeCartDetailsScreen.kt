@@ -180,8 +180,8 @@ private fun CoffeeCartDetailsSuccessContent(
                 }
 
                 val openingHours = cart.openingHours
-                val openingHoursText = if (!openingHours.isNullOrBlank()) {
-                    openingHours
+                val openingHoursText = if (openingHours.isNotEmpty()) {
+                    openingHours.joinToString("\n")
                 } else {
                     stringResource(Res.string.strOpeningHours)
                 }

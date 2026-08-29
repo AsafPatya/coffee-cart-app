@@ -1,9 +1,11 @@
 package com.coffeecart.shared.domain
 
+import com.coffeecart.shared.contract.PlaceDetailsDto
 import com.coffeecart.shared.model.CoffeeCart
 
 interface CoffeeCartRepositoryInterface {
     suspend fun getCoffeeCarts(): List<CoffeeCart>
+    suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto?
     suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String? = null): CoffeeCart
     suspend fun updateCoffeeCart(
         id: String,
