@@ -41,6 +41,7 @@ class GooglePlacesService(
             val langParam = if (!language.isNullOrBlank()) "&language=$language" else ""
             val url = "${GooglePlacesConfig.DETAILS_BASE_URL}?place_id=$placeId&fields=${GooglePlacesConfig.FIELDS}$langParam&key=$apiKey"
             val responseText = client.get(url).bodyAsText()
+            println("[GooglePlacesService] Response from Google Places API:\n$responseText")
             val jsonObj = json.parseToJsonElement(responseText).jsonObject
             val resultObj = jsonObj["result"]?.jsonObject ?: return null
 
@@ -56,6 +57,7 @@ class GooglePlacesService(
             val openingHours = if (weekdayTextArray != null && weekdayTextArray.isNotEmpty()) {
                 weekdayTextArray.joinToString("\n") { it.jsonPrimitive.content }
             } else null
+            println("[GooglePlacesService] Opening hours for placeId=$placeId:\n$openingHours")
 
             val locationObj = resultObj[GooglePlacesConfig.FIELD_GEOMETRY]?.jsonObject?.get("location")?.jsonObject
             val latitude = locationObj?.get("lat")?.jsonPrimitive?.doubleOrNull
