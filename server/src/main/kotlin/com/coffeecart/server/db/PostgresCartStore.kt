@@ -74,6 +74,17 @@ class PostgresCartStore {
             it[menuJson] = jsonString
             it[latitude] = cart.latitude
             it[longitude] = cart.longitude
+            it[openingHours] = cart.openingHours
+            it[placeId] = cart.placeId
+        } > 0
+    }
+
+    fun updateOpeningHours(cartId: String, hours: String, googlePlaceId: String? = null): Boolean = transaction {
+        CoffeeCartsTable.update({ CoffeeCartsTable.id eq cartId }) {
+            it[openingHours] = hours
+            if (googlePlaceId != null) {
+                it[placeId] = googlePlaceId
+            }
         } > 0
     }
 
@@ -117,5 +128,7 @@ class PostgresCartStore {
         longitude = this[CoffeeCartsTable.longitude],
         paymentAccountId = this[CoffeeCartsTable.paymentAccountId],
         paymentAccountVerified = this[CoffeeCartsTable.paymentAccountVerified],
+        openingHours = this[CoffeeCartsTable.openingHours],
+        placeId = this[CoffeeCartsTable.placeId],
     )
 }

@@ -13,4 +13,6 @@ data class CoffeeCart(
     val longitude: Double? = null,
     val paymentAccountId: String? = null,
     val paymentAccountVerified: Boolean = false,
+    val openingHours: String? = null,
+    val placeId: String? = null,
 )

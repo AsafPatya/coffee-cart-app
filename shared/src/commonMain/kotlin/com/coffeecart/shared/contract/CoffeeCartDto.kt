@@ -30,6 +30,8 @@ data class CoffeeCartDto(
     val categories: List<MenuCategoryDto> = emptyList(),
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val openingHours: String? = null,
+    val placeId: String? = null,
 )
 
 fun ProductDto.toModel(): Product = Product(
@@ -68,6 +70,8 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     categories = categories.map { it.toModel() },
     latitude = latitude,
     longitude = longitude,
+    openingHours = openingHours,
+    placeId = placeId,
 )
 
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
@@ -78,6 +82,8 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     categories = categories.map { it.toDto() },
     latitude = latitude,
     longitude = longitude,
+    openingHours = openingHours,
+    placeId = placeId,
 )
 
 @Serializable

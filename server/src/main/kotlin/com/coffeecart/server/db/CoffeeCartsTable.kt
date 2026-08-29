@@ -12,6 +12,8 @@ object CoffeeCartsTable : Table("coffee_carts") {
     val longitude = double("longitude").nullable()
     val paymentAccountId = varchar("payment_account_id", 128).nullable()
     val paymentAccountVerified = bool("payment_account_verified").default(false)
+    val openingHours = text("opening_hours").nullable()
+    val placeId = varchar("place_id", 128).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

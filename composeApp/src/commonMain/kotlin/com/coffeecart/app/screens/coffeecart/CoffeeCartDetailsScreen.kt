@@ -179,8 +179,15 @@ private fun CoffeeCartDetailsSuccessContent(
                     )
                 }
 
+                val openingHours = cart.openingHours
+                val openingHoursText = if (!openingHours.isNullOrBlank()) {
+                    openingHours
+                } else {
+                    stringResource(Res.string.strOpeningHours)
+                }
+
                 Text(
-                    text = stringResource(Res.string.strOpeningHours),
+                    text = openingHoursText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
