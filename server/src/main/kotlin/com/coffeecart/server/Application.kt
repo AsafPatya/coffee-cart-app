@@ -3,6 +3,7 @@ package com.coffeecart.server
 import com.coffeecart.server.db.DatabaseFactory
 import com.coffeecart.server.db.PostgresCartStore
 import com.coffeecart.server.db.PostgresOrderStore
+import com.coffeecart.server.google.GooglePlacesService
 import com.coffeecart.server.rapyd.RapydClient
 import com.coffeecart.server.rapyd.RapydConfig
 import com.coffeecart.server.rapyd.RapydSigner
@@ -77,12 +78,13 @@ fun Application.module() {
     DatabaseFactory.init()
     val cartStore = PostgresCartStore()
     val orderStore = PostgresOrderStore()
-    val rapydHttpClient = HttpClient(OkHttp) {
+    val httpClient = HttpClient(OkHttp) {
         install(ClientContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
         }
     }
-    val rapydClient = RapydClient(rapydHttpClient)
+    val rapydClient = RapydClient(httpClient)
+    val googlePlacesService = GooglePlacesService(httpClient)
 
     // Mounted to a persistent Railway volume in production so uploaded images survive restarts/redeploys.
     val imagesDir = File(System.getenv("IMAGES_DIR") ?: "images").apply { mkdirs() }
@@ -121,27 +123,45 @@ fun Application.module() {
 
         post(Endpoints.CARTS) {
             val request = call.receive<CreateCoffeeCartRequest>()
-            val cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl)
+            var cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl, placeId = request.placeId)
+            val placeId = request.placeId
+            if (!placeId.isNullOrBlank()) {
+                val hours = googlePlacesService.fetchOpeningHours(placeId)
+                if (hours != null) {
+                    cartStore.updateOpeningHours(cart.id, hours)
+                    cart = cart.copy(openingHours = hours)
+                }
+            }
             call.respond(HttpStatusCode.Created, cart.toDto())
         }
 
-        delete(Endpoints.CARTS_ID) {
+        delete(Endpoints.cartById("{id}")) {
             val id = call.parameters["id"]
             val removed = id != null && cartStore.remove(id)
             call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
         }
 
-        delete(Endpoints.CART_CATEGORY_DELETE) {
+        delete(Endpoints.deleteCategory("{id}", "{categoryName}")) {
             val id = call.parameters["id"]
             val categoryName = call.parameters["categoryName"]
             val removed = id != null && categoryName != null && cartStore.deleteCategory(id, categoryName)
             call.respond(if (removed) HttpStatusCode.NoContent else HttpStatusCode.NotFound)
         }
 
-        put(Endpoints.CARTS_ID) {
+        put(Endpoints.cartById("{id}")) {
             val id = call.parameters["id"]
             val request = call.receive<CoffeeCartDto>()
-            val updated = id != null && cartStore.updateFull(request.toModel())
+            val model = request.toModel()
+            val placeId = model.placeId
+            var hours = model.openingHours
+            if (!placeId.isNullOrBlank()) {
+                val fetchedHours = googlePlacesService.fetchOpeningHours(placeId)
+                if (fetchedHours != null) {
+                    hours = fetchedHours
+                }
+            }
+            val cartToUpdate = model.copy(openingHours = hours)
+            val updated = id != null && cartStore.updateFull(cartToUpdate)
             call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
 

@@ -121,8 +121,8 @@ fun AppNavHost(
             EditCartScreen(
                 cartId = cartId,
                 onDismiss = { navController.popBackStack() },
-                onConfirm = { id, name, address, imageUrl, latitude, longitude ->
-                    profileViewModel.editCoffeeCart(id, name, address, imageUrl, latitude, longitude)
+                onConfirm = { id, name, address, imageUrl, placeId, latitude, longitude ->
+                    profileViewModel.editCoffeeCart(id, name, address, imageUrl, placeId, latitude, longitude)
                     navController.popBackStack()
                 }
             )

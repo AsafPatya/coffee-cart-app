@@ -39,10 +39,10 @@ class CoffeeCartRepository(
         carts
     }
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart {
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
         val cart = client.post("${ServerEnvironment.baseUrl}${Endpoints.CARTS}") {
             contentType(ContentType.Application.Json)
-            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl))
+            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl, placeId = placeId))
         }.body<CoffeeCartDto>().toModel()
         mutex.withLock {
             cachedCarts = null
@@ -55,12 +55,15 @@ class CoffeeCartRepository(
         name: String,
         address: String,
         imageUrl: String,
+        placeId: String?,
         latitude: Double?,
         longitude: Double?,
     ): Boolean {
         // The server always persists the full cart on PUT, so fetch current categories first —
         // otherwise this name/address/image-only edit would silently wipe them out.
-        val existingCategories = getCoffeeCarts().find { it.id == id }?.categories.orEmpty()
+        val existingCart = getCoffeeCarts().find { it.id == id }
+        val existingCategories = existingCart?.categories.orEmpty()
+        val existingOpeningHours = existingCart?.openingHours
         return updateCoffeeCartFull(
             CoffeeCart(
                 id = id,
@@ -70,6 +73,8 @@ class CoffeeCartRepository(
                 categories = existingCategories,
                 latitude = latitude,
                 longitude = longitude,
+                openingHours = existingOpeningHours,
+                placeId = placeId ?: existingCart?.placeId,
             )
         )
     }

@@ -75,11 +75,12 @@ internal fun CartSelectionBottomSheet(
 @Composable
 internal fun AddCartBottomSheet(
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String) -> Unit,
+    onConfirm: (name: String, address: String, imageUrl: String, placeId: String?) -> Unit,
 ) {
     var nameInput by remember { mutableStateOf("") }
     var addressInput by remember { mutableStateOf("") }
     var imageUrlInput by remember { mutableStateOf("https://picsum.photos/seed/100/200") }
+    var placeIdInput by remember { mutableStateOf("") }
 
     AppBottomSheet(onDismiss = onDismiss) {
         To_Header_Title(text = "Add Coffee Cart")
@@ -90,7 +91,9 @@ internal fun AddCartBottomSheet(
             address = addressInput,
             onAddressChange = { addressInput = it },
             imageUrl = imageUrlInput,
-            onImageUrlChange = { imageUrlInput = it }
+            onImageUrlChange = { imageUrlInput = it },
+            placeId = placeIdInput,
+            onPlaceIdChange = { placeIdInput = it }
         )
 
         Spacer(modifier = Modifier.height(Spacing.Medium.dp))
@@ -98,7 +101,7 @@ internal fun AddCartBottomSheet(
         Button(
             enabled = nameInput.trim().isNotEmpty() && addressInput.trim().isNotEmpty() && imageUrlInput.isNotEmpty(),
             onClick = {
-                onConfirm(nameInput, addressInput, imageUrlInput)
+                onConfirm(nameInput, addressInput, imageUrlInput, placeIdInput.trim().ifEmpty { null })
                 onDismiss()
             },
             modifier = Modifier.fillMaxWidth()
@@ -150,6 +153,6 @@ private fun CartSelectionBottomSheetPreview() {
 private fun AddCartBottomSheetPreview() {
     AddCartBottomSheet(
         onDismiss = {},
-        onConfirm = { _, _, _ -> }
+        onConfirm = { _, _, _, _ -> }
     )
 }

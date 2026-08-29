@@ -40,14 +40,15 @@ class PostgresCartStore {
         } > 0
     }
 
-    fun add(name: String, address: String, imageUrl: String): CoffeeCart {
-        val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl)
+    fun add(name: String, address: String, imageUrl: String, placeId: String? = null): CoffeeCart {
+        val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl, placeId = placeId)
         transaction {
             CoffeeCartsTable.insert {
                 it[id] = cart.id
                 it[CoffeeCartsTable.name] = cart.name
                 it[CoffeeCartsTable.address] = cart.address
                 it[CoffeeCartsTable.imageUrl] = cart.imageUrl
+                it[CoffeeCartsTable.placeId] = cart.placeId
             }
         }
         return cart

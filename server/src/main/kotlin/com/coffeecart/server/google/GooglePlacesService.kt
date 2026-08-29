@@ -14,14 +14,11 @@ class GooglePlacesService(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun fetchOpeningHours(cartName: String, address: String, existingPlaceId: String? = null): String? {
-        if (apiKey.isNullOrBlank()) {
+    suspend fun fetchOpeningHours(placeId: String): String? {
+        if (apiKey.isNullOrBlank() || placeId.isBlank()) {
             return null
         }
         try {
-            val placeId = existingPlaceId ?: findPlaceId(cartName, address)
-            if (placeId.isNullOrBlank()) return null
-
             val url = "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=opening_hours&key=$apiKey"
             val responseText = client.get(url).bodyAsText()
             val jsonObj = json.parseToJsonElement(responseText).jsonObject
@@ -33,24 +30,7 @@ class GooglePlacesService(
                 return weekdayTextArray.joinToString("\n") { it.jsonPrimitive.content }
             }
         } catch (e: Exception) {
-            System.err.println("Failed to fetch Google Places opening hours: ${e.message}")
-        }
-        return null
-    }
-
-    private suspend fun findPlaceId(name: String, address: String): String? {
-        if (apiKey.isNullOrBlank()) return null
-        try {
-            val query = "$name $address".replace(" ", "+")
-            val url = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=$query&inputtype=textquery&fields=place_id&key=$apiKey"
-            val responseText = client.get(url).bodyAsText()
-            val jsonObj = json.parseToJsonElement(responseText).jsonObject
-            val candidates = jsonObj["candidates"]?.jsonArray
-            if (candidates != null && candidates.isNotEmpty()) {
-                return candidates[0].jsonObject["place_id"]?.jsonPrimitive?.content
-            }
-        } catch (e: Exception) {
-            System.err.println("Failed to find Google Place ID: ${e.message}")
+            System.err.println("Failed to fetch Google Places opening hours for placeId=$placeId: ${e.message}")
         }
         return null
     }

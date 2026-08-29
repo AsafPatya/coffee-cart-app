@@ -60,11 +60,11 @@ fun ProfileScreen(
             dialogMessage = dialogMessage,
             cartsList = cartsList,
             onGetClick = { viewModel.loadCarts() },
-            onConfirmAdd = { name, address, imageUrl ->
-                viewModel.addCoffeeCart(name, address, imageUrl)
+            onConfirmAdd = { name, address, imageUrl, placeId ->
+                viewModel.addCoffeeCart(name, address, imageUrl, placeId)
             },
-            onConfirmEdit = { id, name, address, imageUrl, latitude, longitude ->
-                viewModel.editCoffeeCart(id, name, address, imageUrl, latitude, longitude)
+            onConfirmEdit = { id, name, address, imageUrl, placeId, latitude, longitude ->
+                viewModel.editCoffeeCart(id, name, address, imageUrl, placeId, latitude, longitude)
             },
             onConfirmDelete = { id -> viewModel.removeCoffeeCart(id) },
             onDismissDialog = { viewModel.dismissDialog() },
@@ -104,8 +104,8 @@ fun ProfileContent(
     dialogMessage: String?,
     cartsList: List<CoffeeCart>,
     onGetClick: () -> Unit,
-    onConfirmAdd: (String, String, String) -> Unit,
-    onConfirmEdit: (String, String, String, String, Double?, Double?) -> Unit,
+    onConfirmAdd: (String, String, String, String?) -> Unit,
+    onConfirmEdit: (String, String, String, String, String?, Double?, Double?) -> Unit,
     onConfirmDelete: (String) -> Unit,
     onDismissDialog: () -> Unit,
     onAddCategoryClick: (String) -> Unit,
@@ -255,8 +255,8 @@ fun ProfileContent(
         if (showAddDialog) {
             AddCartBottomSheet(
                 onDismiss = { showAddDialog = false },
-                onConfirm = { name, address, imageUrl ->
-                    onConfirmAdd(name, address, imageUrl)
+                onConfirm = { name, address, imageUrl, placeId ->
+                    onConfirmAdd(name, address, imageUrl, placeId)
                     showAddDialog = false
                 }
             )
@@ -284,8 +284,8 @@ private fun ProfileScreenPreview() {
         dialogMessage = null,
         cartsList = emptyList(),
         onGetClick = {},
-        onConfirmAdd = { _, _, _ -> },
-        onConfirmEdit = { _, _, _, _, _, _ -> },
+        onConfirmAdd = { _, _, _, _ -> },
+        onConfirmEdit = { _, _, _, _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
         onAddCategoryClick = {},
@@ -306,8 +306,8 @@ private fun ProfileScreenWithDialogPreview() {
             CoffeeCart("2", "Riverside Brew", "456 River Rd", "")
         ),
         onGetClick = {},
-        onConfirmAdd = { _, _, _ -> },
-        onConfirmEdit = { _, _, _, _, _, _ -> },
+        onConfirmAdd = { _, _, _, _ -> },
+        onConfirmEdit = { _, _, _, _, _, _, _ -> },
         onConfirmDelete = {},
         onDismissDialog = {},
         onAddCategoryClick = {},

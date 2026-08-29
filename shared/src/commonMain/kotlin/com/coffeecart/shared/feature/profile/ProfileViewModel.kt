@@ -40,7 +40,7 @@ class ProfileViewModel(
         _dialogMessage.value = null
     }
 
-    fun addCoffeeCart(name: String, address: String, imageUrl: String) {
+    fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String? = null) {
         viewModelScope.launch {
             try {
                 _dialogMessage.value = "Adding coffee cart..."
@@ -48,6 +48,7 @@ class ProfileViewModel(
                     name = name.trim().ifEmpty { "Default Cart" },
                     address = address.trim().ifEmpty { "Default Street" },
                     imageUrl = imageUrl.trim().ifEmpty { "https://picsum.photos/seed/100/200" },
+                    placeId = placeId?.trim()?.ifEmpty { null },
                 )
                 _dialogMessage.value = "Successfully Added Coffee Cart!\n\nID: ${cart.id}\nName: ${cart.name}\n📍 ${cart.address}"
                 loadCarts()
@@ -84,6 +85,7 @@ class ProfileViewModel(
         name: String,
         address: String,
         imageUrl: String,
+        placeId: String? = null,
         latitude: Double? = null,
         longitude: Double? = null,
     ) {
@@ -100,6 +102,7 @@ class ProfileViewModel(
                     name = name.trim().ifEmpty { "Updated Cart" },
                     address = address.trim().ifEmpty { "Updated Street" },
                     imageUrl = imageUrl.trim().ifEmpty { "https://picsum.photos/seed/100/200" },
+                    placeId = placeId?.trim()?.ifEmpty { null },
                     latitude = latitude,
                     longitude = longitude,
                 )

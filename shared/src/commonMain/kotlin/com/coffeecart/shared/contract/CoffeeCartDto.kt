@@ -100,4 +100,5 @@ data class CreateCoffeeCartRequest(
     val name: String,
     val address: String,
     val imageUrl: String,
+    val placeId: String? = null,
 )

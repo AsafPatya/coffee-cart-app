@@ -23,6 +23,8 @@ fun CartDetailsForm(
     onAddressChange: (String) -> Unit,
     imageUrl: String,
     onImageUrlChange: (String) -> Unit,
+    placeId: String = "",
+    onPlaceIdChange: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -40,6 +42,13 @@ fun CartDetailsForm(
             value = address,
             onValueChange = onAddressChange,
             label = { Text("Address") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = placeId,
+            onValueChange = onPlaceIdChange,
+            label = { Text("Google Place ID (Optional)") },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )

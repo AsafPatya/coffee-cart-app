@@ -49,7 +49,7 @@ import org.koin.compose.koinInject
 internal fun EditCartScreen(
     cartId: String,
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String, Double?, Double?) -> Unit,
+    onConfirm: (id: String, name: String, address: String, imageUrl: String, placeId: String?, latitude: Double?, longitude: Double?) -> Unit,
     detailsViewModel: CoffeeCartDetailsViewModel = koinInject(),
 ) {
     val uiState by detailsViewModel.uiState.collectAsState()
@@ -92,11 +92,12 @@ internal fun EditCartScreen(
 private fun EditCartScreenContent(
     cart: CoffeeCart,
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String, Double?, Double?) -> Unit,
+    onConfirm: (id: String, name: String, address: String, imageUrl: String, placeId: String?, latitude: Double?, longitude: Double?) -> Unit,
 ) {
     var nameInput by remember { mutableStateOf(cart.name) }
     var addressInput by remember { mutableStateOf(cart.address) }
     var imageUrlInput by remember { mutableStateOf(cart.imageUrl) }
+    var placeIdInput by remember { mutableStateOf(cart.placeId.orEmpty()) }
     var latitude by remember { mutableStateOf(cart.latitude) }
     var longitude by remember { mutableStateOf(cart.longitude) }
 
@@ -129,6 +130,8 @@ private fun EditCartScreenContent(
             onAddressChange = { addressInput = it },
             imageUrl = imageUrlInput,
             onImageUrlChange = { imageUrlInput = it },
+            placeId = placeIdInput,
+            onPlaceIdChange = { placeIdInput = it },
         )
 
         if (launchLocationPicker != null) {
@@ -179,7 +182,7 @@ private fun EditCartScreenContent(
         Button(
             enabled = nameInput.trim().isNotEmpty() && addressInput.trim().isNotEmpty() && imageUrlInput.isNotEmpty(),
             onClick = {
-                onConfirm(cart.id, nameInput, addressInput, imageUrlInput, latitude, longitude)
+                onConfirm(cart.id, nameInput, addressInput, imageUrlInput, placeIdInput.trim().ifEmpty { null }, latitude, longitude)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -194,7 +197,7 @@ private fun EditCartScreenPreview() {
     EditCartScreenContent(
         cart = CoffeeCart("1", "Downtown Espresso Cart", "123 Main St", ""),
         onDismiss = {},
-        onConfirm = { _, _, _, _, _, _ -> }
+        onConfirm = { _, _, _, _, _, _, _ -> }
     )
 }
 

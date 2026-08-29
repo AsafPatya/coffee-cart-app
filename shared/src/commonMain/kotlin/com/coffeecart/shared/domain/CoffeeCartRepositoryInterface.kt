@@ -4,12 +4,13 @@ import com.coffeecart.shared.model.CoffeeCart
 
 interface CoffeeCartRepositoryInterface {
     suspend fun getCoffeeCarts(): List<CoffeeCart>
-    suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart
+    suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String? = null): CoffeeCart
     suspend fun updateCoffeeCart(
         id: String,
         name: String,
         address: String,
         imageUrl: String,
+        placeId: String? = null,
         latitude: Double? = null,
         longitude: Double? = null,
     ): Boolean

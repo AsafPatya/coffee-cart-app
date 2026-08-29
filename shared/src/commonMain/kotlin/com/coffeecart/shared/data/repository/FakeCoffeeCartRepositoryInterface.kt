@@ -135,7 +135,7 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
         return carts.toList()
     }
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String): CoffeeCart {
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
         delay(200)
         val nextId = ((carts.mapNotNull { it.id.toIntOrNull() }.maxOrNull() ?: 0) + 1).toString()
         val newCart = CoffeeCart(
@@ -143,6 +143,7 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
             name = name,
             address = address,
             imageUrl = imageUrl,
+            placeId = placeId,
         )
         carts.add(newCart)
         return newCart
@@ -153,13 +154,25 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
         name: String,
         address: String,
         imageUrl: String,
+        placeId: String?,
         latitude: Double?,
         longitude: Double?,
     ): Boolean {
         delay(200)
         val idx = carts.indexOfFirst { it.id == id }
         if (idx == -1) return false
-        carts[idx] = CoffeeCart(id = id, name = name, address = address, imageUrl = imageUrl, latitude = latitude, longitude = longitude)
+        val existing = carts[idx]
+        carts[idx] = CoffeeCart(
+            id = id,
+            name = name,
+            address = address,
+            imageUrl = imageUrl,
+            categories = existing.categories,
+            latitude = latitude,
+            longitude = longitude,
+            openingHours = existing.openingHours,
+            placeId = placeId ?: existing.placeId,
+        )
         return true
     }
 
