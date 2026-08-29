@@ -54,6 +54,7 @@ fun AppNavHost(
             CoffeeCartDetailsScreen(
                 cartId = cartId,
                 onCartNameLoaded = onCartNameLoaded,
+                onBackClick = { navController.popBackStack() },
                 onCtaClick = { id -> navController.navigate(Routes.coffeeCartMenuCategories(id)) }
             )
         }

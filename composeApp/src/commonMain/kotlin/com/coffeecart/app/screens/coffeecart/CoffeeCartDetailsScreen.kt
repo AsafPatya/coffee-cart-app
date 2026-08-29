@@ -1,6 +1,7 @@
 package com.coffeecart.app.screens.coffeecart
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.BorderWidth
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
+import com.coffeecart.app.ui.buttons.OverlayBackButton
 import com.coffeecart.app.ui.location.CoffeeCartMap
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsUiState
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
@@ -64,6 +66,7 @@ import org.koin.compose.koinInject
 fun CoffeeCartDetailsScreen(
     cartId: String,
     onCartNameLoaded: (String) -> Unit,
+    onBackClick: () -> Unit,
     onCtaClick: (String) -> Unit,
     viewModel: CoffeeCartDetailsViewModel = koinInject(),
 ) {
@@ -83,6 +86,7 @@ fun CoffeeCartDetailsScreen(
 
     CoffeeCartDetailsContent(
         uiState = uiState,
+        onBackClick = onBackClick,
         onCtaClick = { onCtaClick(cartId) },
     )
 }
@@ -90,6 +94,7 @@ fun CoffeeCartDetailsScreen(
 @Composable
 fun CoffeeCartDetailsContent(
     uiState: CoffeeCartDetailsUiState,
+    onBackClick: () -> Unit,
     onCtaClick: () -> Unit,
 ) {
     Box(
@@ -114,6 +119,7 @@ fun CoffeeCartDetailsContent(
             is CoffeeCartDetailsUiState.Success -> {
                 CoffeeCartDetailsSuccessContent(
                     cart = uiState.cart,
+                    onBackClick = onBackClick,
                     onCtaClick = onCtaClick,
                 )
             }
@@ -124,6 +130,7 @@ fun CoffeeCartDetailsContent(
 @Composable
 private fun CoffeeCartDetailsSuccessContent(
     cart: CoffeeCart,
+    onBackClick: () -> Unit,
     onCtaClick: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -133,7 +140,11 @@ private fun CoffeeCartDetailsSuccessContent(
             .fillMaxSize()
             .verticalScroll(scrollState),
     ) {
-        CoffeeCartHeaderImage(imageUrl = cart.imageUrl, cartName = cart.name)
+        CoffeeCartHeaderImage(
+            imageUrl = cart.imageUrl,
+            cartName = cart.name,
+            onBackClick = onBackClick,
+        )
 
         Surface(
             modifier = Modifier
@@ -201,15 +212,34 @@ private fun CoffeeCartDetailsSuccessContent(
 }
 
 @Composable
-private fun CoffeeCartHeaderImage(imageUrl: String, cartName: String) {
-    if (imageUrl.isNotEmpty()) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = "$cartName banner",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(Spacing.HeroHeight.dp),
-            contentScale = ContentScale.Crop,
+private fun CoffeeCartHeaderImage(
+    imageUrl: String,
+    cartName: String,
+    onBackClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Spacing.HeroHeight.dp)
+    ) {
+        if (imageUrl.isNotEmpty()) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "$cartName banner",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            )
+        }
+
+        OverlayBackButton(
+            onClick = onBackClick,
+            modifier = Modifier.align(Alignment.TopStart),
         )
     }
 }
@@ -342,6 +372,7 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
                 longitude = 34.7818,
             )
         ),
+        onBackClick = {},
         onCtaClick = {}
     )
 }
@@ -361,6 +392,7 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                     longitude = 34.7818,
                 )
             ),
+            onBackClick = {},
             onCtaClick = {}
         )
     }
@@ -371,6 +403,7 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
 private fun CoffeeCartDetailsScreenLoadingPreview() {
     CoffeeCartDetailsContent(
         uiState = CoffeeCartDetailsUiState.Loading,
+        onBackClick = {},
         onCtaClick = {}
     )
 }
@@ -380,6 +413,7 @@ private fun CoffeeCartDetailsScreenLoadingPreview() {
 private fun CoffeeCartDetailsScreenErrorPreview() {
     CoffeeCartDetailsContent(
         uiState = CoffeeCartDetailsUiState.Error("Failed to load coffee cart detail."),
+        onBackClick = {},
         onCtaClick = {}
     )
 }

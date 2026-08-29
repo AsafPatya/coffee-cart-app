@@ -29,8 +29,7 @@ fun TopBar(
     topBarTitle: String?,
     onBackClick: () -> Unit,
 ) {
-    if (currentRoute == Routes.COFFEE_CART_DETAILS ||
-        currentRoute == Routes.COFFEE_CART_MENU_CATEGORIES ||
+    if (currentRoute == Routes.COFFEE_CART_MENU_CATEGORIES ||
         currentRoute == Routes.COFFEE_CART_CATEGORY_PRODUCTS ||
         currentRoute == Routes.COFFEE_CART_ADD_CATEGORY_WIZARD ||
         currentRoute == Routes.COFFEE_CART_EDIT ||
