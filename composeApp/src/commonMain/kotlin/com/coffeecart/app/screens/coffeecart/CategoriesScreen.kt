@@ -48,7 +48,7 @@ import org.koin.compose.koinInject
  * Screen displaying the menu categories of the selected coffee cart as a two-column square grid.
  */
 @Composable
-fun CoffeeCartMenuCategoriesScreen(
+fun CategoriesScreen(
     cartId: String,
     onCategoryClick: (String) -> Unit,
     viewModel: CoffeeCartDetailsViewModel = koinInject(),

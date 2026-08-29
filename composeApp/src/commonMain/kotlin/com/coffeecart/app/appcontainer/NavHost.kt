@@ -13,10 +13,10 @@ import androidx.navigation.compose.composable
 import androidx.savedstate.read
 import com.coffeecart.app.screens.home.HomeScreen
 import com.coffeecart.app.screens.MyOrderScreen
-import com.coffeecart.app.screens.coffeecart.CoffeeCartCategoryProductsScreen
+import com.coffeecart.app.screens.coffeecart.ProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
-import com.coffeecart.app.screens.coffeecart.CoffeeCartMenuCategoriesScreen
+import com.coffeecart.app.screens.coffeecart.CategoriesScreen
 import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
 import com.coffeecart.app.screens.profile.CoffeeCartEditCategoryScreen
 import com.coffeecart.app.screens.profile.EditCartScreen
@@ -61,7 +61,7 @@ fun AppNavHost(
             val cartId = backStackEntry.arguments?.read {
                 getStringOrNull("cartId")
             } ?: ""
-            CoffeeCartMenuCategoriesScreen(
+            CategoriesScreen(
                 cartId = cartId,
                 onCategoryClick = { categoryName ->
                     navController.navigate(Routes.coffeeCartCategoryProducts(cartId, categoryName))
@@ -75,7 +75,7 @@ fun AppNavHost(
             val categoryName = backStackEntry.arguments?.read {
                 getStringOrNull("categoryName")
             } ?: ""
-            CoffeeCartCategoryProductsScreen(cartId = cartId, categoryName = categoryName)
+            ProductsScreen(cartId = cartId, categoryName = categoryName)
         }
         composable(Routes.COFFEE_CART_ADD_CATEGORY_WIZARD) { backStackEntry ->
             val cartId = backStackEntry.arguments?.read {
@@ -92,7 +92,7 @@ fun AppNavHost(
             val cartId = backStackEntry.arguments?.read {
                 getStringOrNull("cartId")
             } ?: ""
-            CoffeeCartMenuCategoriesScreen(
+            CategoriesScreen(
                 cartId = cartId,
                 onCategoryClick = { categoryName ->
                     navController.navigate(Routes.coffeeCartEditCategory(cartId, categoryName))
