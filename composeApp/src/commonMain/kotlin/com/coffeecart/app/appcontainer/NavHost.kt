@@ -161,12 +161,8 @@ fun AppNavHost(
             )
         }
         composable(Routes.COFFEE_CART_ADD_FROM_GOOGLE) {
-            val profileViewModel: ProfileViewModel = koinInject()
             AddCartFromGoogleScreen(
-                onSuccess = { navController.popBackStack() },
-                onConfirmAdd = { name, address, imageUrl, placeId ->
-                    profileViewModel.addCoffeeCart(name, address, imageUrl, placeId)
-                }
+                onSuccess = { navController.popBackStack() }
             )
         }
         composable(Routes.ORDER_DASHBOARD) { backStackEntry ->

@@ -40,8 +40,8 @@ class PostgresCartStore {
         } > 0
     }
 
-    fun add(name: String, address: String, imageUrl: String, placeId: String? = null): CoffeeCart {
-        val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl, placeId = placeId)
+    fun add(name: String, address: String, imageUrl: String, placeId: String? = null, phone: String? = null): CoffeeCart {
+        val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl, placeId = placeId, phone = phone)
         transaction {
             CoffeeCartsTable.insert {
                 it[id] = cart.id
@@ -49,6 +49,7 @@ class PostgresCartStore {
                 it[CoffeeCartsTable.address] = cart.address
                 it[CoffeeCartsTable.imageUrl] = cart.imageUrl
                 it[CoffeeCartsTable.placeId] = cart.placeId
+                it[CoffeeCartsTable.phone] = cart.phone
             }
         }
         return cart
@@ -77,6 +78,7 @@ class PostgresCartStore {
             it[longitude] = cart.longitude
             it[openingHours] = cart.openingHours.joinToString("\n").ifBlank { null }
             it[placeId] = cart.placeId
+            it[phone] = cart.phone
         } > 0
     }
 
@@ -131,5 +133,6 @@ class PostgresCartStore {
         paymentAccountVerified = this[CoffeeCartsTable.paymentAccountVerified],
         openingHours = this[CoffeeCartsTable.openingHours]?.split("\n")?.filter { it.isNotBlank() } ?: emptyList(),
         placeId = this[CoffeeCartsTable.placeId],
+        phone = this[CoffeeCartsTable.phone],
     )
 }

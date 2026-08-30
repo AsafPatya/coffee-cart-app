@@ -6,7 +6,7 @@ import com.coffeecart.shared.model.CoffeeCart
 interface CoffeeCartRepositoryInterface {
     suspend fun getCoffeeCarts(): List<CoffeeCart>
     suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto?
-    suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String? = null): CoffeeCart
+    suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String? = null, phone: String? = null): CoffeeCart
     suspend fun updateCoffeeCart(
         id: String,
         name: String,

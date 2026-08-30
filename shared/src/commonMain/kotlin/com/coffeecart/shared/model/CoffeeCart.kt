@@ -15,4 +15,5 @@ data class CoffeeCart(
     val paymentAccountVerified: Boolean = false,
     val openingHours: List<String> = emptyList(),
     val placeId: String? = null,
+    val phone: String? = null,
 )

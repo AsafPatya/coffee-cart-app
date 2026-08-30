@@ -139,7 +139,7 @@ fun Application.module() {
 
         post(Endpoints.CARTS) {
             val request = call.receive<CreateCoffeeCartRequest>()
-            var cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl, placeId = request.placeId)
+            var cart = cartStore.add(name = request.name, address = request.address, imageUrl = request.imageUrl, placeId = request.placeId, phone = request.phone)
             val placeId = request.placeId
             println("[Cart API] Creating cart with placeId=$placeId")
             if (!placeId.isNullOrBlank()) {
@@ -150,6 +150,7 @@ fun Application.module() {
                         openingHours = if (details.openingHours.isNotEmpty()) details.openingHours else cart.openingHours,
                         latitude = details.latitude ?: cart.latitude,
                         longitude = details.longitude ?: cart.longitude,
+                        phone = details.phoneNumber ?: cart.phone,
                     )
                     cartStore.updateFull(updatedCart)
                     cart = updatedCart
@@ -179,6 +180,7 @@ fun Application.module() {
             var hours = model.openingHours
             var lat = model.latitude
             var lng = model.longitude
+            var phone = model.phone
             println("[Cart API] Updating cart id=$id with placeId=$placeId")
             if (!placeId.isNullOrBlank()) {
                 val details = googlePlacesService.fetchPlaceDetails(placeId)
@@ -187,9 +189,10 @@ fun Application.module() {
                     if (details.openingHours.isNotEmpty()) hours = details.openingHours
                     if (details.latitude != null) lat = details.latitude
                     if (details.longitude != null) lng = details.longitude
+                    if (details.phoneNumber != null) phone = details.phoneNumber
                 }
             }
-            val cartToUpdate = model.copy(openingHours = hours, latitude = lat, longitude = lng)
+            val cartToUpdate = model.copy(openingHours = hours, latitude = lat, longitude = lng, phone = phone)
             val updated = id != null && cartStore.updateFull(cartToUpdate)
             call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }

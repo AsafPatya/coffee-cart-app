@@ -21,7 +21,7 @@ private class SucceedingRepositoryInterface(private val carts: List<CoffeeCart>)
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = carts
     override suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto? = error("Not used in this test suite")
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?, phone: String?): CoffeeCart {
         error("Not used in this test suite")
     }
 
@@ -58,7 +58,7 @@ private class FailingRepositoryInterface(private val exception: Exception) : Cof
     override suspend fun getCoffeeCarts(): List<CoffeeCart> = throw exception
     override suspend fun fetchPlaceDetails(placeId: String): PlaceDetailsDto? = throw exception
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart = throw exception
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?, phone: String?): CoffeeCart = throw exception
 
     override suspend fun updateCoffeeCart(
         id: String,

@@ -49,10 +49,10 @@ class CoffeeCartRepository(
         }
     }
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?, phone: String?): CoffeeCart {
         val cart = client.post("${ServerEnvironment.baseUrl}${Endpoints.CARTS}") {
             contentType(ContentType.Application.Json)
-            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl, placeId = placeId))
+            setBody(CreateCoffeeCartRequest(name = name, address = address, imageUrl = imageUrl, placeId = placeId, phone = phone))
         }.body<CoffeeCartDto>().toModel()
         mutex.withLock {
             cachedCarts = null

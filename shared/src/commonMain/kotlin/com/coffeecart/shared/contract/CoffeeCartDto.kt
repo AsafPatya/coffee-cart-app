@@ -32,6 +32,7 @@ data class CoffeeCartDto(
     val longitude: Double? = null,
     val openingHours: List<String> = emptyList(),
     val placeId: String? = null,
+    val phone: String? = null,
 )
 
 fun ProductDto.toModel(): Product = Product(
@@ -72,6 +73,7 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     longitude = longitude,
     openingHours = openingHours,
     placeId = placeId,
+    phone = phone,
 )
 
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
@@ -84,6 +86,7 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     longitude = longitude,
     openingHours = openingHours,
     placeId = placeId,
+    phone = phone,
 )
 
 @Serializable
@@ -101,4 +104,5 @@ data class CreateCoffeeCartRequest(
     val address: String,
     val imageUrl: String,
     val placeId: String? = null,
+    val phone: String? = null,
 )

@@ -22,11 +22,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,26 +38,60 @@ import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.app.ui.location.CoffeeCartMap
 import com.coffeecart.shared.contract.PlaceDetailsDto
-import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
-import kotlinx.coroutines.launch
+import com.coffeecart.shared.feature.profile.AddCartFromGoogleViewModel
 import org.koin.compose.koinInject
 
 @Composable
 fun AddCartFromGoogleScreen(
-    repository: CoffeeCartRepositoryInterface = koinInject(),
+    viewModel: AddCartFromGoogleViewModel = koinInject(),
     onSuccess: () -> Unit,
-    onConfirmAdd: (name: String, address: String, imageUrl: String, placeId: String?) -> Unit,
 ) {
-    var placeIdInput by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
-    var fetchedDetails by remember { mutableStateOf<PlaceDetailsDto?>(null) }
-    var isFetching by remember { mutableStateOf(false) }
-    var statusMessage by remember { mutableStateOf<String?>(null) }
-    var isFetchedSuccess by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val placeIdInput by viewModel.placeIdInput.collectAsState()
+    val name by viewModel.name.collectAsState()
+    val address by viewModel.address.collectAsState()
+    val imageUrl by viewModel.imageUrl.collectAsState()
+    val fetchedDetails by viewModel.fetchedDetails.collectAsState()
+    val isFetching by viewModel.isFetching.collectAsState()
+    val statusMessage by viewModel.statusMessage.collectAsState()
+    val isFetchedSuccess by viewModel.isFetchedSuccess.collectAsState()
 
+    AddCartFromGoogleContent(
+        placeIdInput = placeIdInput,
+        onPlaceIdInputChange = { viewModel.updatePlaceIdInput(it) },
+        name = name,
+        onNameChange = { viewModel.updateName(it) },
+        address = address,
+        onAddressChange = { viewModel.updateAddress(it) },
+        imageUrl = imageUrl,
+        onImageUrlChange = { viewModel.updateImageUrl(it) },
+        fetchedDetails = fetchedDetails,
+        isFetching = isFetching,
+        statusMessage = statusMessage,
+        isFetchedSuccess = isFetchedSuccess,
+        onFetchClick = { viewModel.fetchPlaceDetails() },
+        onSaveClick = {
+            viewModel.saveCoffeeCart(onSuccess)
+        }
+    )
+}
+
+@Composable
+fun AddCartFromGoogleContent(
+    placeIdInput: String,
+    onPlaceIdInputChange: (String) -> Unit,
+    name: String,
+    onNameChange: (String) -> Unit,
+    address: String,
+    onAddressChange: (String) -> Unit,
+    imageUrl: String,
+    onImageUrlChange: (String) -> Unit,
+    fetchedDetails: PlaceDetailsDto?,
+    isFetching: Boolean,
+    statusMessage: String?,
+    isFetchedSuccess: Boolean,
+    onFetchClick: () -> Unit,
+    onSaveClick: () -> Unit,
+) {
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier
@@ -89,40 +120,14 @@ fun AddCartFromGoogleScreen(
             ) {
                 OutlinedTextField(
                     value = placeIdInput,
-                    onValueChange = { placeIdInput = it },
+                    onValueChange = onPlaceIdInputChange,
                     label = { Text("Google Place ID") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
 
                 Button(
-                    onClick = {
-                        if (placeIdInput.isNotBlank()) {
-                            isFetching = true
-                            statusMessage = null
-                            coroutineScope.launch {
-                                try {
-                                    val details = repository.fetchPlaceDetails(placeIdInput)
-                                    if (details != null) {
-                                        fetchedDetails = details
-                                        details.name?.let { name = it }
-                                        details.formattedAddress?.let { address = it }
-                                        details.photoUrls.firstOrNull()?.let { imageUrl = it }
-                                        isFetchedSuccess = true
-                                        statusMessage = "Successfully fetched Google Place info!"
-                                    } else {
-                                        fetchedDetails = null
-                                        statusMessage = "Failed to find details for Place ID."
-                                    }
-                                } catch (e: Exception) {
-                                    fetchedDetails = null
-                                    statusMessage = "Error fetching details: ${e.message}"
-                                } finally {
-                                    isFetching = false
-                                }
-                            }
-                        }
-                    },
+                    onClick = onFetchClick,
                     enabled = !isFetching && placeIdInput.isNotBlank()
                 ) {
                     if (isFetching) {
@@ -155,24 +160,19 @@ fun AddCartFromGoogleScreen(
 
             CartDetailsForm(
                 name = name,
-                onNameChange = { name = it },
+                onNameChange = onNameChange,
                 address = address,
-                onAddressChange = { address = it },
+                onAddressChange = onAddressChange,
                 imageUrl = imageUrl,
-                onImageUrlChange = { imageUrl = it },
+                onImageUrlChange = onImageUrlChange,
                 placeId = placeIdInput,
-                onPlaceIdChange = { placeIdInput = it }
+                onPlaceIdChange = onPlaceIdInputChange
             )
 
             Spacer(modifier = Modifier.height(Spacing.Large.dp))
 
             Button(
-                onClick = {
-                    if (name.isNotBlank() && address.isNotBlank()) {
-                        onConfirmAdd(name.trim(), address.trim(), imageUrl.trim(), placeIdInput.trim().ifBlank { null })
-                        onSuccess()
-                    }
-                },
+                onClick = onSaveClick,
                 modifier = Modifier.fillMaxWidth(),
                 enabled = name.isNotBlank() && address.isNotBlank()
             ) {
@@ -337,9 +337,21 @@ fun FetchedPlaceDetailsCard(
 @Preview
 @Composable
 private fun AddCartFromGoogleScreenPreview() {
-    AddCartFromGoogleScreen(
-        onSuccess = {},
-        onConfirmAdd = { _, _, _, _ -> }
+    AddCartFromGoogleContent(
+        placeIdInput = "",
+        onPlaceIdInputChange = {},
+        name = "Central Coffee Cart",
+        onNameChange = {},
+        address = "123 Main St",
+        onAddressChange = {},
+        imageUrl = "https://example.com/image.jpg",
+        onImageUrlChange = {},
+        fetchedDetails = null,
+        isFetching = false,
+        statusMessage = null,
+        isFetchedSuccess = false,
+        onFetchClick = {},
+        onSaveClick = {}
     )
 }
 

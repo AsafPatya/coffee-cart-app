@@ -164,6 +164,16 @@ private fun CoffeeCartDetailsSuccessContent(
                     fontWeight = FontWeight.Bold,
                 )
 
+                cart.phone?.takeIf { it.isNotBlank() }?.let { phone ->
+                    Spacer(modifier = Modifier.height(Spacing.XXSmall.dp))
+                    Text(
+                        text = phone,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(Spacing.Small.dp))
 
                 CoffeeCartBadgesRow()
@@ -377,6 +387,7 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
                 imageUrl = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
                 latitude = 32.0853,
                 longitude = 34.7818,
+                phone = "+1 555-0199",
             )
         ),
         onBackClick = {},
@@ -397,6 +408,7 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                     imageUrl = "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
                     latitude = 32.0853,
                     longitude = 34.7818,
+                    phone = "050-1234567",
                 )
             ),
             onBackClick = {},

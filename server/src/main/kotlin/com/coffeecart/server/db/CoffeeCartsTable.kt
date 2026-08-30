@@ -14,6 +14,7 @@ object CoffeeCartsTable : Table("coffee_carts") {
     val paymentAccountVerified = bool("payment_account_verified").default(false)
     val openingHours = text("opening_hours").nullable()
     val placeId = varchar("place_id", 128).nullable()
+    val phone = varchar("phone", 64).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

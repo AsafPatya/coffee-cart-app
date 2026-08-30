@@ -148,7 +148,7 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
         )
     }
 
-    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?): CoffeeCart {
+    override suspend fun addCoffeeCart(name: String, address: String, imageUrl: String, placeId: String?, phone: String?): CoffeeCart {
         delay(200)
         val nextId = ((carts.mapNotNull { it.id.toIntOrNull() }.maxOrNull() ?: 0) + 1).toString()
         val newCart = CoffeeCart(
@@ -157,6 +157,7 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
             address = address,
             imageUrl = imageUrl,
             placeId = placeId,
+            phone = phone,
         )
         carts.add(newCart)
         return newCart

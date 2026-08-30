@@ -14,6 +14,7 @@ import com.coffeecart.shared.feature.myorder.MyOrderViewModel
 import com.coffeecart.shared.feature.orderdashboard.OrderDashboardViewModel
 import com.coffeecart.shared.feature.profile.ProfileViewModel
 import com.coffeecart.shared.feature.profile.CartMediaPickerViewModel
+import com.coffeecart.shared.feature.profile.AddCartFromGoogleViewModel
 import com.coffeecart.shared.feature.appcontainer.AppContainerViewModel
 import com.coffeecart.shared.feature.products.ProductsViewModel
 import io.ktor.client.HttpClient
@@ -40,6 +41,7 @@ val coffeeCartModule = module {
     factory { CoffeeCartDetailsViewModel(get(), get()) }
     factory { ProfileViewModel(get()) }
     factory { CartMediaPickerViewModel(get()) }
+    factory { AddCartFromGoogleViewModel(get()) }
     factory { OrderDashboardViewModel(get()) }
     factory { MyOrderViewModel(get(), get(), get()) }
     factory { AppContainerViewModel(get()) }
