@@ -17,23 +17,30 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,13 +48,16 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strBasedOnReviews
 import coffeecart.composeapp.generated.resources.strOpenHours
+import coffeecart.composeapp.generated.resources.strCallNow
 import coffeecart.composeapp.generated.resources.strOurImagesGallery
 import coffeecart.composeapp.generated.resources.strStartYourOrderNow
 import coffeecart.composeapp.generated.resources.strWeAreOnTheMap
@@ -138,6 +148,9 @@ private fun CoffeeCartDetailsSuccessContent(
     onCtaClick: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
+    val uriHandler = LocalUriHandler.current
+    var showCallConfirmDialog by remember { mutableStateOf(false) }
+    var phoneToCall by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -166,16 +179,32 @@ private fun CoffeeCartDetailsSuccessContent(
                     text = cart.name,
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 cart.phone?.takeIf { it.isNotBlank() }?.let { phone ->
                     Spacer(modifier = Modifier.height(Spacing.XXSmall.dp))
-                    Text(
-                        text = phone,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.Medium,
-                    )
+
+                    OutlinedButton(
+                        onClick = {
+                            phoneToCall = phone
+                            showCallConfirmDialog = true
+                        },
+                        modifier = Modifier.padding(vertical = Spacing.XXSmall.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Phone,
+                            contentDescription = "Phone icon",
+                            modifier = Modifier.size(Spacing.Large.dp)
+                        )
+                        Spacer(modifier = Modifier.width(Spacing.Small.dp))
+                        Text(
+                            text = stringResource(Res.string.strCallNow),
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(Spacing.Small.dp))
@@ -230,6 +259,59 @@ private fun CoffeeCartDetailsSuccessContent(
         contentAlignment = Alignment.BottomCenter,
     ) {
         CoffeeCartStartOrderButton(onClick = onCtaClick)
+    }
+
+    if (showCallConfirmDialog && phoneToCall != null) {
+        val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+        val dialogTitle = if (isRtl) "לחייג לעגלה?" else "Make a Call"
+        val dialogText = if (isRtl) {
+            "האם ברצונך להתקשר ל-${cart.name} במספר $phoneToCall?"
+        } else {
+            "Would you like to call ${cart.name} at $phoneToCall?"
+        }
+        val confirmText = if (isRtl) "התקשר" else "Call"
+        val cancelText = if (isRtl) "ביטול" else "Cancel"
+
+        AlertDialog(
+            onDismissRequest = { showCallConfirmDialog = false },
+            title = {
+                Text(
+                    text = dialogTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    text = dialogText,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showCallConfirmDialog = false
+                        try {
+                            uriHandler.openUri("tel:${phoneToCall!!.filter { it.isDigit() || it == '+' }}")
+                        } catch (_: Exception) {
+                        }
+                    }
+                ) {
+                    Text(confirmText)
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showCallConfirmDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                ) {
+                    Text(cancelText)
+                }
+            }
+        )
     }
 }
 
@@ -328,6 +410,8 @@ private fun CoffeeCartLocationRow(address: String) {
             text = address,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

@@ -39,4 +39,5 @@
     <string name="strWeAreOnTheMap">אנחנו על המפה!</string>
     <string name="strOpenHours">שעות פתיחה</string>
     <string name="strBasedOnReviews">על בסיס %d חוות דעת</string>
+    <string name="strCallNow">התקשר עכשיו</string>
 </resources>
