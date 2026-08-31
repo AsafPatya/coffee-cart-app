@@ -4,6 +4,7 @@ import com.coffeecart.server.db.DatabaseFactory
 import com.coffeecart.server.db.PostgresCartStore
 import com.coffeecart.server.db.PostgresOrderStore
 import com.coffeecart.server.google.toDto
+import com.coffeecart.server.google.GooglePlacesConfig
 import com.coffeecart.server.google.GooglePlacesService
 import com.coffeecart.server.rapyd.RapydClient
 import com.coffeecart.server.rapyd.RapydConfig
@@ -19,9 +20,12 @@ import com.coffeecart.shared.contract.toModel
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.PaymentStatus
 import io.ktor.client.HttpClient
+import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.ktor.client.request.get as clientGet
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.serialization.kotlinx.json.json
@@ -39,6 +43,7 @@ import io.ktor.server.request.receive
 import io.ktor.server.request.receiveMultipart
 import io.ktor.server.request.receiveText
 import io.ktor.server.response.respond
+import io.ktor.server.response.respondBytes
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
@@ -85,7 +90,6 @@ fun Application.module() {
         }
     }
     val rapydClient = RapydClient(httpClient)
-    val googlePlacesService = GooglePlacesService(httpClient)
 
     // Mounted to a persistent Railway volume in production so uploaded images survive restarts/redeploys.
     val imagesDir = File(System.getenv("IMAGES_DIR") ?: "images").apply { mkdirs() }
@@ -94,6 +98,8 @@ fun Application.module() {
     // needed because clients load images via absolute URLs, not relative to this server.
     val publicBaseUrl = System.getenv("RAILWAY_PUBLIC_DOMAIN")?.let { "https://$it" }
         ?: "http://localhost:${System.getenv("PORT")?.toIntOrNull() ?: DEFAULT_PORT}"
+
+    val googlePlacesService = GooglePlacesService(httpClient, publicBaseUrl)
 
     routing {
         staticFiles("/images", imagesDir)
@@ -135,6 +141,21 @@ fun Application.module() {
             } else {
                 call.respond(HttpStatusCode.NotFound)
             }
+        }
+
+        // Proxies Google's Place Photo API: Google sends no CORS headers on that endpoint, which silently
+        // breaks image loading on the web target, and this also keeps our API key off the client entirely.
+        get(Endpoints.PLACES_PHOTO) {
+            val photoReference = call.request.queryParameters["photo_reference"]
+            val apiKey = GooglePlacesConfig.apiKey
+            if (photoReference.isNullOrBlank() || apiKey.isNullOrBlank()) {
+                call.respond(HttpStatusCode.BadRequest)
+                return@get
+            }
+            val googleUrl = "${GooglePlacesConfig.PHOTO_BASE_URL}?maxwidth=${GooglePlacesConfig.DEFAULT_PHOTO_MAX_WIDTH}" +
+                "&photo_reference=$photoReference&key=$apiKey"
+            val response = httpClient.clientGet(googleUrl)
+            call.respondBytes(bytes = response.body(), contentType = response.contentType())
         }
 
         post(Endpoints.CARTS) {

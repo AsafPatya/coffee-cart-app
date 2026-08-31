@@ -1,5 +1,6 @@
 package com.coffeecart.server.google
 
+import com.coffeecart.shared.contract.Endpoints
 import com.coffeecart.shared.contract.PlaceDetailsDto
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
@@ -39,6 +40,7 @@ fun PlaceDetails.toDto(): PlaceDetailsDto = PlaceDetailsDto(
 
 class GooglePlacesService(
     private val client: HttpClient,
+    private val publicBaseUrl: String,
     private val apiKey: String? = GooglePlacesConfig.apiKey,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
@@ -82,7 +84,10 @@ class GooglePlacesService(
             val photoUrls = photosArray?.mapNotNull { photoElement ->
                 val photoRef = photoElement.jsonObject["photo_reference"]?.jsonPrimitive?.content
                 if (!photoRef.isNullOrBlank()) {
-                    "${GooglePlacesConfig.PHOTO_BASE_URL}?maxwidth=${GooglePlacesConfig.DEFAULT_PHOTO_MAX_WIDTH}&photo_reference=$photoRef&key=$apiKey"
+                    // Proxied through our own server (not Google's URL directly): Google's Photo API sends no
+                    // CORS headers, which silently breaks image loading on the web target, and this also avoids
+                    // shipping our API key to the client.
+                    "$publicBaseUrl${Endpoints.PLACES_PHOTO}?photo_reference=$photoRef"
                 } else null
             } ?: emptyList()
 

@@ -30,5 +30,7 @@ object Endpoints {
     const val PLACES = "/places"
 
     fun placeDetails(placeId: String): String = "$PLACES/details?placeId=$placeId"
+
+    const val PLACES_PHOTO = "$PLACES/photo"
 }
 
