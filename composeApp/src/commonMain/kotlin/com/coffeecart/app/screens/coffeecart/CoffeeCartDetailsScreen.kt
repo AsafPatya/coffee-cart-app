@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -104,6 +105,8 @@ fun CoffeeCartDetailsScreen(
         uiState = uiState,
         onBackClick = onBackClick,
         onCtaClick = { onCtaClick(cartId) },
+        onFormatWebsiteUrl = { viewModel.getFormattedWebsite(it) },
+        onFormatDialerNumber = { viewModel.getDialerNumber(it) },
     )
 }
 
@@ -112,6 +115,8 @@ fun CoffeeCartDetailsContent(
     uiState: CoffeeCartDetailsUiState,
     onBackClick: () -> Unit,
     onCtaClick: () -> Unit,
+    onFormatWebsiteUrl: (String) -> String,
+    onFormatDialerNumber: (String) -> String,
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -137,6 +142,8 @@ fun CoffeeCartDetailsContent(
                     cart = uiState.cart,
                     onBackClick = onBackClick,
                     onCtaClick = onCtaClick,
+                    onFormatWebsiteUrl = onFormatWebsiteUrl,
+                    onFormatDialerNumber = onFormatDialerNumber,
                 )
             }
         }
@@ -148,6 +155,8 @@ private fun CoffeeCartDetailsSuccessContent(
     cart: CoffeeCart,
     onBackClick: () -> Unit,
     onCtaClick: () -> Unit,
+    onFormatWebsiteUrl: (String) -> String,
+    onFormatDialerNumber: (String) -> String,
 ) {
     val scrollState = rememberScrollState()
     val uriHandler = LocalUriHandler.current
@@ -193,54 +202,28 @@ private fun CoffeeCartDetailsSuccessContent(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         cart.phone?.takeIf { it.isNotBlank() }?.let { phone ->
-                            OutlinedButton(
+                            CoffeeCartActionButton(
+                                icon = Icons.Filled.Phone,
+                                text = stringResource(Res.string.strCallNow),
                                 onClick = {
                                     phoneToCall = phone
                                     showCallConfirmDialog = true
-                                },
-                                modifier = Modifier.padding(vertical = Spacing.XXSmall.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Phone,
-                                    contentDescription = "Phone icon",
-                                    modifier = Modifier.size(Spacing.Large.dp)
-                                )
-                                Spacer(modifier = Modifier.width(Spacing.Small.dp))
-                                Text(
-                                    text = stringResource(Res.string.strCallNow),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                                }
+                            )
                         }
 
                         cart.website?.takeIf { it.isNotBlank() }?.let { website ->
-                            OutlinedButton(
+                            CoffeeCartActionButton(
+                                icon = Icons.Filled.Language,
+                                text = stringResource(Res.string.strWebsite),
                                 onClick = {
                                     try {
-                                        val fullUrl = if (website.startsWith("http://") || website.startsWith("https://")) {
-                                            website
-                                        } else {
-                                            "https://$website"
-                                        }
+                                        val fullUrl = onFormatWebsiteUrl(website)
                                         uriHandler.openUri(fullUrl)
                                     } catch (_: Exception) {
                                     }
-                                },
-                                modifier = Modifier.padding(vertical = Spacing.XXSmall.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.Language,
-                                    contentDescription = "Website icon",
-                                    modifier = Modifier.size(Spacing.Large.dp)
-                                )
-                                Spacer(modifier = Modifier.width(Spacing.Small.dp))
-                                Text(
-                                    text = stringResource(Res.string.strWebsite),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
+                                }
+                            )
                         }
                     }
                 }
@@ -330,7 +313,8 @@ private fun CoffeeCartDetailsSuccessContent(
                     onClick = {
                         showCallConfirmDialog = false
                         try {
-                            uriHandler.openUri("tel:${phoneToCall!!.filter { it.isDigit() || it == '+' }}")
+                            val telUri = onFormatDialerNumber(phoneToCall!!)
+                            uriHandler.openUri(telUri)
                         } catch (_: Exception) {
                         }
                     }
@@ -438,6 +422,30 @@ private fun CoffeeCartBadgesRow(
 }
 
 @Composable
+private fun CoffeeCartActionButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        contentPadding = PaddingValues(horizontal = Spacing.Medium.dp, vertical = Spacing.Small.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = text,
+            modifier = Modifier.size(Spacing.Large.dp)
+        )
+        Spacer(modifier = Modifier.width(Spacing.Small.dp))
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 private fun CoffeeCartLocationRow(address: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -484,8 +492,6 @@ private fun CoffeeCartOpeningHoursSection(
     if (openingHours.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Spacer(modifier = Modifier.height(Spacing.Large.dp))
-
         Text(
             text = stringResource(Res.string.strOpenHours),
             style = MaterialTheme.typography.titleMedium,
@@ -587,7 +593,9 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
             )
         ),
         onBackClick = {},
-        onCtaClick = {}
+        onCtaClick = {},
+        onFormatWebsiteUrl = { "https://$it" },
+        onFormatDialerNumber = { "tel:$it" }
     )
 }
 
@@ -616,7 +624,9 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                 )
             ),
             onBackClick = {},
-            onCtaClick = {}
+            onCtaClick = {},
+            onFormatWebsiteUrl = { "https://$it" },
+            onFormatDialerNumber = { "tel:$it" }
         )
     }
 }
@@ -627,7 +637,9 @@ private fun CoffeeCartDetailsScreenLoadingPreview() {
     CoffeeCartDetailsContent(
         uiState = CoffeeCartDetailsUiState.Loading,
         onBackClick = {},
-        onCtaClick = {}
+        onCtaClick = {},
+        onFormatWebsiteUrl = { it },
+        onFormatDialerNumber = { it }
     )
 }
 
@@ -637,6 +649,8 @@ private fun CoffeeCartDetailsScreenErrorPreview() {
     CoffeeCartDetailsContent(
         uiState = CoffeeCartDetailsUiState.Error("Failed to load coffee cart detail."),
         onBackClick = {},
-        onCtaClick = {}
+        onCtaClick = {},
+        onFormatWebsiteUrl = { it },
+        onFormatDialerNumber = { it }
     )
 }

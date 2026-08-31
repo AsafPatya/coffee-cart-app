@@ -26,6 +26,18 @@ class CoffeeCartDetailsViewModel(
     private val _uiState = MutableStateFlow<CoffeeCartDetailsUiState>(CoffeeCartDetailsUiState.Loading)
     val uiState: StateFlow<CoffeeCartDetailsUiState> = _uiState.asStateFlow()
 
+    fun getFormattedWebsite(website: String): String {
+        return if (website.startsWith("http://") || website.startsWith("https://")) {
+            website
+        } else {
+            "https://$website"
+        }
+    }
+
+    fun getDialerNumber(phone: String): String {
+        return "tel:${phone.filter { it.isDigit() || it == '+' }}"
+    }
+
     fun loadCart(id: String) {
         viewModelScope.launch {
             _uiState.value = CoffeeCartDetailsUiState.Loading
