@@ -37,4 +37,5 @@
     <string name="strNoCategoriesAvailable">אין קטגוריות זמינות</string>
     <string name="strOurImagesGallery">גלריית התמונות שלנו</string>
     <string name="strWeAreOnTheMap">אנחנו על המפה!</string>
+    <string name="strOpenHours">שעות פתיחה</string>
 </resources>

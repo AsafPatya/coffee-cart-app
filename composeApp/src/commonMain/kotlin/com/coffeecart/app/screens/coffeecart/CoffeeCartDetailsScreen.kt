@@ -44,12 +44,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import coffeecart.composeapp.generated.resources.Res
-import coffeecart.composeapp.generated.resources.strKosher
 import coffeecart.composeapp.generated.resources.strOpenNow
-import coffeecart.composeapp.generated.resources.strOpeningHours
-import coffeecart.composeapp.generated.resources.strStartYourOrderNow
 import coffeecart.composeapp.generated.resources.strOurImagesGallery
+import coffeecart.composeapp.generated.resources.strStartYourOrderNow
 import coffeecart.composeapp.generated.resources.strWeAreOnTheMap
+import coffeecart.composeapp.generated.resources.strOpenHours
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.BorderWidth
 import com.coffeecart.app.theme.Spacing
@@ -193,18 +192,7 @@ private fun CoffeeCartDetailsSuccessContent(
                     )
                 }
 
-                val openingHours = cart.openingHours
-                val openingHoursText = if (openingHours.isNotEmpty()) {
-                    openingHours.joinToString("\n")
-                } else {
-                    stringResource(Res.string.strOpeningHours)
-                }
-
-                Text(
-                    text = openingHoursText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                CoffeeCartOpeningHoursSection(openingHours = cart.openingHours)
 
                 if (cart.cartImages.isNotEmpty()) {
                     CoffeeCartImagesSlide(images = cart.cartImages)
@@ -318,18 +306,6 @@ private fun CoffeeCartBadgesRow() {
                 )
             }
         }
-
-        Surface(
-            shape = RoundedCornerShape(Spacing.Large.dp),
-            border = BorderStroke(BorderWidth.XXXSmall.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)),
-            color = Color.Transparent,
-        ) {
-            Text(
-                text = stringResource(Res.string.strKosher),
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(horizontal = Spacing.Medium.dp, vertical = Spacing.XXSmall.dp),
-            )
-        }
     }
 }
 
@@ -366,6 +342,32 @@ private fun CoffeeCartMapBox(latitude: Double, longitude: Double) {
             latitude = latitude,
             longitude = longitude,
             modifier = Modifier.fillMaxSize(),
+        )
+    }
+}
+
+@Composable
+private fun CoffeeCartOpeningHoursSection(
+    openingHours: List<String>,
+    modifier: Modifier = Modifier,
+) {
+    if (openingHours.isEmpty()) return
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        Spacer(modifier = Modifier.height(Spacing.Large.dp))
+
+        Text(
+            text = stringResource(Res.string.strOpenHours),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+
+        Spacer(modifier = Modifier.height(Spacing.Small.dp))
+
+        Text(
+            text = openingHours.joinToString("\n"),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -444,6 +446,7 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
                 latitude = 32.0853,
                 longitude = 34.7818,
                 phone = "+1 555-0199",
+                openingHours = listOf("Sun-Thu: 08:00 – 18:00", "Fri: 08:00 – 15:00"),
                 cartImages = listOf(
                     "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
                     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085"
@@ -469,6 +472,7 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                     latitude = 32.0853,
                     longitude = 34.7818,
                     phone = "050-1234567",
+                    openingHours = listOf("א׳-ה׳: 08:00 – 18:00", "יום שישי: 08:00 – 15:00"),
                     cartImages = listOf(
                         "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
                         "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085"
