@@ -81,6 +81,8 @@ class PostgresCartStore {
             it[placeId] = cart.placeId
             it[phone] = cart.phone
             it[cartImages] = cart.cartImages.joinToString("\n").ifBlank { null }
+            it[rating] = cart.rating
+            it[userRatingsTotal] = cart.userRatingsTotal
         } > 0
     }
 
@@ -137,5 +139,7 @@ class PostgresCartStore {
         placeId = this[CoffeeCartsTable.placeId],
         phone = this[CoffeeCartsTable.phone],
         cartImages = this[CoffeeCartsTable.cartImages]?.split("\n")?.filter { it.isNotBlank() } ?: emptyList(),
+        rating = this[CoffeeCartsTable.rating],
+        userRatingsTotal = this[CoffeeCartsTable.userRatingsTotal],
     )
 }

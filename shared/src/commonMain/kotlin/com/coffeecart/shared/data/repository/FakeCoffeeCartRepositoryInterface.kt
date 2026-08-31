@@ -186,6 +186,8 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
             longitude = longitude,
             openingHours = existing.openingHours,
             placeId = placeId ?: existing.placeId,
+            rating = existing.rating,
+            userRatingsTotal = existing.userRatingsTotal,
         )
         return true
     }

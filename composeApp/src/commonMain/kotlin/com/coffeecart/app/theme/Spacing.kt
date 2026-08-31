@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
  * in the app traces back to one of these steps.
  */
 enum class Spacing {
+    None,
     XXXSmall,
     XXSmall,
     XSmall,
@@ -26,6 +27,7 @@ enum class Spacing {
 
 val Spacing.dp: Dp
     get() = when (this) {
+        Spacing.None -> 0.dp
         Spacing.XXXSmall -> 2.dp
         Spacing.XXSmall -> 4.dp
         Spacing.XSmall -> 6.dp

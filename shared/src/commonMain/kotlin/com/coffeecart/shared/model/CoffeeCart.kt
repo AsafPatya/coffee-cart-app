@@ -17,4 +17,6 @@ data class CoffeeCart(
     val placeId: String? = null,
     val phone: String? = null,
     val cartImages: List<String> = emptyList(),
+    val rating: Double? = null,
+    val userRatingsTotal: Int? = null,
 )

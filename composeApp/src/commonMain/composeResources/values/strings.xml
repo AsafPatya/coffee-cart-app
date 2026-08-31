@@ -38,4 +38,5 @@
     <string name="strOurImagesGallery">Our Images Gallery</string>
     <string name="strWeAreOnTheMap">We are on the map!</string>
     <string name="strOpenHours">Opening Hours</string>
+    <string name="strBasedOnReviews">based on %d reviews</string>
 </resources>

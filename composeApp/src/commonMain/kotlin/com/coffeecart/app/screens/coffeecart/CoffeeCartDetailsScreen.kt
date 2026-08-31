@@ -1,6 +1,5 @@
 package com.coffeecart.app.screens.coffeecart
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,7 +18,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,16 +42,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import coffeecart.composeapp.generated.resources.Res
-import coffeecart.composeapp.generated.resources.strOpenNow
+import coffeecart.composeapp.generated.resources.strBasedOnReviews
+import coffeecart.composeapp.generated.resources.strOpenHours
 import coffeecart.composeapp.generated.resources.strOurImagesGallery
 import coffeecart.composeapp.generated.resources.strStartYourOrderNow
 import coffeecart.composeapp.generated.resources.strWeAreOnTheMap
-import coffeecart.composeapp.generated.resources.strOpenHours
 import coil3.compose.AsyncImage
-import com.coffeecart.app.theme.BorderWidth
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.app.ui.buttons.OverlayBackButton
@@ -179,7 +180,7 @@ private fun CoffeeCartDetailsSuccessContent(
 
                 Spacer(modifier = Modifier.height(Spacing.Small.dp))
 
-                CoffeeCartBadgesRow()
+                CoffeeCartBadgesRow(rating = cart.rating, userRatingsTotal = cart.userRatingsTotal)
 
                 Spacer(modifier = Modifier.height(Spacing.Medium.dp))
 
@@ -266,45 +267,52 @@ private fun CoffeeCartHeaderImage(
 }
 
 @Composable
-private fun CoffeeCartBadgesRow() {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Spacing.Small.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Surface(
-            shape = RoundedCornerShape(Spacing.Large.dp),
-            border = BorderStroke(BorderWidth.XXXSmall.dp, Color(0xFF4CAF50)),
-            color = Color(0xFFE8F5E9),
-        ) {
-            Text(
-                text = stringResource(Res.string.strOpenNow),
-                color = Color(0xFF2E7D32),
-                style = MaterialTheme.typography.labelMedium,
-                modifier = Modifier.padding(horizontal = Spacing.Medium.dp, vertical = Spacing.XXSmall.dp),
-            )
-        }
+private fun CoffeeCartBadgesRow(
+    rating: Double?,
+    userRatingsTotal: Int?,
+) {
+    if (rating == null) return
 
-        Surface(
-            shape = RoundedCornerShape(Spacing.Large.dp),
-            border = BorderStroke(BorderWidth.XXXSmall.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)),
-            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.XXSmall.dp)
+    ) {
+        Text(
+            text = rating.toString(),
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.None.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = Spacing.Medium.dp, vertical = Spacing.XXSmall.dp),
-            ) {
-                Text(
-                    text = "4.8 ",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+            for (i in 1..5) {
+                val starDiff = rating - (i - 1)
+                val icon = when {
+                    starDiff >= 0.75 -> Icons.Filled.Star
+                    starDiff >= 0.25 -> Icons.AutoMirrored.Filled.StarHalf
+                    else -> Icons.Filled.StarBorder
+                }
                 Icon(
-                    imageVector = Icons.Filled.Star,
+                    imageVector = icon,
                     contentDescription = null,
                     tint = Color(0xFFFFB300),
-                    modifier = Modifier.size(Spacing.Large.dp),
+                    modifier = Modifier.size(Spacing.Large.dp)
                 )
             }
+        }
+
+        if (userRatingsTotal != null) {
+            Text(
+                text = stringResource(Res.string.strBasedOnReviews).replace("%d", userRatingsTotal.toString()),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                    fontWeight = FontWeight.Medium
+                ),
+            )
         }
     }
 }
@@ -451,6 +459,8 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
                     "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
                     "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085"
                 ),
+                rating = 4.6,
+                userRatingsTotal = 211,
             )
         ),
         onBackClick = {},
@@ -477,6 +487,8 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                         "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
                         "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085"
                     ),
+                    rating = 4.7,
+                    userRatingsTotal = 45,
                 )
             ),
             onBackClick = {},

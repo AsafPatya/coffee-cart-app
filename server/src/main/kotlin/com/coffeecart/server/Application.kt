@@ -173,6 +173,8 @@ fun Application.module() {
                         longitude = details.longitude ?: cart.longitude,
                         phone = details.phoneNumber ?: cart.phone,
                         cartImages = if (details.photoUrls.isNotEmpty()) details.photoUrls else cart.cartImages,
+                        rating = details.rating ?: cart.rating,
+                        userRatingsTotal = details.userRatingsTotal ?: cart.userRatingsTotal,
                     )
                     cartStore.updateFull(updatedCart)
                     cart = updatedCart
@@ -204,6 +206,8 @@ fun Application.module() {
             var lng = model.longitude
             var phone = model.phone
             var images = model.cartImages
+            var rating = model.rating
+            var userRatingsTotal = model.userRatingsTotal
             println("[Cart API] Updating cart id=$id with placeId=$placeId")
             if (!placeId.isNullOrBlank()) {
                 val details = googlePlacesService.fetchPlaceDetails(placeId)
@@ -214,9 +218,19 @@ fun Application.module() {
                     if (details.longitude != null) lng = details.longitude
                     if (details.phoneNumber != null) phone = details.phoneNumber
                     if (details.photoUrls.isNotEmpty()) images = details.photoUrls
+                    if (details.rating != null) rating = details.rating
+                    if (details.userRatingsTotal != null) userRatingsTotal = details.userRatingsTotal
                 }
             }
-            val cartToUpdate = model.copy(openingHours = hours, latitude = lat, longitude = lng, phone = phone, cartImages = images)
+            val cartToUpdate = model.copy(
+                openingHours = hours,
+                latitude = lat,
+                longitude = lng,
+                phone = phone,
+                cartImages = images,
+                rating = rating,
+                userRatingsTotal = userRatingsTotal,
+            )
             val updated = id != null && cartStore.updateFull(cartToUpdate)
             call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
