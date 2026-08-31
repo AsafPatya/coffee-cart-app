@@ -83,6 +83,7 @@ class PostgresCartStore {
             it[cartImages] = cart.cartImages.joinToString("\n").ifBlank { null }
             it[rating] = cart.rating
             it[userRatingsTotal] = cart.userRatingsTotal
+            it[CoffeeCartsTable.website] = cart.website
         } > 0
     }
 
@@ -141,5 +142,6 @@ class PostgresCartStore {
         cartImages = this[CoffeeCartsTable.cartImages]?.split("\n")?.filter { it.isNotBlank() } ?: emptyList(),
         rating = this[CoffeeCartsTable.rating],
         userRatingsTotal = this[CoffeeCartsTable.userRatingsTotal],
+        website = this[CoffeeCartsTable.website],
     )
 }

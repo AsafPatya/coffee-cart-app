@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.StarHalf
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
@@ -58,6 +59,7 @@ import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strBasedOnReviews
 import coffeecart.composeapp.generated.resources.strOpenHours
 import coffeecart.composeapp.generated.resources.strCallNow
+import coffeecart.composeapp.generated.resources.strWebsite
 import coffeecart.composeapp.generated.resources.strOurImagesGallery
 import coffeecart.composeapp.generated.resources.strStartYourOrderNow
 import coffeecart.composeapp.generated.resources.strWeAreOnTheMap
@@ -183,27 +185,63 @@ private fun CoffeeCartDetailsSuccessContent(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                cart.phone?.takeIf { it.isNotBlank() }?.let { phone ->
+                if (cart.phone?.isNotBlank() == true || cart.website?.isNotBlank() == true) {
                     Spacer(modifier = Modifier.height(Spacing.XXSmall.dp))
-
-                    OutlinedButton(
-                        onClick = {
-                            phoneToCall = phone
-                            showCallConfirmDialog = true
-                        },
-                        modifier = Modifier.padding(vertical = Spacing.XXSmall.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.Medium.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Phone,
-                            contentDescription = "Phone icon",
-                            modifier = Modifier.size(Spacing.Large.dp)
-                        )
-                        Spacer(modifier = Modifier.width(Spacing.Small.dp))
-                        Text(
-                            text = stringResource(Res.string.strCallNow),
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold
-                        )
+                        cart.phone?.takeIf { it.isNotBlank() }?.let { phone ->
+                            OutlinedButton(
+                                onClick = {
+                                    phoneToCall = phone
+                                    showCallConfirmDialog = true
+                                },
+                                modifier = Modifier.padding(vertical = Spacing.XXSmall.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Phone,
+                                    contentDescription = "Phone icon",
+                                    modifier = Modifier.size(Spacing.Large.dp)
+                                )
+                                Spacer(modifier = Modifier.width(Spacing.Small.dp))
+                                Text(
+                                    text = stringResource(Res.string.strCallNow),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+
+                        cart.website?.takeIf { it.isNotBlank() }?.let { website ->
+                            OutlinedButton(
+                                onClick = {
+                                    try {
+                                        val fullUrl = if (website.startsWith("http://") || website.startsWith("https://")) {
+                                            website
+                                        } else {
+                                            "https://$website"
+                                        }
+                                        uriHandler.openUri(fullUrl)
+                                    } catch (_: Exception) {
+                                    }
+                                },
+                                modifier = Modifier.padding(vertical = Spacing.XXSmall.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Language,
+                                    contentDescription = "Website icon",
+                                    modifier = Modifier.size(Spacing.Large.dp)
+                                )
+                                Spacer(modifier = Modifier.width(Spacing.Small.dp))
+                                Text(
+                                    text = stringResource(Res.string.strWebsite),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -545,6 +583,7 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
                 ),
                 rating = 4.6,
                 userRatingsTotal = 211,
+                website = "https://example.com/coffeecart",
             )
         ),
         onBackClick = {},
@@ -573,6 +612,7 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                     ),
                     rating = 4.7,
                     userRatingsTotal = 45,
+                    website = "https://example.com/farmcart",
                 )
             ),
             onBackClick = {},

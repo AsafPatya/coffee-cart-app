@@ -36,6 +36,7 @@ data class CoffeeCartDto(
     val cartImages: List<String> = emptyList(),
     val rating: Double? = null,
     val userRatingsTotal: Int? = null,
+    val website: String? = null,
 )
 
 fun ProductDto.toModel(): Product = Product(
@@ -80,6 +81,7 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     cartImages = cartImages,
     rating = rating,
     userRatingsTotal = userRatingsTotal,
+    website = website,
 )
 
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
@@ -96,6 +98,7 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     cartImages = cartImages,
     rating = rating,
     userRatingsTotal = userRatingsTotal,
+    website = website,
 )
 
 @Serializable

@@ -188,6 +188,7 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
             placeId = placeId ?: existing.placeId,
             rating = existing.rating,
             userRatingsTotal = existing.userRatingsTotal,
+            website = existing.website,
         )
         return true
     }

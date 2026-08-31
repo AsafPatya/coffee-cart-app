@@ -40,4 +40,5 @@
     <string name="strOpenHours">Opening Hours</string>
     <string name="strBasedOnReviews">based on %d reviews</string>
     <string name="strCallNow">Call Now</string>
+    <string name="strWebsite">Website</string>
 </resources>
