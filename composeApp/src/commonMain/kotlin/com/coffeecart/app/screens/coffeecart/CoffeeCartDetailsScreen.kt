@@ -48,6 +48,8 @@ import coffeecart.composeapp.generated.resources.strKosher
 import coffeecart.composeapp.generated.resources.strOpenNow
 import coffeecart.composeapp.generated.resources.strOpeningHours
 import coffeecart.composeapp.generated.resources.strStartYourOrderNow
+import coffeecart.composeapp.generated.resources.strOurImagesGallery
+import coffeecart.composeapp.generated.resources.strWeAreOnTheMap
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.BorderWidth
 import com.coffeecart.app.theme.Spacing
@@ -213,6 +215,14 @@ private fun CoffeeCartDetailsSuccessContent(
                 if (latitude != null && longitude != null) {
                     Spacer(modifier = Modifier.height(Spacing.Large.dp))
 
+                    Text(
+                        text = stringResource(Res.string.strWeAreOnTheMap),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+
+                    Spacer(modifier = Modifier.height(Spacing.Small.dp))
+
                     CoffeeCartMapBox(
                         latitude = latitude,
                         longitude = longitude,
@@ -371,7 +381,7 @@ private fun CoffeeCartImagesSlide(
         Spacer(modifier = Modifier.height(Spacing.Large.dp))
 
         Text(
-            text = "Photos",
+            text = stringResource(Res.string.strOurImagesGallery),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
         )

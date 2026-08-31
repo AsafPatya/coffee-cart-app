@@ -35,4 +35,6 @@
     <string name="strNavigateNow">Navigate Now</string>
     <string name="strSearchCategory">Search menu...</string>
     <string name="strNoCategoriesAvailable">No categories available.</string>
+    <string name="strOurImagesGallery">Our Images Gallery</string>
+    <string name="strWeAreOnTheMap">We are on the map!</string>
 </resources>

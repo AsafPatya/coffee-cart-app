@@ -35,4 +35,6 @@
     <string name="strNavigateNow">נווט עכשיו</string>
     <string name="strSearchCategory">חיפוש בתפריט...</string>
     <string name="strNoCategoriesAvailable">אין קטגוריות זמינות</string>
+    <string name="strOurImagesGallery">גלריית התמונות שלנו</string>
+    <string name="strWeAreOnTheMap">אנחנו על המפה!</string>
 </resources>
