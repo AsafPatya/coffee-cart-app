@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -202,6 +204,10 @@ private fun CoffeeCartDetailsSuccessContent(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
+                if (cart.cartImages.isNotEmpty()) {
+                    CoffeeCartImagesSlide(images = cart.cartImages)
+                }
+
                 val latitude = cart.latitude
                 val longitude = cart.longitude
                 if (latitude != null && longitude != null) {
@@ -355,6 +361,46 @@ private fun CoffeeCartMapBox(latitude: Double, longitude: Double) {
 }
 
 @Composable
+private fun CoffeeCartImagesSlide(
+    images: List<String>,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Spacer(modifier = Modifier.height(Spacing.Large.dp))
+
+        Text(
+            text = "Photos",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+        )
+
+        Spacer(modifier = Modifier.height(Spacing.Small.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Medium.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(images) { imageUrl ->
+                Box(
+                    modifier = Modifier
+                        .size(width = Spacing.HeroHeight.dp, height = Spacing.CategoryCardHeight.dp)
+                        .clip(RoundedCornerShape(Spacing.Small.dp))
+                ) {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = "Coffee Cart Photo",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun CoffeeCartStartOrderButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -388,6 +434,10 @@ private fun CoffeeCartDetailsScreenSuccessPreview() {
                 latitude = 32.0853,
                 longitude = 34.7818,
                 phone = "+1 555-0199",
+                cartImages = listOf(
+                    "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
+                    "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085"
+                ),
             )
         ),
         onBackClick = {},
@@ -409,6 +459,10 @@ private fun CoffeeCartDetailsScreenHebrewPreview() {
                     latitude = 32.0853,
                     longitude = 34.7818,
                     phone = "050-1234567",
+                    cartImages = listOf(
+                        "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb",
+                        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085"
+                    ),
                 )
             ),
             onBackClick = {},

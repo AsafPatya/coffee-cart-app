@@ -15,6 +15,7 @@ object CoffeeCartsTable : Table("coffee_carts") {
     val openingHours = text("opening_hours").nullable()
     val placeId = varchar("place_id", 128).nullable()
     val phone = varchar("phone", 64).nullable()
+    val cartImages = text("cart_images").nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

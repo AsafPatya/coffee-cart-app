@@ -33,6 +33,7 @@ data class CoffeeCartDto(
     val openingHours: List<String> = emptyList(),
     val placeId: String? = null,
     val phone: String? = null,
+    val cartImages: List<String> = emptyList(),
 )
 
 fun ProductDto.toModel(): Product = Product(
@@ -74,6 +75,7 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     openingHours = openingHours,
     placeId = placeId,
     phone = phone,
+    cartImages = cartImages,
 )
 
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
@@ -87,6 +89,7 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     openingHours = openingHours,
     placeId = placeId,
     phone = phone,
+    cartImages = cartImages,
 )
 
 @Serializable
@@ -105,4 +108,5 @@ data class CreateCoffeeCartRequest(
     val imageUrl: String,
     val placeId: String? = null,
     val phone: String? = null,
+    val cartImages: List<String> = emptyList(),
 )

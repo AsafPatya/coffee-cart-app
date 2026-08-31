@@ -16,4 +16,5 @@ data class CoffeeCart(
     val openingHours: List<String> = emptyList(),
     val placeId: String? = null,
     val phone: String? = null,
+    val cartImages: List<String> = emptyList(),
 )

@@ -40,8 +40,8 @@ class PostgresCartStore {
         } > 0
     }
 
-    fun add(name: String, address: String, imageUrl: String, placeId: String? = null, phone: String? = null): CoffeeCart {
-        val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl, placeId = placeId, phone = phone)
+    fun add(name: String, address: String, imageUrl: String, placeId: String? = null, phone: String? = null, cartImages: List<String> = emptyList()): CoffeeCart {
+        val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl, placeId = placeId, phone = phone, cartImages = cartImages)
         transaction {
             CoffeeCartsTable.insert {
                 it[id] = cart.id
@@ -50,6 +50,7 @@ class PostgresCartStore {
                 it[CoffeeCartsTable.imageUrl] = cart.imageUrl
                 it[CoffeeCartsTable.placeId] = cart.placeId
                 it[CoffeeCartsTable.phone] = cart.phone
+                it[CoffeeCartsTable.cartImages] = cart.cartImages.joinToString("\n").ifBlank { null }
             }
         }
         return cart
@@ -79,6 +80,7 @@ class PostgresCartStore {
             it[openingHours] = cart.openingHours.joinToString("\n").ifBlank { null }
             it[placeId] = cart.placeId
             it[phone] = cart.phone
+            it[cartImages] = cart.cartImages.joinToString("\n").ifBlank { null }
         } > 0
     }
 
@@ -134,5 +136,6 @@ class PostgresCartStore {
         openingHours = this[CoffeeCartsTable.openingHours]?.split("\n")?.filter { it.isNotBlank() } ?: emptyList(),
         placeId = this[CoffeeCartsTable.placeId],
         phone = this[CoffeeCartsTable.phone],
+        cartImages = this[CoffeeCartsTable.cartImages]?.split("\n")?.filter { it.isNotBlank() } ?: emptyList(),
     )
 }
