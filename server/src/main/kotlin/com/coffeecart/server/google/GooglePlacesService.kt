@@ -2,6 +2,8 @@ package com.coffeecart.server.google
 
 import com.coffeecart.shared.contract.Endpoints
 import com.coffeecart.shared.contract.PlaceDetailsDto
+import com.coffeecart.shared.model.OpeningPeriod
+import com.coffeecart.shared.model.DayTime
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -23,6 +25,7 @@ data class PlaceDetails(
     val userRatingsTotal: Int? = null,
     val website: String? = null,
     val photoUrls: List<String> = emptyList(),
+    val periods: List<OpeningPeriod> = emptyList(),
 )
 
 fun PlaceDetails.toDto(): PlaceDetailsDto = PlaceDetailsDto(
@@ -36,6 +39,7 @@ fun PlaceDetails.toDto(): PlaceDetailsDto = PlaceDetailsDto(
     userRatingsTotal = userRatingsTotal,
     website = website,
     photoUrls = photoUrls,
+    periods = periods,
 )
 
 class GooglePlacesService(
@@ -76,6 +80,24 @@ class GooglePlacesService(
                 } ?: emptyList()
             println("[GooglePlacesService] Opening hours for placeId=$placeId: $openingHours")
 
+            val periodsArray = openingHoursObj?.get("periods")?.jsonArray
+            val periods = periodsArray?.mapNotNull { periodElement ->
+                val periodObj = periodElement.jsonObject
+                val openObj = periodObj["open"]?.jsonObject ?: return@mapNotNull null
+                val openDay = openObj["day"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null
+                val openTime = openObj["time"]?.jsonPrimitive?.content ?: return@mapNotNull null
+
+                val closeObj = periodObj["close"]?.jsonObject
+                val closeDay = closeObj?.get("day")?.jsonPrimitive?.intOrNull
+                val closeTime = closeObj?.get("time")?.jsonPrimitive?.content
+
+                OpeningPeriod(
+                    open = DayTime(openDay, openTime),
+                    close = if (closeDay != null && closeTime != null) DayTime(closeDay, closeTime) else null
+                )
+            } ?: emptyList()
+            println("[GooglePlacesService] Parsed periods for placeId=$placeId: $periods")
+
             val locationObj = resultObj[GooglePlacesConfig.FIELD_GEOMETRY]?.jsonObject?.get("location")?.jsonObject
             val latitude = locationObj?.get("lat")?.jsonPrimitive?.doubleOrNull
             val longitude = locationObj?.get("lng")?.jsonPrimitive?.doubleOrNull
@@ -102,6 +124,7 @@ class GooglePlacesService(
                 userRatingsTotal = userRatingsTotal,
                 website = website,
                 photoUrls = photoUrls,
+                periods = periods,
             )
             println("[GooglePlacesService] Fetched PlaceDetails for placeId=$placeId: $details")
             return details

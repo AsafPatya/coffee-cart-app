@@ -1,6 +1,8 @@
 package com.coffeecart.app.screens.coffeecart
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import com.coffeecart.app.theme.BorderWidth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -230,7 +232,11 @@ private fun CoffeeCartDetailsSuccessContent(
 
                 Spacer(modifier = Modifier.height(Spacing.Small.dp))
 
-                CoffeeCartBadgesRow(rating = cart.rating, userRatingsTotal = cart.userRatingsTotal)
+                CoffeeCartBadgesRow(
+                    rating = cart.rating,
+                    userRatingsTotal = cart.userRatingsTotal,
+                    isOpen = cart.isOpenNow()
+                )
 
                 Spacer(modifier = Modifier.height(Spacing.Medium.dp))
 
@@ -374,49 +380,78 @@ private fun CoffeeCartHeaderImage(
 private fun CoffeeCartBadgesRow(
     rating: Double?,
     userRatingsTotal: Int?,
+    isOpen: Boolean,
 ) {
     if (rating == null) return
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.XXSmall.dp)
+        horizontalArrangement = Arrangement.spacedBy(Spacing.Medium.dp)
     ) {
-        Text(
-            text = rating.toString(),
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.None.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            for (i in 1..5) {
-                val starDiff = rating - (i - 1)
-                val icon = when {
-                    starDiff >= 0.75 -> Icons.Filled.Star
-                    starDiff >= 0.25 -> Icons.AutoMirrored.Filled.StarHalf
-                    else -> Icons.Filled.StarBorder
-                }
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color(0xFFFFB300),
-                    modifier = Modifier.size(Spacing.Large.dp)
-                )
-            }
+        val badgeColor = if (isOpen) Color(0xFF2E7D32) else Color(0xFFC62828)
+        val badgeBg = if (isOpen) Color(0xFFE8F5E9) else Color(0xFFFFEBEE)
+        val badgeText = if (isOpen) {
+            val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+            if (isRtl) "פתוח עכשיו" else "Open Now"
+        } else {
+            val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+            if (isRtl) "סגור עכשיו" else "Closed Now"
         }
 
-        if (userRatingsTotal != null) {
+        Surface(
+            shape = RoundedCornerShape(Spacing.Large.dp),
+            border = BorderStroke(BorderWidth.XXXSmall.dp, badgeColor),
+            color = badgeBg,
+        ) {
             Text(
-                text = stringResource(Res.string.strBasedOnReviews).replace("%d", userRatingsTotal.toString()),
-                style = MaterialTheme.typography.labelMedium.copy(
-                    color = MaterialTheme.colorScheme.primary,
-                    textDecoration = TextDecoration.Underline,
-                    fontWeight = FontWeight.Medium
-                ),
+                text = badgeText,
+                color = badgeColor,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.padding(horizontal = Spacing.Medium.dp, vertical = Spacing.XXSmall.dp),
             )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.XXSmall.dp)
+        ) {
+            Text(
+                text = rating.toString(),
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(Spacing.None.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                for (i in 1..5) {
+                    val starDiff = rating - (i - 1)
+                    val icon = when {
+                        starDiff >= 0.75 -> Icons.Filled.Star
+                        starDiff >= 0.25 -> Icons.AutoMirrored.Filled.StarHalf
+                        else -> Icons.Filled.StarBorder
+                    }
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color(0xFFFFB300),
+                        modifier = Modifier.size(Spacing.Large.dp)
+                    )
+                }
+            }
+
+            if (userRatingsTotal != null) {
+                Text(
+                    text = stringResource(Res.string.strBasedOnReviews).replace("%d", userRatingsTotal.toString()),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline,
+                        fontWeight = FontWeight.Medium
+                    ),
+                )
+            }
         }
     }
 }

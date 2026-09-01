@@ -176,6 +176,7 @@ fun Application.module() {
                         rating = details.rating ?: cart.rating,
                         userRatingsTotal = details.userRatingsTotal ?: cart.userRatingsTotal,
                         website = details.website ?: cart.website,
+                        periods = if (details.periods.isNotEmpty()) details.periods else cart.periods,
                     )
                     cartStore.updateFull(updatedCart)
                     cart = updatedCart
@@ -210,6 +211,7 @@ fun Application.module() {
             var rating = model.rating
             var userRatingsTotal = model.userRatingsTotal
             var website = model.website
+            var periods = model.periods
             println("[Cart API] Updating cart id=$id with placeId=$placeId")
             if (!placeId.isNullOrBlank()) {
                 val details = googlePlacesService.fetchPlaceDetails(placeId)
@@ -223,6 +225,7 @@ fun Application.module() {
                     if (details.rating != null) rating = details.rating
                     if (details.userRatingsTotal != null) userRatingsTotal = details.userRatingsTotal
                     if (details.website != null) website = details.website
+                    if (details.periods.isNotEmpty()) periods = details.periods
                 }
             }
             val cartToUpdate = model.copy(
@@ -234,6 +237,7 @@ fun Application.module() {
                 rating = rating,
                 userRatingsTotal = userRatingsTotal,
                 website = website,
+                periods = periods,
             )
             val updated = id != null && cartStore.updateFull(cartToUpdate)
             call.respond(if (updated) HttpStatusCode.OK else HttpStatusCode.NotFound)

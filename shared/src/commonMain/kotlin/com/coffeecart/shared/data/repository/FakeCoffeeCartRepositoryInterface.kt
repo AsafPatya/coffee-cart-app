@@ -189,6 +189,7 @@ class FakeCoffeeCartRepositoryInterface : CoffeeCartRepositoryInterface {
             rating = existing.rating,
             userRatingsTotal = existing.userRatingsTotal,
             website = existing.website,
+            periods = existing.periods,
         )
         return true
     }

@@ -2,6 +2,7 @@ package com.coffeecart.server.db
 
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.shared.model.MenuCategory
+import com.coffeecart.shared.model.OpeningPeriod
 import java.util.UUID
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -84,6 +85,7 @@ class PostgresCartStore {
             it[rating] = cart.rating
             it[userRatingsTotal] = cart.userRatingsTotal
             it[CoffeeCartsTable.website] = cart.website
+            it[CoffeeCartsTable.periodsJson] = Json.encodeToString(cart.periods)
         } > 0
     }
 
@@ -143,5 +145,12 @@ class PostgresCartStore {
         rating = this[CoffeeCartsTable.rating],
         userRatingsTotal = this[CoffeeCartsTable.userRatingsTotal],
         website = this[CoffeeCartsTable.website],
+        periods = this[CoffeeCartsTable.periodsJson]?.let {
+            try {
+                Json.decodeFromString<List<OpeningPeriod>>(it)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        } ?: emptyList(),
     )
 }

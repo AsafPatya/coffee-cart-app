@@ -1,6 +1,7 @@
 package com.coffeecart.shared.contract
 
 import kotlinx.serialization.Serializable
+import com.coffeecart.shared.model.OpeningPeriod
 
 @Serializable
 data class PlaceDetailsDto(
@@ -14,5 +15,6 @@ data class PlaceDetailsDto(
     val userRatingsTotal: Int? = null,
     val website: String? = null,
     val photoUrls: List<String> = emptyList(),
+    val periods: List<OpeningPeriod> = emptyList(),
 )
 

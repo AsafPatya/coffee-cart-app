@@ -3,6 +3,7 @@ package com.coffeecart.shared.contract
 import com.coffeecart.shared.model.CoffeeCart
 import com.coffeecart.shared.model.MenuCategory
 import com.coffeecart.shared.model.Product
+import com.coffeecart.shared.model.OpeningPeriod
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -37,6 +38,7 @@ data class CoffeeCartDto(
     val rating: Double? = null,
     val userRatingsTotal: Int? = null,
     val website: String? = null,
+    val periods: List<OpeningPeriod> = emptyList(),
 )
 
 fun ProductDto.toModel(): Product = Product(
@@ -82,6 +84,7 @@ fun CoffeeCartDto.toModel(): CoffeeCart = CoffeeCart(
     rating = rating,
     userRatingsTotal = userRatingsTotal,
     website = website,
+    periods = periods,
 )
 
 fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
@@ -99,6 +102,7 @@ fun CoffeeCart.toDto(): CoffeeCartDto = CoffeeCartDto(
     rating = rating,
     userRatingsTotal = userRatingsTotal,
     website = website,
+    periods = periods,
 )
 
 @Serializable
