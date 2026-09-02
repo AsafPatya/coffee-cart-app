@@ -13,8 +13,10 @@ import androidx.compose.ui.Modifier
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 
-// The checkout page itself is cross-origin (Rapyd's domain), so its location can't be read while
-// there — only once it navigates back to our own domain (complete/error URLs) does polling succeed.
+// The checkout page itself is cross-origin (the provider's domain), so its location can't be read
+// while there — only once it navigates back to our own domain (complete/error URLs) does polling
+// succeed. Opened as a popup window rather than an iframe because payment providers (Rapyd, Grow)
+// send X-Frame-Options/CSP headers that block being framed at all.
 @Composable
 actual fun CheckoutWebView(
     url: String,
@@ -35,46 +37,41 @@ actual fun CheckoutWebView(
             Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
         }
         DisposableEffect(url) {
-            val handle = embedCheckoutIframe(
+            val handle = openCheckoutWindow(
                 url,
                 completeUrlPrefix,
                 errorUrlPrefix,
                 onComplete = { onComplete() },
                 onError = { onError("Payment failed or was cancelled.") },
+                onClosed = { onCancel() },
             )
-            onDispose { removeCheckoutIframe(handle) }
+            onDispose { closeCheckoutWindow(handle) }
         }
     }
 }
 
 @JsFun(
-    "(url, completePrefix, errorPrefix, onComplete, onError) => {" +
-        "const iframe = document.createElement('iframe');" +
-        "iframe.src = url;" +
-        "iframe.style.position = 'fixed';" +
-        "iframe.style.top = '0'; iframe.style.left = '0'; iframe.style.right = '0'; iframe.style.bottom = '0';" +
-        "iframe.style.width = '100vw'; iframe.style.height = '100vh';" +
-        "iframe.style.border = 'none'; iframe.style.zIndex = '2147483647';" +
-        "iframe.allow = 'payment';" +
-        "document.body.appendChild(iframe);" +
+    "(url, completePrefix, errorPrefix, onComplete, onError, onClosed) => {" +
+        "const popup = window.open(url, 'checkout', 'width=480,height=760');" +
         "const interval = setInterval(() => {" +
+        "  if (!popup || popup.closed) { clearInterval(interval); onClosed(); return; }" +
         "  try {" +
-        "    const href = iframe.contentWindow.location.href;" +
-        "    if (href.indexOf(completePrefix) === 0) { clearInterval(interval); onComplete(); }" +
-        "    else if (href.indexOf(errorPrefix) === 0) { clearInterval(interval); onError(); }" +
+        "    const href = popup.location.href;" +
+        "    if (href.indexOf(completePrefix) === 0) { clearInterval(interval); popup.close(); onComplete(); }" +
+        "    else if (href.indexOf(errorPrefix) === 0) { clearInterval(interval); popup.close(); onError(); }" +
         "  } catch (e) { /* cross-origin while on the checkout page itself; ignore */ }" +
         "}, 500);" +
-        "iframe.dataset.pollHandle = interval;" +
-        "return iframe;" +
+        "return { popup, interval };" +
         "}"
 )
-private external fun embedCheckoutIframe(
+private external fun openCheckoutWindow(
     url: String,
     completePrefix: String,
     errorPrefix: String,
     onComplete: () -> Unit,
     onError: () -> Unit,
+    onClosed: () -> Unit,
 ): JsAny
 
-@JsFun("(iframe) => { if (iframe.dataset.pollHandle) clearInterval(parseInt(iframe.dataset.pollHandle)); iframe.remove(); }")
-private external fun removeCheckoutIframe(iframe: JsAny)
+@JsFun("(handle) => { clearInterval(handle.interval); if (handle.popup && !handle.popup.closed) handle.popup.close(); }")
+private external fun closeCheckoutWindow(handle: JsAny)
