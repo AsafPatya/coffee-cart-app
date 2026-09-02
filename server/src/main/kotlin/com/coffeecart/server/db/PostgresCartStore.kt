@@ -40,6 +40,12 @@ class PostgresCartStore {
         } > 0
     }
 
+    fun setGrowWebhookUrl(cartId: String, webhookUrl: String): Boolean = transaction {
+        CoffeeCartsTable.update({ CoffeeCartsTable.id eq cartId }) {
+            it[growWebhookUrl] = webhookUrl
+        } > 0
+    }
+
     fun add(name: String, address: String, imageUrl: String, placeId: String? = null, phone: String? = null, cartImages: List<String> = emptyList()): CoffeeCart {
         val cart = CoffeeCart(id = UUID.randomUUID().toString(), name = name, address = address, imageUrl = imageUrl, placeId = placeId, phone = phone, cartImages = cartImages)
         transaction {
@@ -84,6 +90,7 @@ class PostgresCartStore {
             it[rating] = cart.rating
             it[userRatingsTotal] = cart.userRatingsTotal
             it[CoffeeCartsTable.website] = cart.website
+            it[growWebhookUrl] = cart.growWebhookUrl
         } > 0
     }
 
@@ -143,5 +150,6 @@ class PostgresCartStore {
         rating = this[CoffeeCartsTable.rating],
         userRatingsTotal = this[CoffeeCartsTable.userRatingsTotal],
         website = this[CoffeeCartsTable.website],
+        growWebhookUrl = this[CoffeeCartsTable.growWebhookUrl],
     )
 }

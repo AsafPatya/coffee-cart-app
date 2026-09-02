@@ -6,6 +6,7 @@ import com.coffeecart.server.db.PostgresOrderStore
 import com.coffeecart.server.google.toDto
 import com.coffeecart.server.google.GooglePlacesConfig
 import com.coffeecart.server.google.GooglePlacesService
+import com.coffeecart.server.grow.GrowClient
 import com.coffeecart.server.rapyd.RapydClient
 import com.coffeecart.server.rapyd.RapydConfig
 import com.coffeecart.server.rapyd.RapydSigner
@@ -90,6 +91,7 @@ fun Application.module() {
         }
     }
     val rapydClient = RapydClient(httpClient)
+    val growClient = GrowClient(httpClient)
 
     // Mounted to a persistent Railway volume in production so uploaded images survive restarts/redeploys.
     val imagesDir = File(System.getenv("IMAGES_DIR") ?: "images").apply { mkdirs() }
@@ -325,28 +327,30 @@ fun Application.module() {
             val orderId = call.parameters["orderId"]
             val cart = cartId?.let { cartStore.getById(it) }
             val order = orderId?.let { orderStore.getById(it) }
-            val walletId = "ewallet_f64e93a83b4830f61c8de72b3644387c"
-            println("[Checkout API] Creating checkout: cartId=$cartId, orderId=$orderId, walletId=$walletId")
+            println("[Checkout API] Creating checkout: cartId=$cartId, orderId=$orderId")
             if (order == null) {
                 call.respond(HttpStatusCode.BadRequest)
+                return@post
+            }
+            val growWebhookUrl = cart?.growWebhookUrl
+            if (growWebhookUrl == null) {
+                call.respondText("This cart has no payment method configured", status = HttpStatusCode.UnprocessableEntity)
                 return@post
             }
             try {
                 val amount = order.items.sumOf { it.product.price * it.quantity }
                 println("[Checkout API] Amount to charge: $amount ILS")
-                val url = rapydClient.createCheckout(
-                    walletId = walletId,
-                    amountInMainUnits = amount,
-                    currency = "ILS",
+                val url = growClient.createPaymentLink(
+                    webhookUrl = growWebhookUrl,
                     orderId = order.id,
+                    amount = amount,
                     completeUrl = "$publicBaseUrl/payments/complete",
-                    errorUrl = "$publicBaseUrl/payments/error",
                 )
                 println("[Checkout API] Success! Redirect URL generated: $url")
                 orderStore.setCheckoutUrl(order.id, url)
                 call.respond(HttpStatusCode.Created, CheckoutResponse(url = url))
             } catch (e: Exception) {
-                System.err.println("Database/Rapyd checkout creation failed:")
+                System.err.println("Grow checkout creation failed:")
                 e.printStackTrace()
                 call.respondText(e.message ?: "Failed to create checkout", status = HttpStatusCode.InternalServerError)
             }

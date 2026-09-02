@@ -20,4 +20,5 @@ data class CoffeeCart(
     val rating: Double? = null,
     val userRatingsTotal: Int? = null,
     val website: String? = null,
+    val growWebhookUrl: String? = null,
 )

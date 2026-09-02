@@ -19,6 +19,7 @@ object CoffeeCartsTable : Table("coffee_carts") {
     val rating = double("rating").nullable()
     val userRatingsTotal = integer("user_ratings_total").nullable()
     val website = varchar("website", 1024).nullable()
+    val growWebhookUrl = varchar("grow_webhook_url", 1024).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }
