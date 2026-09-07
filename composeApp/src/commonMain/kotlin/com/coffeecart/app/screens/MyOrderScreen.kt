@@ -1,5 +1,6 @@
 package com.coffeecart.app.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -38,13 +40,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.app.ui.payment.CheckoutWebView
-import com.coffeecart.shared.data.remote.ServerEnvironment
+import com.coffeecart.app.ui.payment.clearCheckoutReturnUrl
+import com.coffeecart.app.ui.payment.currentPageUrl
 import com.coffeecart.shared.domain.ShoppingCartState
 import com.coffeecart.shared.feature.myorder.MyOrderViewModel
 import com.coffeecart.shared.model.OrderItem
@@ -73,8 +77,30 @@ fun MyOrderScreen(
     val checkoutUrl by viewModel.checkoutUrl.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val completeUrlPrefix = "${ServerEnvironment.baseUrl}/payments/complete"
-    val errorUrlPrefix = "${ServerEnvironment.baseUrl}/payments/error"
+    // Path only, not a full domain+path prefix: the server builds these against the web app's own
+    // public domain (see webPublicBaseUrl in Application.kt), which differs from the API server's
+    // domain (ServerEnvironment.baseUrl) — matching by path keeps this independent of which domain
+    // actually serves it, across QA/prod/local and Android/iOS/web alike.
+    val completeUrlPrefix = "/payments/complete"
+    val errorUrlPrefix = "/payments/error"
+
+    // On web, checkout redirects the current tab away and Grow redirects back to complete/error —
+    // the app reloads fresh at that URL, so check for it once on startup (no-op on Android/iOS,
+    // which embed checkout in a native WebView within the same session).
+    LaunchedEffect(Unit) {
+        val returnUrl = currentPageUrl()
+        when {
+            returnUrl.contains(completeUrlPrefix) -> {
+                val message = getString(Res.string.strOrderPlaced)
+                viewModel.onCheckoutComplete(message)
+                clearCheckoutReturnUrl()
+            }
+            returnUrl.contains(errorUrlPrefix) -> {
+                viewModel.onCheckoutError("Payment failed or was cancelled.")
+                clearCheckoutReturnUrl()
+            }
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.snackBarMessages.collect { message ->
@@ -92,9 +118,7 @@ fun MyOrderScreen(
                 onQuantityChange = { product, quantity -> viewModel.updateQuantity(product, quantity) },
                 onExploreCartsClick = onExploreCartsClick,
                 onItemClick = { item -> selectedItem = item },
-                onPlaceOrderClick = {
-                    viewModel.placeOrder()
-                },
+                onPlaceOrderClick = { viewModel.placeOrder() },
             )
         }
         SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))
@@ -110,12 +134,19 @@ fun MyOrderScreen(
                         viewModel.onCheckoutComplete(message)
                     }
                 },
-                onError = { message ->
-                    viewModel.onCheckoutError(message)
-                },
+                onError = { message -> viewModel.onCheckoutError(message) },
                 onCancel = { viewModel.onCheckoutCancel() },
                 modifier = Modifier.fillMaxSize(),
             )
+        }
+
+        if (isPlacingOrder) {
+            Box(
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 

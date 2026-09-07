@@ -27,6 +27,7 @@ actual fun CheckoutWebView(
     onError: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier,
+    popupHandle: CheckoutPopupHandle?,
 ) {
     Column(modifier) {
         IconButton(
@@ -47,11 +48,11 @@ actual fun CheckoutWebView(
                         override fun shouldOverrideUrlLoading(view: WebView?, requestUrl: String?): Boolean {
                             val navigatedUrl = requestUrl ?: return false
                             return when {
-                                navigatedUrl.startsWith(completeUrlPrefix) -> {
+                                navigatedUrl.contains(completeUrlPrefix) -> {
                                     onComplete()
                                     true
                                 }
-                                navigatedUrl.startsWith(errorUrlPrefix) -> {
+                                navigatedUrl.contains(errorUrlPrefix) -> {
                                     onError("Payment failed or was cancelled.")
                                     true
                                 }

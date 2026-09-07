@@ -31,6 +31,7 @@ actual fun CheckoutWebView(
     onError: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier,
+    popupHandle: CheckoutPopupHandle?,
 ) {
     Column(modifier) {
         IconButton(
@@ -52,11 +53,11 @@ actual fun CheckoutWebView(
                     ) {
                         val navigatedUrl = decidePolicyForNavigationAction.request.URL?.absoluteString
                         when {
-                            navigatedUrl != null && navigatedUrl.startsWith(completeUrlPrefix) -> {
+                            navigatedUrl != null && navigatedUrl.contains(completeUrlPrefix) -> {
                                 onComplete()
                                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyCancel)
                             }
-                            navigatedUrl != null && navigatedUrl.startsWith(errorUrlPrefix) -> {
+                            navigatedUrl != null && navigatedUrl.contains(errorUrlPrefix) -> {
                                 onError("Payment failed or was cancelled.")
                                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyCancel)
                             }

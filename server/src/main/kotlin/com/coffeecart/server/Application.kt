@@ -103,6 +103,11 @@ fun Application.module() {
 
     val googlePlacesService = GooglePlacesService(httpClient, publicBaseUrl)
 
+    // The web app (SPA, with its own domain and SPA-fallback routing) is what customers actually
+    // land on after payment — not this API server, which has no route for /payments/*.
+    val webPublicBaseUrl = System.getenv("RAILWAY_SERVICE_COFFEE_CART_WEB_URL")?.let { "https://$it" }
+        ?: publicBaseUrl
+
     routing {
         staticFiles("/images", imagesDir)
 
@@ -344,7 +349,7 @@ fun Application.module() {
                     webhookUrl = growWebhookUrl,
                     orderId = order.id,
                     amount = amount,
-                    completeUrl = "$publicBaseUrl/payments/complete",
+                    completeUrl = "$webPublicBaseUrl/payments/complete",
                 )
                 println("[Checkout API] Success! Redirect URL generated: $url")
                 orderStore.setCheckoutUrl(order.id, url)

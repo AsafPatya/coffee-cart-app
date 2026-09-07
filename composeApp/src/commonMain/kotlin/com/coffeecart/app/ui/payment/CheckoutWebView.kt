@@ -18,4 +18,5 @@ expect fun CheckoutWebView(
     onError: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier,
+    popupHandle: CheckoutPopupHandle? = null,
 )
