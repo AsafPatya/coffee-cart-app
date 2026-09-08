@@ -35,7 +35,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,17 +50,16 @@ import com.coffeecart.app.ui.payment.clearCheckoutReturnUrl
 import com.coffeecart.app.ui.payment.currentPageUrl
 import com.coffeecart.shared.domain.ShoppingCartState
 import com.coffeecart.shared.feature.myorder.MyOrderViewModel
+import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.Product
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strComments
 import coffeecart.composeapp.generated.resources.strNoOpenOrder
-import coffeecart.composeapp.generated.resources.strOrderPlaced
 import coffeecart.composeapp.generated.resources.strPlaceOrder
 import coffeecart.composeapp.generated.resources.strStartNewOrder
 import coffeecart.composeapp.generated.resources.strUpdateItem
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -76,7 +74,6 @@ fun MyOrderScreen(
     val isPlacingOrder by viewModel.isPlacingOrder.collectAsState()
     val checkoutUrl by viewModel.checkoutUrl.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
     // Path only, not a full domain+path prefix: the server builds these against the web app's own
     // public domain (see webPublicBaseUrl in Application.kt), which differs from the API server's
     // domain (ServerEnvironment.baseUrl) — matching by path keeps this independent of which domain
@@ -91,8 +88,7 @@ fun MyOrderScreen(
         val returnUrl = currentPageUrl()
         when {
             returnUrl.contains(completeUrlPrefix) -> {
-                val message = getString(Res.string.strOrderPlaced)
-                viewModel.onCheckoutComplete(message)
+                viewModel.onCheckoutSuccess(returnUrl)
                 clearCheckoutReturnUrl()
             }
             returnUrl.contains(errorUrlPrefix) -> {
@@ -110,8 +106,10 @@ fun MyOrderScreen(
         }
     }
 
+    val successOrder by viewModel.successOrder.collectAsState()
+
     Box(modifier = Modifier.fillMaxSize()) {
-        if (checkoutUrl == null) {
+        if (checkoutUrl == null && successOrder == null) {
             MyOrderContent(
                 state = state,
                 isPlacingOrder = isPlacingOrder,
@@ -128,15 +126,17 @@ fun MyOrderScreen(
                 url = url,
                 completeUrlPrefix = completeUrlPrefix,
                 errorUrlPrefix = errorUrlPrefix,
-                onComplete = {
-                    coroutineScope.launch {
-                        val message = getString(Res.string.strOrderPlaced)
-                        viewModel.onCheckoutComplete(message)
-                    }
-                },
+                onComplete = { navigatedUrl -> viewModel.onCheckoutSuccess(navigatedUrl) },
                 onError = { message -> viewModel.onCheckoutError(message) },
                 onCancel = { viewModel.onCheckoutCancel() },
                 modifier = Modifier.fillMaxSize(),
+            )
+        }
+
+        successOrder?.let { order ->
+            PaymentSuccessContent(
+                order = order,
+                onDismiss = { viewModel.dismissSuccessOrder() },
             )
         }
 
@@ -159,6 +159,41 @@ fun MyOrderScreen(
                 selectedItem = null
             }
         )
+    }
+}
+
+@Composable
+private fun PaymentSuccessContent(order: Order, onDismiss: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth().padding(Spacing.Large.dp),
+        ) {
+            Text(
+                text = "Payment successful!",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = Spacing.Medium.dp),
+            )
+
+            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                items(order.items, key = { it.product.name }) { item ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Text("${item.quantity}x ${item.product.name}", style = MaterialTheme.typography.bodyLarge)
+                        Text(formatPrice(item.product.price * item.quantity), style = MaterialTheme.typography.bodyLarge)
+                    }
+                    HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.Small.dp))
+                }
+            }
+
+            Spacer(Modifier.height(Spacing.Medium.dp))
+
+            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                Text("Done")
+            }
+        }
     }
 }
 

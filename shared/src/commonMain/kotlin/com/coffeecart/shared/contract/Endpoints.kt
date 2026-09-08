@@ -27,6 +27,9 @@ object Endpoints {
 
     fun markOrderPrinted(cartId: String, orderId: String): String = "$CARTS/$cartId/orders/$orderId/mark-printed"
 
+    /** Not nested under /carts — an order id is already globally unique. */
+    fun markOrderPaid(orderId: String): String = "/orders/$orderId/mark-paid"
+
     const val PLACES = "/places"
 
     fun placeDetails(placeId: String): String = "$PLACES/details?placeId=$placeId"

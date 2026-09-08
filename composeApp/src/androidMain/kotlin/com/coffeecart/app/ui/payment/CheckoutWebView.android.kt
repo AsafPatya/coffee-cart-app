@@ -23,7 +23,7 @@ actual fun CheckoutWebView(
     url: String,
     completeUrlPrefix: String,
     errorUrlPrefix: String,
-    onComplete: () -> Unit,
+    onComplete: (url: String) -> Unit,
     onError: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier,
@@ -49,7 +49,7 @@ actual fun CheckoutWebView(
                             val navigatedUrl = requestUrl ?: return false
                             return when {
                                 navigatedUrl.contains(completeUrlPrefix) -> {
-                                    onComplete()
+                                    onComplete(navigatedUrl)
                                     true
                                 }
                                 navigatedUrl.contains(errorUrlPrefix) -> {

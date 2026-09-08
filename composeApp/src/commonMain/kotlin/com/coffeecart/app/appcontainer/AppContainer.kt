@@ -3,6 +3,7 @@ package com.coffeecart.app.appcontainer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -13,6 +14,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.read
+import com.coffeecart.app.ui.payment.currentPageUrl
 import com.coffeecart.shared.data.repository.ShoppingCartRepository
 import com.coffeecart.shared.feature.appcontainer.AppContainerViewModel
 import org.koin.compose.koinInject
@@ -33,6 +35,17 @@ fun AppContainer(
     var topBarTitle by remember { mutableStateOf<String?>(null) }
 
     val cartProductCount by viewModel.cartProductCount.collectAsState()
+
+    // On web, a payment redirect back lands as a fresh page load at /payments/complete — force
+    // navigation to the Orders tab so its own return-URL handling (see MyOrderScreen) can run.
+    // No-op on Android/iOS (currentPageUrl() is empty there — no browser address bar to check).
+    LaunchedEffect(Unit) {
+        if (currentPageUrl().contains("/payments/complete")) {
+            navController.navigate(Destination.Orders.route) {
+                popUpTo(navController.graph.findStartDestination().id) { saveState = false }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {

@@ -36,4 +36,9 @@ class KtorOrderRepository(private val client: HttpClient) : OrderRepository {
 
     override suspend fun markOrderPrinted(cartId: String, orderId: String): Boolean =
         client.post("${ServerEnvironment.baseUrl}${Endpoints.markOrderPrinted(cartId, orderId)}").status == HttpStatusCode.OK
+
+    override suspend fun markOrderPaid(orderId: String): Order? {
+        val response = client.post("${ServerEnvironment.baseUrl}${Endpoints.markOrderPaid(orderId)}")
+        return if (response.status == HttpStatusCode.OK) response.body() else null
+    }
 }

@@ -14,7 +14,7 @@ expect fun CheckoutWebView(
     url: String,
     completeUrlPrefix: String,
     errorUrlPrefix: String,
-    onComplete: () -> Unit,
+    onComplete: (url: String) -> Unit,
     onError: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier,

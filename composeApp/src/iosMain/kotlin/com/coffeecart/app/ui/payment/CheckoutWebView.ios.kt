@@ -27,7 +27,7 @@ actual fun CheckoutWebView(
     url: String,
     completeUrlPrefix: String,
     errorUrlPrefix: String,
-    onComplete: () -> Unit,
+    onComplete: (url: String) -> Unit,
     onError: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier,
@@ -54,7 +54,7 @@ actual fun CheckoutWebView(
                         val navigatedUrl = decidePolicyForNavigationAction.request.URL?.absoluteString
                         when {
                             navigatedUrl != null && navigatedUrl.contains(completeUrlPrefix) -> {
-                                onComplete()
+                                onComplete(navigatedUrl)
                                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyCancel)
                             }
                             navigatedUrl != null && navigatedUrl.contains(errorUrlPrefix) -> {

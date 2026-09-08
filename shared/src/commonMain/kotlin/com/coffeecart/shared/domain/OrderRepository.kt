@@ -13,4 +13,6 @@ interface OrderRepository {
     suspend fun getUnprintedOrders(cartId: String): List<Order>
 
     suspend fun markOrderPrinted(cartId: String, orderId: String): Boolean
+
+    suspend fun markOrderPaid(orderId: String): Order?
 }

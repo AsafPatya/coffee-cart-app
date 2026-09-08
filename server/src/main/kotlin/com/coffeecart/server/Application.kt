@@ -277,6 +277,16 @@ fun Application.module() {
             call.respond(if (marked) HttpStatusCode.OK else HttpStatusCode.NotFound)
         }
 
+        post(Endpoints.markOrderPaid("{orderId}")) {
+            val orderId = call.parameters["orderId"]
+            val updated = orderId?.let { orderStore.markPaid(it) }
+            if (updated != null) {
+                call.respond(updated)
+            } else {
+                call.respond(HttpStatusCode.NotFound)
+            }
+        }
+
         post(Endpoints.advanceOrder("{id}", "{orderId}")) {
             val orderId = call.parameters["orderId"]
             val updated = orderId?.let { orderStore.advance(it) }
@@ -349,7 +359,7 @@ fun Application.module() {
                     webhookUrl = growWebhookUrl,
                     orderId = order.id,
                     amount = amount,
-                    completeUrl = "$webPublicBaseUrl/payments/complete",
+                    completeUrl = "$webPublicBaseUrl/payments/complete?orderId=${order.id}",
                 )
                 println("[Checkout API] Success! Redirect URL generated: $url")
                 orderStore.setCheckoutUrl(order.id, url)

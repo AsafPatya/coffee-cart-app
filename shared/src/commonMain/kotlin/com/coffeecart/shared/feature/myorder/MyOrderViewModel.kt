@@ -6,6 +6,7 @@ import com.coffeecart.shared.domain.OrderRepository
 import com.coffeecart.shared.domain.PaymentRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.domain.ShoppingCartState
+import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.Product
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,6 +30,9 @@ class MyOrderViewModel(
 
     private val _checkoutUrl = MutableStateFlow<String?>(null)
     val checkoutUrl: StateFlow<String?> = _checkoutUrl.asStateFlow()
+
+    private val _successOrder = MutableStateFlow<Order?>(null)
+    val successOrder: StateFlow<Order?> = _successOrder.asStateFlow()
 
     private val _snackBarMessages = MutableSharedFlow<String>(
         replay = 0,
@@ -60,12 +64,19 @@ class MyOrderViewModel(
         }
     }
 
-    fun onCheckoutComplete(onPlacedMessage: String) {
+    /** [url] is the completeUrl the payment provider redirected to, carrying the paid order's id
+     *  as a query param — see Application.kt's completeUrl construction. */
+    fun onCheckoutSuccess(url: String) {
+        val orderId = extractQueryParam(url, "orderId") ?: return
         viewModelScope.launch {
+            _successOrder.value = orderRepository.markOrderPaid(orderId)
             _checkoutUrl.value = null
             shoppingCartRepository.clear()
-            _snackBarMessages.emit(onPlacedMessage)
         }
+    }
+
+    fun dismissSuccessOrder() {
+        _successOrder.value = null
     }
 
     fun onCheckoutError(message: String) {
@@ -86,5 +97,14 @@ class MyOrderViewModel(
     fun updateItem(product: Product, quantity: Int, comment: String) {
         shoppingCartRepository.updateItem(product, quantity, comment)
     }
+}
+
+private fun extractQueryParam(url: String, key: String): String? {
+    val query = url.substringAfter('?', missingDelimiterValue = "")
+    if (query.isEmpty()) return null
+    return query.split("&")
+        .map { it.split("=", limit = 2) }
+        .firstOrNull { it.getOrNull(0) == key }
+        ?.getOrNull(1)
 }
 
