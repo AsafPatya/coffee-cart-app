@@ -39,8 +39,13 @@ fun AppContainer(
     // On web, a payment redirect back lands as a fresh page load at /payments/complete — force
     // navigation to the Orders tab so its own return-URL handling (see MyOrderScreen) can run.
     // No-op on Android/iOS (currentPageUrl() is empty there — no browser address bar to check).
-    LaunchedEffect(Unit) {
-        if (currentPageUrl().contains("/payments/complete")) {
+    // Waits for currentEntry to be non-null: NavHost (a child composable below) attaches the nav
+    // graph as part of its own composition, and navController.graph isn't readable before that —
+    // currentEntry naturally stays null until it is, so it doubles as the "graph is ready" signal.
+    var handledPaymentReturn by remember { mutableStateOf(false) }
+    LaunchedEffect(currentEntry) {
+        if (!handledPaymentReturn && currentEntry != null && currentPageUrl().contains("/payments/complete")) {
+            handledPaymentReturn = true
             navController.navigate(Destination.Orders.route) {
                 popUpTo(navController.graph.findStartDestination().id) { saveState = false }
             }
