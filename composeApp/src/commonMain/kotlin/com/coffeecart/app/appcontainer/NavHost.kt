@@ -31,10 +31,11 @@ fun AppNavHost(
     navController: NavHostController,
     innerPadding: PaddingValues,
     onCartNameLoaded: (String) -> Unit,
+    startDestination: String = Destination.Home.route,
 ) {
     NavHost(
         navController = navController,
-        startDestination = Destination.Home.route,
+        startDestination = startDestination,
         modifier = Modifier.padding(innerPadding),
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },

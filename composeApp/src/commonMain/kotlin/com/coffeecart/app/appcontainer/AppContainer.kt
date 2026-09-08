@@ -3,7 +3,6 @@ package com.coffeecart.app.appcontainer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,20 +35,13 @@ fun AppContainer(
 
     val cartProductCount by viewModel.cartProductCount.collectAsState()
 
-    // On web, a payment redirect back lands as a fresh page load at /payments/complete — force
-    // navigation to the Orders tab so its own return-URL handling (see MyOrderScreen) can run.
-    // No-op on Android/iOS (currentPageUrl() is empty there — no browser address bar to check).
-    // Waits for currentEntry to be non-null: NavHost (a child composable below) attaches the nav
-    // graph as part of its own composition, and navController.graph isn't readable before that —
-    // currentEntry naturally stays null until it is, so it doubles as the "graph is ready" signal.
-    var handledPaymentReturn by remember { mutableStateOf(false) }
-    LaunchedEffect(currentEntry) {
-        if (!handledPaymentReturn && currentEntry != null && currentPageUrl().contains("/payments/complete")) {
-            handledPaymentReturn = true
-            navController.navigate(Destination.Orders.route) {
-                popUpTo(navController.graph.findStartDestination().id) { saveState = false }
-            }
-        }
+    // On web, a payment redirect back lands as a fresh page load at /payments/complete — start
+    // directly on the Orders tab (rather than Home then navigating away) so its own return-URL
+    // handling (see MyOrderScreen) can run. Starting at Home first and redirecting away would still
+    // briefly compose it, which matters here: HomeScreen's local hero image failed to decode when
+    // loaded from a non-root path. No-op on Android/iOS (currentPageUrl() is empty there).
+    val startDestination = remember {
+        if (currentPageUrl().contains("/payments/complete")) Destination.Orders.route else Destination.Home.route
     }
 
     Scaffold(
@@ -94,7 +86,8 @@ fun AppContainer(
         AppNavHost(
             navController = navController,
             innerPadding = innerPadding,
-            onCartNameLoaded = { name -> topBarTitle = name }
+            onCartNameLoaded = { name -> topBarTitle = name },
+            startDestination = startDestination,
         )
     }
 }
