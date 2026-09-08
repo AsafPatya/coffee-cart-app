@@ -359,7 +359,10 @@ fun Application.module() {
                     webhookUrl = growWebhookUrl,
                     orderId = order.id,
                     amount = amount,
-                    completeUrl = "$webPublicBaseUrl/payments/complete?orderId=${order.id}",
+                    // Root path, not /payments/complete: Compose Resources' asset loading (fonts,
+                    // local images) breaks when the wasmJs SPA loads from a non-root path — landing
+                    // back on "/" instead avoids that whole class of bug.
+                    completeUrl = "$webPublicBaseUrl/?payment=complete&orderId=${order.id}",
                 )
                 println("[Checkout API] Success! Redirect URL generated: $url")
                 orderStore.setCheckoutUrl(order.id, url)

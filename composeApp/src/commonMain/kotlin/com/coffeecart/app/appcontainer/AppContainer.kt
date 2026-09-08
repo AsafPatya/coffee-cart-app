@@ -35,13 +35,14 @@ fun AppContainer(
 
     val cartProductCount by viewModel.cartProductCount.collectAsState()
 
-    // On web, a payment redirect back lands as a fresh page load at /payments/complete — start
-    // directly on the Orders tab (rather than Home then navigating away) so its own return-URL
-    // handling (see MyOrderScreen) can run. Starting at Home first and redirecting away would still
-    // briefly compose it, which matters here: HomeScreen's local hero image failed to decode when
-    // loaded from a non-root path. No-op on Android/iOS (currentPageUrl() is empty there).
+    // On web, a payment redirect back lands as a fresh page load at "/?payment=complete&orderId=…"
+    // — start directly on the Orders tab (rather than Home then navigating away) so its own
+    // return-URL handling (see MyOrderScreen) can run. Starting at Home first and redirecting away
+    // would still briefly compose it, which matters here: HomeScreen's local hero image failed to
+    // decode the one time this was tried loading from a non-root path (since fixed by redirecting to
+    // root instead — see Application.kt). No-op on Android/iOS (currentPageUrl() is empty there).
     val startDestination = remember {
-        if (currentPageUrl().contains("/payments/complete")) Destination.Orders.route else Destination.Home.route
+        if (currentPageUrl().contains("payment=complete")) Destination.Orders.route else Destination.Home.route
     }
 
     Scaffold(

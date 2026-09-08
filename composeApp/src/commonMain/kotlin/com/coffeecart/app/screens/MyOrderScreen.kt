@@ -74,12 +74,13 @@ fun MyOrderScreen(
     val isPlacingOrder by viewModel.isPlacingOrder.collectAsState()
     val checkoutUrl by viewModel.checkoutUrl.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    // Path only, not a full domain+path prefix: the server builds these against the web app's own
-    // public domain (see webPublicBaseUrl in Application.kt), which differs from the API server's
-    // domain (ServerEnvironment.baseUrl) — matching by path keeps this independent of which domain
-    // actually serves it, across QA/prod/local and Android/iOS/web alike.
-    val completeUrlPrefix = "/payments/complete"
-    val errorUrlPrefix = "/payments/error"
+    // A query marker, not a path: the server redirects back to root ("/") rather than a
+    // /payments/complete path, since Compose Resources' asset loading (fonts, local images) breaks
+    // when the wasmJs SPA loads from a non-root path. Matching by substring keeps this independent
+    // of which domain actually serves it (web app vs API server — see webPublicBaseUrl in
+    // Application.kt), across QA/prod/local and Android/iOS/web alike.
+    val completeUrlPrefix = "payment=complete"
+    val errorUrlPrefix = "payment=error"
 
     // On web, checkout redirects the current tab away and Grow redirects back to complete/error —
     // the app reloads fresh at that URL, so check for it once on startup (no-op on Android/iOS,
