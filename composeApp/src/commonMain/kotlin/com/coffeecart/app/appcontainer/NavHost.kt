@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.savedstate.read
 import com.coffeecart.app.screens.home.HomeScreen
-import com.coffeecart.app.screens.MyOrderScreen
+import com.coffeecart.app.screens.myorder.MyOrderScreen
 import com.coffeecart.app.screens.coffeecart.ProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen

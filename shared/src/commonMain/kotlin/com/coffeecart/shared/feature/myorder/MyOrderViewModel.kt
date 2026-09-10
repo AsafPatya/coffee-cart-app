@@ -108,3 +108,10 @@ private fun extractQueryParam(url: String, key: String): String? {
         ?.getOrNull(1)
 }
 
+/** Formats a price in Israeli shekels, e.g. 4.5 -> "₪4.50". */
+fun formatPrice(price: Double): String {
+    val agora = price.toString().substringAfter(".", "00").padEnd(2, '0').take(2)
+    val shekels = price.toString().substringBefore(".")
+    return "₪$shekels.$agora"
+}
+

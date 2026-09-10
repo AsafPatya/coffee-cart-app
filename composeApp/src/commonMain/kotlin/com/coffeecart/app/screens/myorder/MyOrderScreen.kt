@@ -1,4 +1,4 @@
-package com.coffeecart.app.screens
+package com.coffeecart.app.screens.myorder
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,14 +11,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,8 +58,11 @@ import com.coffeecart.app.ui.payment.clearCheckoutReturnUrl
 import com.coffeecart.app.ui.payment.currentPageUrl
 import com.coffeecart.shared.domain.ShoppingCartState
 import com.coffeecart.shared.feature.myorder.MyOrderViewModel
+import com.coffeecart.shared.feature.myorder.formatPrice
 import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.OrderItem
+import com.coffeecart.shared.model.OrderStatus
+import com.coffeecart.shared.model.PaymentStatus
 import com.coffeecart.shared.model.Product
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strComments
@@ -240,7 +251,7 @@ private fun MyOrderContent(
                     onQuantityChange = { quantity -> onQuantityChange(item.product, quantity) },
                     onClick = { onItemClick(item) },
                 )
-                HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.Small.dp))
+                Spacer(modifier = Modifier.padding(vertical = Spacing.Small.dp))
             }
         }
 
@@ -274,12 +285,27 @@ private fun OrderItemRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
+            .shadow(
+                elevation = Spacing.Small.dp,
+                shape = MaterialTheme.shapes.large,
+                clip = false
+            )
+            .clip(MaterialTheme.shapes.large)
+            .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
+            .padding(Spacing.Medium.dp)
+,
+        verticalAlignment = Alignment.Top,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(item.product.name, style = MaterialTheme.typography.titleMedium)
-            Text(formatPrice(item.product.price), style = MaterialTheme.typography.bodyMedium)
+            if (item.product.description.isNotEmpty()) {
+                Text(
+                    text = item.product.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (item.comment.isNotEmpty()) {
                 Text(
                     text = item.comment,
@@ -288,13 +314,53 @@ private fun OrderItemRow(
                     modifier = Modifier.padding(top = Spacing.XXSmall.dp)
                 )
             }
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = Spacing.Small.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(formatPrice(item.product.price), style = MaterialTheme.typography.bodyMedium)
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Composed in reverse of the intended left-to-right visual order (+, count, −, 🗑) —
+                    // the app is RTL, and Row mirrors child placement under RTL layout direction.
+                    IconButton(onClick = { onQuantityChange(0) }) {
+                        Icon(imageVector = Icons.Default.DeleteOutline, contentDescription = "Remove item")
+                    }
+                    Spacer(modifier = Modifier.width(Spacing.Small.dp))
+                    FilledTonalIconButton(
+                        shape = MaterialTheme.shapes.small,
+                        onClick = { onQuantityChange(item.quantity - 1) }
+                    ) {
+                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease quantity")
+                    }
+                    Text(
+                        "${item.quantity}",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(horizontal = Spacing.Small.dp),
+                    )
+                    FilledTonalIconButton(
+                        shape = MaterialTheme.shapes.small,
+                        onClick = { onQuantityChange(item.quantity + 1) }
+                    ) {
+                        Icon(imageVector = Icons.Default.Add, contentDescription = "Increase quantity")
+                    }
+                }
+            }
         }
-        IconButton(onClick = { onQuantityChange(item.quantity - 1) }) {
-            Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease quantity")
-        }
-        Text("${item.quantity}", style = MaterialTheme.typography.titleMedium)
-        IconButton(onClick = { onQuantityChange(item.quantity + 1) }) {
-            Icon(imageVector = Icons.Default.Add, contentDescription = "Increase quantity")
+
+        if (item.product.imageUrl.isNotEmpty()) {
+            Spacer(modifier = Modifier.width(Spacing.Medium.dp))
+            AsyncImage(
+                model = item.product.imageUrl,
+                contentDescription = item.product.name,
+                modifier = Modifier
+                    .size(Spacing.XXXXXLarge.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .align(Alignment.CenterVertically),
+                contentScale = ContentScale.Crop,
+            )
         }
     }
 }
@@ -372,50 +438,84 @@ private fun EditOrderItemBottomSheet(
     }
 }
 
-private fun formatPrice(price: Double): String {
-    val cents = price.toString().substringAfter(".", "00").padEnd(2, '0').take(2)
-    val dollars = price.toString().substringBefore(".")
-    return "$$dollars.$cents"
-}
-
 @Preview
 @Composable
 private fun MyOrderScreenEmptyPreview() {
-    MyOrderContent(
-        state = ShoppingCartState(),
-        isPlacingOrder = false,
-        onQuantityChange = { _, _ -> },
-        onExploreCartsClick = {},
-        onItemClick = {},
-        onPlaceOrderClick = {},
-    )
+    Box(modifier = Modifier.background(Color.White).fillMaxSize()) {
+        MyOrderContent(
+            state = ShoppingCartState(),
+            isPlacingOrder = false,
+            onQuantityChange = { _, _ -> },
+            onExploreCartsClick = {},
+            onItemClick = {},
+            onPlaceOrderClick = {},
+        )
+    }
 }
 
-@Preview
+@Preview(locale = "iw")
 @Composable
 private fun MyOrderScreenPreview() {
     val latte = Product(
-        name = "Caffè Latte",
+        name = "לאטה",
         price = 4.50,
-        description = "Rich espresso with steamed milk and a thin layer of foam.",
+        description = "אספרסו עשיר עם חלב מוקצף ושכבה דקה של קצף",
         imageUrl = "https://picsum.photos/seed/latte/200"
     )
     val cappuccino = Product(
-        name = "Cappuccino",
+        name = "קפוצ'ינו",
         price = 4.25,
-        description = "Espresso balanced with steamed milk and a thick layer of foam.",
+        description = "אספרסו מאוזן עם חלב מוקצף ושכבה עבה של קצף",
         imageUrl = "https://picsum.photos/seed/capp/200"
     )
-    MyOrderContent(
-        state = ShoppingCartState(
-            cartId = "1",
-            cartName = "Downtown Espresso Cart",
-            items = listOf(OrderItem(latte, quantity = 2, comment = "Extra hot, oat milk"), OrderItem(cappuccino, quantity = 1)),
-        ),
-        isPlacingOrder = false,
-        onQuantityChange = { _, _ -> },
-        onExploreCartsClick = {},
-        onItemClick = {},
-        onPlaceOrderClick = {},
+    Box(modifier = Modifier.background(Color.White).fillMaxSize()) {
+        MyOrderContent(
+            state = ShoppingCartState(
+                cartId = "1",
+                cartName = "עגלת אספרסו במרכז העיר",
+                items = listOf(
+                    OrderItem(latte, quantity = 2, comment = "חם מאוד, חלב שיבולת שועל"),
+                    OrderItem(cappuccino, quantity = 1)
+                ),
+            ),
+            isPlacingOrder = false,
+            onQuantityChange = { _, _ -> },
+            onExploreCartsClick = {},
+            onItemClick = {},
+            onPlaceOrderClick = {},
+        )
+    }
+}
+
+@Preview(locale = "iw")
+@Composable
+private fun PaymentSuccessContentPreview() {
+    val latte = Product(
+        name = "לאטה",
+        price = 4.50,
+        description = "אספרסו עשיר עם חלב מוקצף ושכבה דקה של קצף",
+        imageUrl = "https://picsum.photos/seed/latte/200"
     )
+    val cappuccino = Product(
+        name = "קפוצ'ינו",
+        price = 4.25,
+        description = "אספרסו מאוזן עם חלב מוקצף ושכבה עבה של קצף",
+        imageUrl = "https://picsum.photos/seed/capp/200"
+    )
+    Box(modifier = Modifier.background(Color.White).fillMaxSize()) {
+        PaymentSuccessContent(
+            order = Order(
+                id = "preview-order-id",
+                cartId = "1",
+                items = listOf(
+                    OrderItem(latte, quantity = 2, comment = "חם מאוד, חלב שיבולת שועל"),
+                    OrderItem(cappuccino, quantity = 1),
+                ),
+                status = OrderStatus.ARRIVED,
+                createdAt = 0L,
+                paymentStatus = PaymentStatus.PAID,
+            ),
+            onDismiss = {},
+        )
+    }
 }
