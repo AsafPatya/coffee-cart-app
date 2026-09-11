@@ -20,7 +20,8 @@ enum class Destination(
         listOf(
             Routes.COFFEE_CART_DETAILS,
             Routes.COFFEE_CART_MENU_CATEGORIES,
-            Routes.COFFEE_CART_CATEGORY_PRODUCTS
+            Routes.COFFEE_CART_CATEGORY_PRODUCTS,
+            Routes.PRODUCT_DETAILS,
         )
     ),
     Orders("orders", Res.string.strMyOrder),
@@ -53,6 +54,10 @@ object Routes {
     const val COFFEE_CART_CATEGORY_PRODUCTS = "coffee_cart_category_products/{cartId}/{categoryName}"
     fun coffeeCartCategoryProducts(cartId: String, categoryName: String): String = "coffee_cart_category_products/$cartId/$categoryName"
 
+    const val PRODUCT_DETAILS = "product_details/{cartId}/{categoryName}/{productName}"
+    fun productDetails(cartId: String, categoryName: String, productName: String): String =
+        "product_details/$cartId/${categoryName.encodePathSegment()}/${productName.encodePathSegment()}"
+
     const val COFFEE_CART_ADD_CATEGORY_WIZARD = "coffee_cart_add_category_wizard/{cartId}"
     fun coffeeCartAddCategoryWizard(cartId: String): String = "coffee_cart_add_category_wizard/$cartId"
 
@@ -70,4 +75,9 @@ object Routes {
 
     const val COFFEE_CART_ADD_FROM_GOOGLE = "coffee_cart_add_from_google"
 }
+
+/** Escapes the one character ("/") that would otherwise be misread as a path separator — product
+ *  and category names can legitimately contain it (e.g. "Egg salad / veggie omelet sandwich"). */
+private fun String.encodePathSegment(): String = replace("/", "%2F")
+fun String.decodePathSegment(): String = replace("%2F", "/")
 

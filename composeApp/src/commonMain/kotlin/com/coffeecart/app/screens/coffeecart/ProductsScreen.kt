@@ -26,9 +26,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,15 +40,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
+import coffeecart.composeapp.generated.resources.Res
+import coffeecart.composeapp.generated.resources.strClickProductToAddToCart
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
 import com.coffeecart.shared.feature.products.ProductsUiState
 import com.coffeecart.shared.feature.products.ProductsViewModel
 import com.coffeecart.shared.model.Product
-import coffeecart.composeapp.generated.resources.Res
-import coffeecart.composeapp.generated.resources.strAddedToBasket
-import coffeecart.composeapp.generated.resources.strClickProductToAddToCart
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -61,12 +58,11 @@ import org.koin.compose.koinInject
 fun ProductsScreen(
     cartId: String,
     categoryName: String,
+    onProductClick: (Product) -> Unit,
     viewModel: ProductsViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
-    var selectedProduct by remember { mutableStateOf<Product?>(null) }
-    val addedText = stringResource(Res.string.strAddedToBasket)
 
     LaunchedEffect(cartId, categoryName) {
         viewModel.loadProducts(cartId, categoryName)
@@ -93,25 +89,8 @@ fun ProductsScreen(
             is ProductsUiState.Success -> {
                 CoffeeCartCategoryProductsContent(
                     products = state.products,
-                    onProductClick = { product -> selectedProduct = product },
+                    onProductClick = onProductClick,
                 )
-
-                selectedProduct?.let { product ->
-                    ProductDetailsBottomSheet(
-                        product = product,
-                        onDismiss = { selectedProduct = null },
-                        onAddToCart = { quantity, comment ->
-                            viewModel.addProductToCart(
-                                cartId = cartId,
-                                product = product,
-                                quantity = quantity,
-                                comment = comment,
-                                addedText = addedText,
-                            )
-                            selectedProduct = null
-                        },
-                    )
-                }
             }
         }
         SnackbarHost(hostState = snackBarHostState, modifier = Modifier.align(Alignment.BottomCenter))

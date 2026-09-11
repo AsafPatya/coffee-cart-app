@@ -14,6 +14,7 @@ import androidx.savedstate.read
 import com.coffeecart.app.screens.home.HomeScreen
 import com.coffeecart.app.screens.myorder.MyOrderScreen
 import com.coffeecart.app.screens.coffeecart.ProductsScreen
+import com.coffeecart.app.screens.coffeecart.ProductDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
 import com.coffeecart.app.screens.coffeecart.CategoriesScreen
@@ -78,7 +79,30 @@ fun AppNavHost(
             val categoryName = backStackEntry.arguments?.read {
                 getStringOrNull("categoryName")
             } ?: ""
-            ProductsScreen(cartId = cartId, categoryName = categoryName)
+            ProductsScreen(
+                cartId = cartId,
+                categoryName = categoryName,
+                onProductClick = { product ->
+                    navController.navigate(Routes.productDetails(cartId, categoryName, product.name))
+                },
+            )
+        }
+        composable(Routes.PRODUCT_DETAILS) { backStackEntry ->
+            val cartId = backStackEntry.arguments?.read {
+                getStringOrNull("cartId")
+            } ?: ""
+            val categoryName = backStackEntry.arguments?.read {
+                getStringOrNull("categoryName")
+            }?.decodePathSegment() ?: ""
+            val productName = backStackEntry.arguments?.read {
+                getStringOrNull("productName")
+            }?.decodePathSegment() ?: ""
+            ProductDetailsScreen(
+                cartId = cartId,
+                categoryName = categoryName,
+                productName = productName,
+                onBackClick = { navController.popBackStack() },
+            )
         }
         composable(Routes.COFFEE_CART_ADD_CATEGORY_WIZARD) { backStackEntry ->
             val cartId = backStackEntry.arguments?.read {
