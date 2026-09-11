@@ -1,6 +1,7 @@
 package com.coffeecart.shared.contract
 
 import com.coffeecart.shared.model.CoffeeCart
+import com.coffeecart.shared.model.Customization
 import com.coffeecart.shared.model.MenuCategory
 import com.coffeecart.shared.model.Product
 import kotlinx.serialization.Serializable
@@ -11,6 +12,7 @@ data class ProductDto(
     val price: Double,
     val description: String,
     val imageUrl: String,
+    val customizations: List<Customization> = emptyList(),
 )
 
 @Serializable
@@ -44,6 +46,7 @@ fun ProductDto.toModel(): Product = Product(
     price = price,
     description = description,
     imageUrl = imageUrl,
+    customizations = customizations,
 )
 
 fun Product.toDto(): ProductDto = ProductDto(
@@ -51,6 +54,7 @@ fun Product.toDto(): ProductDto = ProductDto(
     price = price,
     description = description,
     imageUrl = imageUrl,
+    customizations = customizations,
 )
 
 fun MenuCategoryDto.toModel(): MenuCategory = MenuCategory(
