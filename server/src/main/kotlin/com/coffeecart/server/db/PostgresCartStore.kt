@@ -13,6 +13,8 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 
+private val menuJson = Json { ignoreUnknownKeys = true }
+
 /** Postgres-backed cart storage. Replaces the old in-memory CartStore — data now survives restarts. */
 class PostgresCartStore {
     init {
@@ -75,7 +77,7 @@ class PostgresCartStore {
     }
 
     fun updateFull(cart: CoffeeCart): Boolean = transaction {
-        val jsonString = Json.encodeToString(cart.categories)
+        val jsonString = menuJson.encodeToString(cart.categories)
         CoffeeCartsTable.update({ CoffeeCartsTable.id eq cart.id }) {
             it[CoffeeCartsTable.name] = cart.name
             it[CoffeeCartsTable.address] = cart.address
@@ -134,7 +136,7 @@ class PostgresCartStore {
         imageUrl = this[CoffeeCartsTable.imageUrl],
         categories = this[CoffeeCartsTable.menuJson]?.let {
             try {
-                Json.decodeFromString<List<MenuCategory>>(it)
+                menuJson.decodeFromString<List<MenuCategory>>(it)
             } catch (e: Exception) {
                 emptyList()
             }

@@ -71,9 +71,10 @@ class ProductsViewModel(
         quantity: Int = 1,
         comment: String = "",
         addedText: String = "added to basket",
+        selectedOptionIds: List<String> = emptyList(),
     ) {
         val cartName = (uiState.value as? ProductsUiState.Success)?.cartName ?: ""
-        val result = shoppingCartRepositoryInterface.addProduct(cartId, cartName, product, quantity, comment)
+        val result = shoppingCartRepositoryInterface.addProduct(cartId, cartName, product, quantity, comment, selectedOptionIds)
         viewModelScope.launch {
             when (result) {
                 AddProductResult.BlockedDifferentCart -> {

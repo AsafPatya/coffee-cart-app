@@ -1,5 +1,6 @@
 package com.coffeecart.app.screens.coffeecart
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import coil3.compose.AsyncImage
 import coffeecart.composeapp.generated.resources.Res
@@ -42,6 +46,9 @@ import com.coffeecart.app.theme.dp
 import com.coffeecart.app.ui.buttons.OverlayBackButton
 import com.coffeecart.shared.feature.products.ProductsUiState
 import com.coffeecart.shared.feature.products.ProductsViewModel
+import com.coffeecart.shared.model.Customization
+import com.coffeecart.shared.model.CustomizationOption
+import com.coffeecart.shared.model.CustomizationType
 import com.coffeecart.shared.model.Product
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -88,13 +95,14 @@ fun ProductDetailsScreen(
                     ProductDetailsContent(
                         product = product,
                         onBackClick = onBackClick,
-                        onAddToCart = { quantity, comment ->
+                        onAddToCart = { quantity, comment, selectedOptionIds ->
                             viewModel.addProductToCart(
                                 cartId = cartId,
                                 product = product,
                                 quantity = quantity,
                                 comment = comment,
                                 addedText = addedText,
+                                selectedOptionIds = selectedOptionIds,
                             )
                             onBackClick()
                         },
@@ -109,11 +117,20 @@ fun ProductDetailsScreen(
 private fun ProductDetailsContent(
     product: Product,
     onBackClick: () -> Unit,
-    onAddToCart: (quantity: Int, comment: String) -> Unit,
+    onAddToCart: (quantity: Int, comment: String, selectedOptionIds: List<String>) -> Unit,
 ) {
     var quantity by remember { mutableStateOf(1) }
     var comment by remember { mutableStateOf("") }
+    var selectedOptionIds by remember(product) { mutableStateOf(emptySet<String>()) }
     val scrollState = rememberScrollState()
+
+    val priceExtraByOptionId = remember(product) {
+        product.customizations.flatMap { it.options }.associate { it.id to it.priceExtra }
+    }
+    val unitPrice = product.price + selectedOptionIds.sumOf { id -> priceExtraByOptionId[id] ?: 0.0 }
+    val allRequiredSatisfied = product.customizations.all { customization ->
+        !customization.required || customization.options.count { it.id in selectedOptionIds } >= customization.minSelect
+    }
 
     Column(
         modifier = Modifier
@@ -150,11 +167,21 @@ private fun ProductDetailsContent(
             }
 
             Text(
-                text = formatPrice(product.price),
+                text = formatPrice(unitPrice),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(top = Spacing.Small.dp),
             )
+
+            product.customizations.forEach { customization ->
+                CustomizationSection(
+                    customization = customization,
+                    selectedOptionIds = selectedOptionIds,
+                    onToggle = { optionId ->
+                        selectedOptionIds = toggleCustomizationOption(customization, optionId, selectedOptionIds)
+                    },
+                )
+            }
 
             Spacer(modifier = Modifier.height(Spacing.Medium.dp))
 
@@ -184,11 +211,82 @@ private fun ProductDetailsContent(
             Spacer(modifier = Modifier.height(Spacing.Medium.dp))
 
             Button(
-                onClick = { onAddToCart(quantity, comment) },
+                onClick = { onAddToCart(quantity, comment, selectedOptionIds.toList()) },
+                enabled = allRequiredSatisfied,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(Res.string.strAddToCart))
             }
+        }
+    }
+}
+
+@Composable
+private fun CustomizationSection(
+    customization: Customization,
+    selectedOptionIds: Set<String>,
+    onToggle: (optionId: String) -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(top = Spacing.Medium.dp)) {
+        Row {
+            Text(
+                text = customization.title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            if (customization.required) {
+                Text(
+                    text = " *",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+
+        customization.options.forEach { option ->
+            val selected = option.id in selectedOptionIds
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggle(option.id) }
+                    .padding(vertical = Spacing.XXSmall.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (customization.type == CustomizationType.SINGLE) {
+                    RadioButton(selected = selected, onClick = { onToggle(option.id) })
+                } else {
+                    Checkbox(checked = selected, onCheckedChange = { onToggle(option.id) })
+                }
+                Text(
+                    text = option.name,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (option.priceExtra > 0) {
+                    Text(
+                        text = "+${formatPrice(option.priceExtra)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** SINGLE clears the rest of the group before selecting; MULTIPLE toggles freely up to maxSelect. */
+private fun toggleCustomizationOption(
+    customization: Customization,
+    optionId: String,
+    current: Set<String>,
+): Set<String> {
+    val groupIds = customization.options.map { it.id }.toSet()
+    return when (customization.type) {
+        CustomizationType.SINGLE -> (current - groupIds) + optionId
+        CustomizationType.MULTIPLE -> when {
+            optionId in current -> current - optionId
+            current.count { it in groupIds } >= customization.maxSelect -> current
+            else -> current + optionId
         }
     }
 }
@@ -201,9 +299,35 @@ private fun ProductDetailsContentPreview() {
             name = "Caffè Latte",
             price = 4.50,
             description = "Rich espresso with steamed milk and a thin layer of foam.",
-            imageUrl = "https://picsum.photos/seed/latte/200"
+            imageUrl = "https://picsum.photos/seed/latte/200",
+            customizations = listOf(
+                Customization(
+                    id = "cust_strength",
+                    title = "Strong / weak",
+                    type = CustomizationType.SINGLE,
+                    required = true,
+                    minSelect = 1,
+                    maxSelect = 1,
+                    options = listOf(
+                        CustomizationOption(id = "opt_strong", name = "Strong"),
+                        CustomizationOption(id = "opt_weak", name = "Weak"),
+                    ),
+                ),
+                Customization(
+                    id = "cust_extras",
+                    title = "Extras",
+                    type = CustomizationType.MULTIPLE,
+                    required = false,
+                    minSelect = 0,
+                    maxSelect = 2,
+                    options = listOf(
+                        CustomizationOption(id = "opt_extra_shot", name = "Extra espresso shot", priceExtra = 3.0),
+                        CustomizationOption(id = "opt_whipped_cream", name = "Whipped cream", priceExtra = 4.0),
+                    ),
+                ),
+            ),
         ),
         onBackClick = {},
-        onAddToCart = { _, _ -> }
+        onAddToCart = { _, _, _ -> }
     )
 }

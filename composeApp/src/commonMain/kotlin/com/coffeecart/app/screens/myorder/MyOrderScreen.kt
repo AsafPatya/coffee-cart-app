@@ -62,6 +62,8 @@ import com.coffeecart.shared.feature.myorder.formatPrice
 import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.OrderStatus
+import com.coffeecart.shared.model.lineTotal
+import com.coffeecart.shared.model.unitPrice
 import com.coffeecart.shared.model.PaymentStatus
 import com.coffeecart.shared.model.Product
 import coffeecart.composeapp.generated.resources.Res
@@ -125,7 +127,7 @@ fun MyOrderScreen(
             MyOrderContent(
                 state = state,
                 isPlacingOrder = isPlacingOrder,
-                onQuantityChange = { product, quantity -> viewModel.updateQuantity(product, quantity) },
+                onQuantityChange = { item, quantity -> viewModel.updateQuantity(item.product, quantity, item.selectedOptionIds) },
                 onExploreCartsClick = onExploreCartsClick,
                 onItemClick = { item -> selectedItem = item },
                 onPlaceOrderClick = { viewModel.placeOrder() },
@@ -167,7 +169,7 @@ fun MyOrderScreen(
             item = item,
             onDismiss = { selectedItem = null },
             onUpdate = { quantity, comment ->
-                viewModel.updateItem(item.product, quantity, comment)
+                viewModel.updateItem(item.product, quantity, comment, item.selectedOptionIds)
                 selectedItem = null
             }
         )
@@ -188,13 +190,13 @@ private fun PaymentSuccessContent(order: Order, onDismiss: () -> Unit) {
             )
 
             LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                items(order.items, key = { it.product.name }) { item ->
+                items(order.items, key = { "${it.product.name}|${it.selectedOptionIds.joinToString(",")}" }) { item ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text("${item.quantity}x ${item.product.name}", style = MaterialTheme.typography.bodyLarge)
-                        Text(formatPrice(item.product.price * item.quantity), style = MaterialTheme.typography.bodyLarge)
+                        Text(formatPrice(item.lineTotal()), style = MaterialTheme.typography.bodyLarge)
                     }
                     HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.Small.dp))
                 }
@@ -213,7 +215,7 @@ private fun PaymentSuccessContent(order: Order, onDismiss: () -> Unit) {
 private fun MyOrderContent(
     state: ShoppingCartState,
     isPlacingOrder: Boolean,
-    onQuantityChange: (Product, Int) -> Unit,
+    onQuantityChange: (OrderItem, Int) -> Unit,
     onExploreCartsClick: () -> Unit,
     onItemClick: (OrderItem) -> Unit,
     onPlaceOrderClick: () -> Unit,
@@ -245,17 +247,17 @@ private fun MyOrderContent(
         }
 
         LazyColumn(modifier = Modifier.weight(1f)) {
-            items(state.items, key = { it.product.name }) { item ->
+            items(state.items, key = { "${it.product.name}|${it.selectedOptionIds.joinToString(",")}" }) { item ->
                 OrderItemRow(
                     item = item,
-                    onQuantityChange = { quantity -> onQuantityChange(item.product, quantity) },
+                    onQuantityChange = { quantity -> onQuantityChange(item, quantity) },
                     onClick = { onItemClick(item) },
                 )
                 Spacer(modifier = Modifier.padding(vertical = Spacing.Small.dp))
             }
         }
 
-        val total = state.items.sumOf { it.product.price * it.quantity }
+        val total = state.items.sumOf { it.lineTotal() }
         Row(
             modifier = Modifier.fillMaxWidth().padding(top = Spacing.Small.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -320,7 +322,7 @@ private fun OrderItemRow(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text(formatPrice(item.product.price), style = MaterialTheme.typography.bodyMedium)
+                Text(formatPrice(item.unitPrice()), style = MaterialTheme.typography.bodyMedium)
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // Composed in reverse of the intended left-to-right visual order (+, count, −, 🗑) —
@@ -397,7 +399,7 @@ private fun EditOrderItemBottomSheet(
 
             Text(item.product.name, style = MaterialTheme.typography.headlineSmall)
             Text(
-                text = formatPrice(item.product.price),
+                text = formatPrice(item.unitPrice()),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = Spacing.Medium.dp)

@@ -8,5 +8,6 @@ data class Product(
     val price: Double,
     val description: String,
     val imageUrl: String,
+    val customizations: List<Customization> = emptyList(),
 )
 

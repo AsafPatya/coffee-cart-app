@@ -1,6 +1,7 @@
 package com.coffeecart.printagent
 
 import com.coffeecart.shared.model.Order
+import com.coffeecart.shared.model.lineTotal
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -21,7 +22,7 @@ fun renderReceiptText(cartName: String, order: Order): String {
     builder.appendLine(divider)
     var total = 0.0
     for (item in order.items) {
-        val lineTotal = item.product.price * item.quantity
+        val lineTotal = item.lineTotal()
         total += lineTotal
         builder.appendLine("${item.quantity}x ${item.product.name}")
         if (item.comment.isNotBlank()) {

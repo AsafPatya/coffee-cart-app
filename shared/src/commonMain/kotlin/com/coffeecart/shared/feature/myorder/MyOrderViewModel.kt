@@ -90,12 +90,12 @@ class MyOrderViewModel(
         _checkoutUrl.value = null
     }
 
-    fun updateQuantity(product: Product, quantity: Int) {
-        shoppingCartRepository.updateQuantity(product, quantity)
+    fun updateQuantity(product: Product, quantity: Int, selectedOptionIds: List<String> = emptyList()) {
+        shoppingCartRepository.updateQuantity(product, quantity, selectedOptionIds)
     }
 
-    fun updateItem(product: Product, quantity: Int, comment: String) {
-        shoppingCartRepository.updateItem(product, quantity, comment)
+    fun updateItem(product: Product, quantity: Int, comment: String, selectedOptionIds: List<String> = emptyList()) {
+        shoppingCartRepository.updateItem(product, quantity, comment, selectedOptionIds)
     }
 }
 

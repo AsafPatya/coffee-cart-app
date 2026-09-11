@@ -20,6 +20,7 @@ import com.coffeecart.shared.contract.toDto
 import com.coffeecart.shared.contract.toModel
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.PaymentStatus
+import com.coffeecart.shared.model.lineTotal
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.okhttp.OkHttp
@@ -353,7 +354,7 @@ fun Application.module() {
                 return@post
             }
             try {
-                val amount = order.items.sumOf { it.product.price * it.quantity }
+                val amount = order.items.sumOf { it.lineTotal() }
                 println("[Checkout API] Amount to charge: $amount ILS")
                 val url = growClient.createPaymentLink(
                     webhookUrl = growWebhookUrl,

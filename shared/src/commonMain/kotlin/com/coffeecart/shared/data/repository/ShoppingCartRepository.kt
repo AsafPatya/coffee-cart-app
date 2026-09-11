@@ -19,32 +19,33 @@ class ShoppingCartRepository : ShoppingCartRepositoryInterface {
         product: Product,
         quantity: Int,
         comment: String,
+        selectedOptionIds: List<String>,
     ): AddProductResult {
         val current = _state.value
         if (current.items.isNotEmpty() && current.cartId != cartId) {
             return AddProductResult.BlockedDifferentCart
         }
 
-        val existingIndex = current.items.indexOfFirst { it.product == product }
+        val existingIndex = current.items.indexOfFirst { it.matches(product, selectedOptionIds) }
         val (newItems, result) = if (existingIndex >= 0) {
             val existing = current.items[existingIndex]
             current.items.toMutableList().apply {
                 this[existingIndex] = existing.copy(quantity = existing.quantity + quantity, comment = comment)
             } to AddProductResult.IncrementedExisting
         } else {
-            (current.items + OrderItem(product, quantity = quantity, comment = comment)) to AddProductResult.Added
+            (current.items + OrderItem(product, quantity = quantity, comment = comment, selectedOptionIds = selectedOptionIds)) to AddProductResult.Added
         }
 
         _state.value = ShoppingCartState(cartId = cartId, cartName = cartName, items = newItems)
         return result
     }
 
-    override fun updateQuantity(product: Product, quantity: Int) {
+    override fun updateQuantity(product: Product, quantity: Int, selectedOptionIds: List<String>) {
         val current = _state.value
         val newItems = if (quantity <= 0) {
-            current.items.filterNot { it.product == product }
+            current.items.filterNot { it.matches(product, selectedOptionIds) }
         } else {
-            current.items.map { if (it.product == product) it.copy(quantity = quantity) else it }
+            current.items.map { if (it.matches(product, selectedOptionIds)) it.copy(quantity = quantity) else it }
         }
 
         _state.value = if (newItems.isEmpty()) {
@@ -54,12 +55,12 @@ class ShoppingCartRepository : ShoppingCartRepositoryInterface {
         }
     }
 
-    override fun updateItem(product: Product, quantity: Int, comment: String) {
+    override fun updateItem(product: Product, quantity: Int, comment: String, selectedOptionIds: List<String>) {
         val current = _state.value
         val newItems = if (quantity <= 0) {
-            current.items.filterNot { it.product == product }
+            current.items.filterNot { it.matches(product, selectedOptionIds) }
         } else {
-            current.items.map { if (it.product == product) it.copy(quantity = quantity, comment = comment) else it }
+            current.items.map { if (it.matches(product, selectedOptionIds)) it.copy(quantity = quantity, comment = comment) else it }
         }
 
         _state.value = if (newItems.isEmpty()) {
@@ -68,6 +69,9 @@ class ShoppingCartRepository : ShoppingCartRepositoryInterface {
             current.copy(items = newItems)
         }
     }
+
+    private fun OrderItem.matches(product: Product, selectedOptionIds: List<String>) =
+        this.product == product && this.selectedOptionIds == selectedOptionIds
 
     override fun clear() {
         _state.value = ShoppingCartState()

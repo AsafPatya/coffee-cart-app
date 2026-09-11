@@ -15,6 +15,8 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
 
+private val itemsJsonFormat = Json { ignoreUnknownKeys = true }
+
 /** Postgres-backed order storage, one row per submitted order. */
 class PostgresOrderStore {
 
@@ -61,7 +63,7 @@ class PostgresOrderStore {
         OrdersTable.insert {
             it[id] = order.id
             it[OrdersTable.cartId] = order.cartId
-            it[itemsJson] = Json.encodeToString(order.items)
+            it[itemsJson] = itemsJsonFormat.encodeToString(order.items)
             it[status] = order.status.name
             it[createdAt] = order.createdAt
         }
@@ -79,7 +81,7 @@ class PostgresOrderStore {
     private fun ResultRow.toOrder() = Order(
         id = this[OrdersTable.id],
         cartId = this[OrdersTable.cartId],
-        items = Json.decodeFromString(this[OrdersTable.itemsJson]),
+        items = itemsJsonFormat.decodeFromString(this[OrdersTable.itemsJson]),
         status = OrderStatus.valueOf(this[OrdersTable.status]),
         createdAt = this[OrdersTable.createdAt],
         paymentStatus = PaymentStatus.valueOf(this[OrdersTable.paymentStatus]),
