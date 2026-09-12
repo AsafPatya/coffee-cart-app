@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -150,7 +151,7 @@ private fun ProductDetailsContent(
                 model = product.imageUrl,
                 contentDescription = product.name,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.FillWidth,
             )
             OverlayBackButton(
                 onClick = onBackClick,
@@ -192,7 +193,14 @@ private fun ProductDetailsContent(
             OutlinedTextField(
                 value = comment,
                 onValueChange = { comment = it },
-                label = { Text(stringResource(Res.string.strComments)) },
+                label = {
+                    Text(
+                        text = stringResource(Res.string.strComments),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -237,6 +245,7 @@ private fun CustomizationSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = Spacing.Medium.dp)
+            .clip(MaterialTheme.shapes.medium)
             .border(
                 width = 1.dp,
                 color = MaterialTheme.colorScheme.outline,
