@@ -1,5 +1,6 @@
 package com.coffeecart.app.screens.coffeecart
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -36,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strAddToCart
@@ -227,47 +231,74 @@ private fun CustomizationSection(
     selectedOptionIds: Set<String>,
     onToggle: (optionId: String) -> Unit,
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(top = Spacing.Medium.dp)) {
-        Row {
-            Text(
-                text = customization.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Bold,
-            )
-            if (customization.required) {
+    var expanded by remember(customization) { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = Spacing.Medium.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = MaterialTheme.shapes.medium,
+            ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+                .padding(Spacing.Medium.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = " *",
+                    text = customization.title,
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.error,
+                    fontWeight = FontWeight.Bold,
                 )
+                if (customization.required) {
+                    Text(
+                        text = " *",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
             }
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+            )
         }
 
-        customization.options.forEach { option ->
-            val selected = option.id in selectedOptionIds
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onToggle(option.id) }
-                    .padding(vertical = Spacing.XXSmall.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                if (customization.type == CustomizationType.SINGLE) {
-                    RadioButton(selected = selected, onClick = { onToggle(option.id) })
-                } else {
-                    Checkbox(checked = selected, onCheckedChange = { onToggle(option.id) })
-                }
-                Text(
-                    text = option.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (option.priceExtra > 0) {
-                    Text(
-                        text = "+${formatPrice(option.priceExtra)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+        if (expanded) {
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.Medium.dp, vertical = Spacing.Small.dp)) {
+                customization.options.forEach { option ->
+                    val selected = option.id in selectedOptionIds
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onToggle(option.id) }
+                            .padding(vertical = Spacing.XXSmall.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (customization.type == CustomizationType.SINGLE) {
+                            RadioButton(selected = selected, onClick = { onToggle(option.id) })
+                        } else {
+                            Checkbox(checked = selected, onCheckedChange = { onToggle(option.id) })
+                        }
+                        Text(
+                            text = option.name,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (option.priceExtra > 0) {
+                            Text(
+                                text = "+${formatPrice(option.priceExtra)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
         }
