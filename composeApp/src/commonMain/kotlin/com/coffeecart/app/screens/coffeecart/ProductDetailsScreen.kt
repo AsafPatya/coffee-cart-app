@@ -1,5 +1,7 @@
 package com.coffeecart.app.screens.coffeecart
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,12 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -26,6 +28,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,8 +40,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -132,102 +138,154 @@ private fun ProductDetailsContent(
     val priceExtraByOptionId = remember(product) {
         product.customizations.flatMap { it.options }.associate { it.id to it.priceExtra }
     }
-    val unitPrice = product.price + selectedOptionIds.sumOf { id -> priceExtraByOptionId[id] ?: 0.0 }
+    val unitPrice =
+        product.price + selectedOptionIds.sumOf { id -> priceExtraByOptionId[id] ?: 0.0 }
     val allRequiredSatisfied = product.customizations.all { customization ->
         !customization.required || customization.options.count { it.id in selectedOptionIds } >= customization.minSelect
     }
+    val selectionSummary = remember(product, selectedOptionIds) {
+        product.customizations
+            .flatMap { it.options }
+            .filter { it.id in selectedOptionIds }
+            .joinToString(" | ") { it.name }
+    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState),
-    ) {
-        Box(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(Spacing.HeroHeight.dp),
+                .fillMaxSize()
+                .verticalScroll(scrollState),
         ) {
-            AsyncImage(
-                model = product.imageUrl,
-                contentDescription = product.name,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillWidth,
-            )
-            OverlayBackButton(
-                onClick = onBackClick,
-                modifier = Modifier.align(Alignment.TopStart),
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Spacing.HeroHeight.dp),
+            ) {
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.name,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillWidth,
+                )
+                OverlayBackButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.TopStart),
+                )
+            }
+
+            Column(modifier = Modifier.fillMaxWidth().padding(Spacing.Large.dp)) {
+                Text(product.name, style = MaterialTheme.typography.headlineSmall)
+
+                if (product.description.isNotEmpty()) {
+                    Text(
+                        text = product.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = Spacing.XXSmall.dp),
+                    )
+                }
+
+                Text(
+                    text = formatPrice(unitPrice),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(top = Spacing.Small.dp),
+                )
+
+                if (selectionSummary.isNotEmpty()) {
+                    Text(
+                        text = "נבחר: $selectionSummary",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+
+                product.customizations.forEach { customization ->
+                    CustomizationSection(
+                        customization = customization,
+                        selectedOptionIds = selectedOptionIds,
+                        onToggle = { optionId ->
+                            selectedOptionIds = toggleCustomizationOption(
+                                customization,
+                                optionId,
+                                selectedOptionIds
+                            )
+                        },
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(Spacing.Medium.dp))
+
+                OutlinedTextField(
+                    value = comment,
+                    onValueChange = { comment = it },
+                    label = {
+                        Text(
+                            text = stringResource(Res.string.strComments),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    },
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                // Extra room so the floating bottom bar never covers the last scrolled content.
+                Spacer(modifier = Modifier.height(Spacing.XXXXLarge.dp * 2))
+            }
         }
 
-        Column(modifier = Modifier.fillMaxWidth().padding(Spacing.Large.dp)) {
-            Text(product.name, style = MaterialTheme.typography.headlineSmall)
-
-            if (product.description.isNotEmpty()) {
-                Text(
-                    text = product.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = Spacing.XXSmall.dp),
-                )
-            }
-
-            Text(
-                text = formatPrice(unitPrice),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(top = Spacing.Small.dp),
-            )
-
-            product.customizations.forEach { customization ->
-                CustomizationSection(
-                    customization = customization,
-                    selectedOptionIds = selectedOptionIds,
-                    onToggle = { optionId ->
-                        selectedOptionIds = toggleCustomizationOption(customization, optionId, selectedOptionIds)
-                    },
-                )
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
-
-            OutlinedTextField(
-                value = comment,
-                onValueChange = { comment = it },
-                label = {
-                    Text(
-                        text = stringResource(Res.string.strComments),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(onClick = { if (quantity > 1) quantity-- }) {
-                    Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease quantity")
-                }
-                Text("$quantity", style = MaterialTheme.typography.titleLarge)
-                IconButton(onClick = { quantity++ }) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Increase quantity")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(Spacing.Medium.dp))
-
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(Spacing.Large.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Button(
                 onClick = { onAddToCart(quantity, comment, selectedOptionIds.toList()) },
                 enabled = allRequiredSatisfied,
-                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.extraLarge,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(Spacing.XXXXLarge.dp),
             ) {
                 Text(stringResource(Res.string.strAddToCart))
+            }
+
+            Spacer(modifier = Modifier.width(Spacing.Small.dp))
+
+            // Quantity Controls Container
+            Surface(
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.surfaceVariant, // Or secondaryContainer / surface
+                modifier = Modifier.height(Spacing.XXXXLarge.dp) // Matches the Button height
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(horizontal = Spacing.XSmall.dp)
+                ) {
+                    IconButton(onClick = { if (quantity > 1) quantity-- }) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = "Decrease quantity"
+                        )
+                    }
+                    Text(
+                        text = "$quantity",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    IconButton(onClick = { quantity++ }) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Increase quantity"
+                        )
+                    }
+                }
             }
         }
     }
@@ -259,23 +317,37 @@ private fun CustomizationSection(
                 .padding(Spacing.Medium.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = customization.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                if (customization.required) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row {
                     Text(
-                        text = " *",
+                        text = customization.title,
                         style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    if (customization.required) {
+                        Text(
+                            text = " *",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
+                val selectedNames = remember(customization, selectedOptionIds) {
+                    customization.options.filter { it.id in selectedOptionIds }.joinToString(", ") { it.name }
+                }
+                if (selectedNames.isNotEmpty()) {
+                    Text(
+                        text = "נבחר: $selectedNames",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
+            val rotation by animateFloatAsState(targetValue = if (expanded) 180f else 0f)
             Icon(
-                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                imageVector = Icons.Default.KeyboardArrowDown,
                 contentDescription = null,
+                modifier = Modifier.rotate(rotation),
             )
         }
 
@@ -283,17 +355,23 @@ private fun CustomizationSection(
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.Medium.dp, vertical = Spacing.Small.dp)) {
                 customization.options.forEach { option ->
                     val selected = option.id in selectedOptionIds
+                    // Only auto-close when actually selecting — clicking an already-selected option
+                    // clears it instead, and should leave the drawer open to pick something else.
+                    val selectOption = {
+                        onToggle(option.id)
+                        if (!selected) expanded = false
+                    }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onToggle(option.id) }
+                            .clickable { selectOption() }
                             .padding(vertical = Spacing.XXSmall.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (customization.type == CustomizationType.SINGLE) {
-                            RadioButton(selected = selected, onClick = { onToggle(option.id) })
+                            RadioButton(selected = selected, onClick = { selectOption() })
                         } else {
-                            Checkbox(checked = selected, onCheckedChange = { onToggle(option.id) })
+                            Checkbox(checked = selected, onCheckedChange = { selectOption() })
                         }
                         Text(
                             text = option.name,
@@ -314,7 +392,8 @@ private fun CustomizationSection(
     }
 }
 
-/** SINGLE clears the rest of the group before selecting; MULTIPLE toggles freely up to maxSelect. */
+/** SINGLE clears the rest of the group before selecting, or clears the group entirely if the
+ *  already-selected option is clicked again; MULTIPLE toggles freely up to maxSelect. */
 private fun toggleCustomizationOption(
     customization: Customization,
     optionId: String,
@@ -322,7 +401,10 @@ private fun toggleCustomizationOption(
 ): Set<String> {
     val groupIds = customization.options.map { it.id }.toSet()
     return when (customization.type) {
-        CustomizationType.SINGLE -> (current - groupIds) + optionId
+        CustomizationType.SINGLE -> when {
+            optionId in current -> current - groupIds
+            else -> (current - groupIds) + optionId
+        }
         CustomizationType.MULTIPLE -> when {
             optionId in current -> current - optionId
             current.count { it in groupIds } >= customization.maxSelect -> current
