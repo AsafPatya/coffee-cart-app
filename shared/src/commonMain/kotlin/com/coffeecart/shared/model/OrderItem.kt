@@ -21,8 +21,11 @@ fun OrderItem.unitPrice(): Double {
 
 fun OrderItem.lineTotal(): Double = unitPrice() * quantity
 
-/** Names of the selected customization options, in product-customization order. */
-fun OrderItem.selectedOptionNames(): List<String> {
-    val allOptions = product.customizations.flatMap { it.options }
-    return selectedOptionIds.mapNotNull { id -> allOptions.find { it.id == id }?.name }
-}
+/** Selected option names grouped by their customization's title, e.g. ("סוג החלב", "חלב שיבולת שועל") —
+ *  a MULTIPLE customization's several picks are comma-joined into one entry. Skips customizations
+ *  with nothing selected. In product-customization order. */
+fun OrderItem.selectedOptionsByCustomization(): List<Pair<String, String>> =
+    product.customizations.mapNotNull { customization ->
+        val names = customization.options.filter { it.id in selectedOptionIds }.map { it.name }
+        if (names.isEmpty()) null else customization.title to names.joinToString(", ")
+    }
