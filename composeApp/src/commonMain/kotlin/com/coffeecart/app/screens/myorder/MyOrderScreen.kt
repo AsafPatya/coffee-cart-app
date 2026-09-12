@@ -63,6 +63,7 @@ import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.OrderItem
 import com.coffeecart.shared.model.OrderStatus
 import com.coffeecart.shared.model.lineTotal
+import com.coffeecart.shared.model.selectedOptionNames
 import com.coffeecart.shared.model.unitPrice
 import com.coffeecart.shared.model.PaymentStatus
 import com.coffeecart.shared.model.Product
@@ -198,6 +199,14 @@ private fun PaymentSuccessContent(order: Order, onDismiss: () -> Unit) {
                         Text("${item.quantity}x ${item.product.name}", style = MaterialTheme.typography.bodyLarge)
                         Text(formatPrice(item.lineTotal()), style = MaterialTheme.typography.bodyLarge)
                     }
+                    val selectedOptionNames = item.selectedOptionNames()
+                    if (selectedOptionNames.isNotEmpty()) {
+                        Text(
+                            text = "נבחר: ${selectedOptionNames.joinToString(", ")}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.Small.dp))
                 }
             }
@@ -306,6 +315,15 @@ private fun OrderItemRow(
                     text = item.product.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            val selectedOptionNames = item.selectedOptionNames()
+            if (selectedOptionNames.isNotEmpty()) {
+                Text(
+                    text = "נבחר: ${selectedOptionNames.joinToString(", ")}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = Spacing.XXSmall.dp)
                 )
             }
             if (item.comment.isNotEmpty()) {

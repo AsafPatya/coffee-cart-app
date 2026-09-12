@@ -20,3 +20,9 @@ fun OrderItem.unitPrice(): Double {
 }
 
 fun OrderItem.lineTotal(): Double = unitPrice() * quantity
+
+/** Names of the selected customization options, in product-customization order. */
+fun OrderItem.selectedOptionNames(): List<String> {
+    val allOptions = product.customizations.flatMap { it.options }
+    return selectedOptionIds.mapNotNull { id -> allOptions.find { it.id == id }?.name }
+}

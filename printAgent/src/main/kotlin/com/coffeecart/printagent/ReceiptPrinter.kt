@@ -2,6 +2,7 @@ package com.coffeecart.printagent
 
 import com.coffeecart.shared.model.Order
 import com.coffeecart.shared.model.lineTotal
+import com.coffeecart.shared.model.selectedOptionNames
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -25,6 +26,10 @@ fun renderReceiptText(cartName: String, order: Order): String {
         val lineTotal = item.lineTotal()
         total += lineTotal
         builder.appendLine("${item.quantity}x ${item.product.name}")
+        val selectedOptionNames = item.selectedOptionNames()
+        if (selectedOptionNames.isNotEmpty()) {
+            builder.appendLine("   ${selectedOptionNames.joinToString(", ")}")
+        }
         if (item.comment.isNotBlank()) {
             builder.appendLine("   note: ${item.comment}")
         }
