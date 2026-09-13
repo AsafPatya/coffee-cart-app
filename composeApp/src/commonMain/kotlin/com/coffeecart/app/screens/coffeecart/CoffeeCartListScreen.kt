@@ -71,11 +71,15 @@ fun CoffeeCartListContent(
                 )
                 Spacer(modifier = Modifier.height(Spacing.Medium.dp))
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.Small.dp),
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(uiState.carts, key = { (cart, _) -> cart.id }) { (cart, distance) ->
+                        Spacer(modifier = Modifier.padding(vertical = Spacing.XXXSmall.dp))
+
                         CoffeeCartListItem(cart = cart, formattedDistance = distance, onClick = { onCartClick(cart.id) })
+
+                        Spacer(modifier = Modifier.padding(vertical = Spacing.XXSmall.dp))
+
                     }
                 }
             }

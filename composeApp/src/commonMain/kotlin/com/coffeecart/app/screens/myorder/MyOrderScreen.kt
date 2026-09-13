@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -29,11 +30,13 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -49,7 +52,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.coffeecart.app.theme.Spacing
 import com.coffeecart.app.theme.dp
@@ -248,43 +253,74 @@ private fun MyOrderContent(
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(Spacing.Large.dp)) {
-        state.cartName?.let {
-            Text(it, style = MaterialTheme.typography.headlineSmall)
-            Spacer(Modifier.height(Spacing.Small.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+
+        // התוכן הנגלל / הראשי
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(Spacing.Large.dp)
+        ) {
+            state.cartName?.let {
+                Text(it, style = MaterialTheme.typography.headlineSmall)
+                Spacer(Modifier.height(Spacing.Small.dp))
+            }
+
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(
+                    items = state.items,
+                    key = { "${it.product.name}|${it.selectedOptionIds.joinToString(",")}" }
+                ) { item ->
+                    Spacer(modifier = Modifier.padding(vertical = Spacing.XXSmall.dp))
+
+                    OrderItemRow(
+                        item = item,
+                        onQuantityChange = { quantity -> onQuantityChange(item, quantity) },
+                        onClick = { onItemClick(item) },
+                    )
+                    Spacer(modifier = Modifier.padding(vertical = Spacing.XXSmall.dp))
+                }
+            }
+
+            // רווח תחתון מוגדל כדי שה-Surface הנעוץ לא יסתיר את הפריטים האחרונים ברשימה
+            Spacer(Modifier.height(Spacing.XXXXLarge.dp * 2))
         }
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(state.items, key = { "${it.product.name}|${it.selectedOptionIds.joinToString(",")}" }) { item ->
-                OrderItemRow(
-                    item = item,
-                    onQuantityChange = { quantity -> onQuantityChange(item, quantity) },
-                    onClick = { onItemClick(item) },
-                )
-                Spacer(modifier = Modifier.padding(vertical = Spacing.Small.dp))
+        // ה-Surface הנעוץ למטה מתפשט מקצה לקצה (מקבל padding פנימי בלבד)
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter),
+            shape = RoundedCornerShape(topStart = Spacing.XXLarge.dp, topEnd = Spacing.XXLarge.dp),
+            color = Color.White,
+            shadowElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(Spacing.Large.dp) // פדינג פנימי בלבד עבור ה-Total והכפתור
+            ) {
+                val total = state.items.sumOf { it.lineTotal() }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text("Total", style = MaterialTheme.typography.titleMedium)
+                    Text(formatPrice(total), style = MaterialTheme.typography.titleMedium)
+                }
+
+                Spacer(Modifier.height(Spacing.Medium.dp))
+
+                Button(
+                    onClick = onPlaceOrderClick,
+                    enabled = !isPlacingOrder,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(Res.string.strPlaceOrder))
+                }
             }
         }
-
-        val total = state.items.sumOf { it.lineTotal() }
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = Spacing.Small.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text("Total", style = MaterialTheme.typography.titleMedium)
-            Text(formatPrice(total), style = MaterialTheme.typography.titleMedium)
-        }
-
-        Spacer(Modifier.height(Spacing.Small.dp))
-
-        Button(
-            onClick = onPlaceOrderClick,
-            enabled = !isPlacingOrder,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(Res.string.strPlaceOrder))
-        }
-    }
-}
+    }}
 
 @Composable
 private fun OrderItemRow(
@@ -344,22 +380,43 @@ private fun OrderItemRow(
                     // Composed in reverse of the intended left-to-right visual order (+, count, −, 🗑) —
                     // the app is RTL, and Row mirrors child placement under RTL layout direction.
                     IconButton(onClick = { onQuantityChange(0) }) {
-                        Icon(imageVector = Icons.Default.DeleteOutline, contentDescription = "Remove item")
+                        Icon(
+                            imageVector = Icons.Default.DeleteOutline,
+                            contentDescription = "Remove item",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant // אפור-חום עדין לפח
+                        )
                     }
+
                     Spacer(modifier = Modifier.width(Spacing.Small.dp))
+
+                    // כפתור מינוס
                     FilledTonalIconButton(
                         shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
                         onClick = { onQuantityChange(item.quantity - 1) }
                     ) {
                         Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease quantity")
                     }
+
+                    // ספרת הכמות
                     Text(
-                        "${item.quantity}",
+                        text = "${item.quantity}",
                         style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = Spacing.Small.dp),
                     )
+
+                    // כפתור פלוס
                     FilledTonalIconButton(
                         shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.filledTonalIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        ),
                         onClick = { onQuantityChange(item.quantity + 1) }
                     ) {
                         Icon(imageVector = Icons.Default.Add, contentDescription = "Increase quantity")
