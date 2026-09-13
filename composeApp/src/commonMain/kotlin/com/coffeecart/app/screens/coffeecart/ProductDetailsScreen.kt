@@ -11,9 +11,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -40,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -232,60 +235,68 @@ private fun ProductDetailsContent(
                 )
 
                 // Extra room so the floating bottom bar never covers the last scrolled content.
-                Spacer(modifier = Modifier.height(Spacing.XXXXLarge.dp * 2))
+                Spacer(modifier = Modifier.height(Spacing.XXXXLarge.dp * 3))
             }
         }
 
-        Row(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(Spacing.Large.dp),
-            verticalAlignment = Alignment.CenterVertically,
+                .align(Alignment.BottomCenter),
+            shape = RoundedCornerShape(topStart = Spacing.XXLarge.dp, topEnd = Spacing.XXLarge.dp),
+            color = Color.White,
         ) {
-            Button(
-                onClick = { onAddToCart(quantity, comment, selectedOptionIds.toList()) },
-                enabled = allRequiredSatisfied,
-                shape = MaterialTheme.shapes.extraLarge,
+            Row(
                 modifier = Modifier
-                    .weight(1f)
-                    .height(Spacing.XXXXLarge.dp),
+                    .fillMaxWidth()
+                    .padding(Spacing.Large.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(stringResource(Res.string.strAddToCart))
-            }
-
-            Spacer(modifier = Modifier.width(Spacing.Small.dp))
-
-            // Quantity Controls Container
-            Surface(
-                shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.surfaceVariant, // Or secondaryContainer / surface
-                modifier = Modifier.height(Spacing.XXXXLarge.dp) // Matches the Button height
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.padding(horizontal = Spacing.XSmall.dp)
+                Button(
+                    onClick = { onAddToCart(quantity, comment, selectedOptionIds.toList()) },
+                    enabled = allRequiredSatisfied,
+                    shape = MaterialTheme.shapes.extraLarge,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(Spacing.XXXXLarge.dp),
                 ) {
-                    IconButton(onClick = { if (quantity > 1) quantity-- }) {
-                        Icon(
-                            imageVector = Icons.Default.Remove,
-                            contentDescription = "Decrease quantity"
+                    Text(stringResource(Res.string.strAddToCart))
+                }
+
+                Spacer(modifier = Modifier.width(Spacing.Small.dp))
+
+                // Quantity Controls Container
+                Surface(
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surfaceVariant, // Or secondaryContainer / surface
+                    modifier = Modifier.height(Spacing.XXXXLarge.dp) // Matches the Button height
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(horizontal = Spacing.XSmall.dp)
+                    ) {
+                        IconButton(onClick = { if (quantity > 1) quantity-- }) {
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = "Decrease quantity"
+                            )
+                        }
+                        Text(
+                            text = "$quantity",
+                            style = MaterialTheme.typography.titleLarge
                         )
-                    }
-                    Text(
-                        text = "$quantity",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                    IconButton(onClick = { quantity++ }) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Increase quantity"
-                        )
+                        IconButton(onClick = { quantity++ }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Increase quantity"
+                            )
+                        }
                     }
                 }
             }
         }
+
     }
 }
 
