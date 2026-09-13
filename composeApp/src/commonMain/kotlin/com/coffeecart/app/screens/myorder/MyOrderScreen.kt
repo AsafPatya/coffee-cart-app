@@ -1,5 +1,6 @@
 package com.coffeecart.app.screens.myorder
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,15 +16,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
@@ -72,12 +75,15 @@ import com.coffeecart.shared.model.selectedOptionsByCustomization
 import com.coffeecart.shared.model.unitPrice
 import com.coffeecart.shared.model.PaymentStatus
 import com.coffeecart.shared.model.Product
+import com.coffeecart.shared.model.total
 import coffeecart.composeapp.generated.resources.Res
 import coffeecart.composeapp.generated.resources.strComments
 import coffeecart.composeapp.generated.resources.strNoOpenOrder
 import coffeecart.composeapp.generated.resources.strPlaceOrder
 import coffeecart.composeapp.generated.resources.strStartNewOrder
 import coffeecart.composeapp.generated.resources.strUpdateItem
+import com.coffeecart.app.theme.Colors.CardBackground
+import com.coffeecart.app.theme.Colors.CardBorder
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -183,42 +189,154 @@ fun MyOrderScreen(
 }
 
 @Composable
-private fun PaymentSuccessContent(order: Order, onDismiss: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+private fun PaymentSuccessContent(
+    order: Order,
+    onDismiss: () -> Unit
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth().padding(Spacing.Large.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(Spacing.Large.dp),
         ) {
-            Text(
-                text = "Payment successful!",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = Spacing.Medium.dp),
-            )
-
-            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
-                items(order.items, key = { "${it.product.name}|${it.selectedOptionIds.joinToString(",")}" }) { item ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text("${item.quantity}x ${item.product.name}", style = MaterialTheme.typography.bodyLarge)
-                        Text(formatPrice(item.lineTotal()), style = MaterialTheme.typography.bodyLarge)
-                    }
-                    item.selectedOptionsByCustomization().forEach { (title, names) ->
-                        Text(
-                            text = "$title: $names",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    HorizontalDivider(modifier = Modifier.padding(vertical = Spacing.Small.dp))
+            // 1. אייקון אישור חגיגי
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                modifier = Modifier.size(72.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(40.dp)
+                    )
                 }
             }
 
             Spacer(Modifier.height(Spacing.Medium.dp))
 
-            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                Text("Done")
+            Text(
+                text = "ההזמנה התקבלה בהצלחה!",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            // 2. מספר הזמנה וזמן איסוף (חשוב מאוד בעגלת קפה)
+            if (order.id.isNotEmpty()) {
+                Spacer(Modifier.height(Spacing.XXSmall.dp))
+                Text(
+                    text = "מספר הזמנה: #${order.id.takeLast(4)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.height(Spacing.Large.dp))
+
+            // 3. כרטיס הקבלה / פירוט ההזמנה
+            Card(
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(
+                    containerColor = CardBackground // או MaterialTheme.colorScheme.surfaceVariant
+                ),
+                border = BorderStroke(1.dp, CardBorder),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(Spacing.Large.dp)) {
+                    Text(
+                        text = "סיכום הזמנה",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = Spacing.Small.dp)
+                    )
+
+                    LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                        items(
+                            items = order.items,
+                            key = { "${it.product.name}|${it.selectedOptionIds.joinToString(",")}" }
+                        ) { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = Spacing.XXSmall.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    text = "${item.quantity}x ${item.product.name}",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Text(
+                                    text = formatPrice(item.lineTotal()),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            item.selectedOptionsByCustomization().forEach { (title, names) ->
+                                Text(
+                                    text = "$title: $names",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            HorizontalDivider(
+                                modifier = Modifier.padding(vertical = Spacing.XSmall.dp),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+                            )
+                        }
+                    }
+
+                    // סך הכל לתשלום
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Spacing.Small.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "סה\"כ שולם:",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = formatPrice(order.total),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(Spacing.XLarge.dp))
+
+            // 4. כפתור סיום מותאם למותג
+            Button(
+                onClick = onDismiss,
+                shape = MaterialTheme.shapes.extraLarge,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(Spacing.XXXXLarge.dp)
+            ) {
+                Text(
+                    text = "סיום",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
             }
         }
     }

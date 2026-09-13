@@ -25,3 +25,8 @@ data class Order(
     val checkoutUrl: String? = null,
     val printed: Boolean = false,
 )
+
+val Order.total: Double
+    get() = items.sumOf { it.lineTotal() }
+
+
