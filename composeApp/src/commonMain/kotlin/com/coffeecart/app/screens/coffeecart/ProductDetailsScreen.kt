@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -231,9 +230,12 @@ private fun ProductDetailsContent(
                         )
                     },
                     shape = MaterialTheme.shapes.medium,
+                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    ),
                     modifier = Modifier.fillMaxWidth(),
                 )
-
                 // Extra room so the floating bottom bar never covers the last scrolled content.
                 Spacer(modifier = Modifier.height(Spacing.XXXXLarge.dp * 3))
             }
@@ -245,6 +247,7 @@ private fun ProductDetailsContent(
                 .align(Alignment.BottomCenter),
             shape = RoundedCornerShape(topStart = Spacing.XXLarge.dp, topEnd = Spacing.XXLarge.dp),
             color = Color.White,
+            shadowElevation = 8.dp
         ) {
             Row(
                 modifier = Modifier
@@ -268,7 +271,7 @@ private fun ProductDetailsContent(
                 // Quantity Controls Container
                 Surface(
                     shape = MaterialTheme.shapes.extraLarge,
-                    color = MaterialTheme.colorScheme.surfaceVariant, // Or secondaryContainer / surface
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), // Or secondaryContainer / surface
                     modifier = Modifier.height(Spacing.XXXXLarge.dp) // Matches the Button height
                 ) {
                     Row(
@@ -279,17 +282,20 @@ private fun ProductDetailsContent(
                         IconButton(onClick = { if (quantity > 1) quantity-- }) {
                             Icon(
                                 imageVector = Icons.Default.Remove,
-                                contentDescription = "Decrease quantity"
+                                contentDescription = "Decrease quantity",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                         Text(
                             text = "$quantity",
-                            style = MaterialTheme.typography.titleLarge
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         IconButton(onClick = { quantity++ }) {
                             Icon(
                                 imageVector = Icons.Default.Add,
-                                contentDescription = "Increase quantity"
+                                contentDescription = "Increase quantity",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -315,7 +321,7 @@ private fun CustomizationSection(
             .clip(MaterialTheme.shapes.medium)
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
                 shape = MaterialTheme.shapes.medium,
             ),
     ) {
