@@ -38,6 +38,7 @@ import org.koin.compose.koinInject
 @Composable
 fun PlacesScreen(
     onCartClick: (String) -> Unit,
+    onBakeryClick: (String) -> Unit,
     viewModel: PlacesViewModel = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -50,6 +51,7 @@ fun PlacesScreen(
     CoffeeCartListContent(
         uiState = uiState,
         onCartClick = onCartClick,
+        onBakeryClick = onBakeryClick,
         onCategorySelected = viewModel::onCategorySelected,
     )
 }
@@ -58,6 +60,7 @@ fun PlacesScreen(
 fun CoffeeCartListContent(
     uiState: CoffeeCartListUiState,
     onCartClick: (String) -> Unit,
+    onBakeryClick: (String) -> Unit = {},
     onCategorySelected: (CartCategory) -> Unit = {},
 ) {
     when (uiState) {
@@ -109,7 +112,7 @@ fun CoffeeCartListContent(
                         items(uiState.bakeries, key = { (bakery, _) -> bakery.id }) { (bakery, distance) ->
                             Spacer(modifier = Modifier.padding(vertical = Spacing.XXXSmall.dp))
 
-                            BakeryListItem(bakery = bakery, formattedDistance = distance)
+                            BakeryListItem(bakery = bakery, formattedDistance = distance, onClick = { onBakeryClick(bakery.id) })
 
                             Spacer(modifier = Modifier.padding(vertical = Spacing.XXSmall.dp))
                         }

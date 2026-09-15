@@ -8,6 +8,7 @@ data class Bakery(
     val name: String,
     val address: String,
     val imageUrl: String,
+    val categories: List<MenuCategory> = emptyList(),
     val latitude: Double? = null,
     val longitude: Double? = null,
 )

@@ -22,6 +22,8 @@ enum class Destination(
             Routes.COFFEE_CART_MENU_CATEGORIES,
             Routes.COFFEE_CART_CATEGORY_PRODUCTS,
             Routes.PRODUCT_DETAILS,
+            Routes.BAKERY_DETAILS,
+            Routes.BAKERY_MENU_CATEGORIES,
         )
     ),
     Orders("orders", Res.string.strMyOrder),
@@ -47,6 +49,12 @@ enum class Destination(
 object Routes {
     const val COFFEE_CART_DETAILS = "coffee_cart_details/{cartId}"
     fun coffeeCartDetails(cartId: String): String = "coffee_cart_details/$cartId"
+
+    const val BAKERY_DETAILS = "bakery_details/{bakeryId}"
+    fun bakeryDetails(bakeryId: String): String = "bakery_details/$bakeryId"
+
+    const val BAKERY_MENU_CATEGORIES = "bakery_menu_categories/{bakeryId}"
+    fun bakeryMenuCategories(bakeryId: String): String = "bakery_menu_categories/$bakeryId"
 
     const val COFFEE_CART_MENU_CATEGORIES = "coffee_cart_menu_categories/{cartId}"
     fun coffeeCartMenuCategories(cartId: String): String = "coffee_cart_menu_categories/$cartId"

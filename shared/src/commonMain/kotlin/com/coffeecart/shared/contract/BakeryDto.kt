@@ -9,6 +9,7 @@ data class BakeryDto(
     val name: String,
     val address: String,
     val imageUrl: String,
+    val categories: List<MenuCategoryDto> = emptyList(),
     val latitude: Double? = null,
     val longitude: Double? = null,
 )
@@ -18,6 +19,7 @@ fun BakeryDto.toModel(): Bakery = Bakery(
     name = name,
     address = address,
     imageUrl = imageUrl,
+    categories = categories.map { it.toModel() },
     latitude = latitude,
     longitude = longitude,
 )
@@ -27,6 +29,7 @@ fun Bakery.toDto(): BakeryDto = BakeryDto(
     name = name,
     address = address,
     imageUrl = imageUrl,
+    categories = categories.map { it.toDto() },
     latitude = latitude,
     longitude = longitude,
 )

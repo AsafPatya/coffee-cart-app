@@ -10,6 +10,7 @@ import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.domain.OrderRepository
 import com.coffeecart.shared.domain.PaymentRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
+import com.coffeecart.shared.feature.bakerydetails.BakeryDetailsViewModel
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
 import com.coffeecart.shared.feature.cartlist.PlacesViewModel
 import com.coffeecart.shared.feature.myorder.MyOrderViewModel
@@ -42,6 +43,7 @@ val coffeeCartModule = module {
     single<PaymentRepository> { KtorPaymentRepository(get()) }
     factory { PlacesViewModel(get(), get()) }
     factory { CoffeeCartDetailsViewModel(get(), get()) }
+    factory { BakeryDetailsViewModel(get()) }
     factory { ProfileViewModel(get()) }
     factory { CartMediaPickerViewModel(get()) }
     factory { AddCartFromGoogleViewModel(get()) }

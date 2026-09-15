@@ -15,6 +15,8 @@ import com.coffeecart.app.screens.home.HomeScreen
 import com.coffeecart.app.screens.myorder.MyOrderScreen
 import com.coffeecart.app.screens.coffeecart.ProductsScreen
 import com.coffeecart.app.screens.coffeecart.ProductDetailsScreen
+import com.coffeecart.app.screens.coffeecart.BakeryCategoriesScreen
+import com.coffeecart.app.screens.coffeecart.BakeryDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.PlacesScreen
 import com.coffeecart.app.screens.coffeecart.CategoriesScreen
@@ -47,7 +49,30 @@ fun AppNavHost(
             HomeScreen(onCtaButtonClick = { navController.navigate(Destination.CoffeeCart.route) })
         }
         composable(Destination.CoffeeCart.route) {
-            PlacesScreen(onCartClick = { cartId -> navController.navigate(Routes.coffeeCartDetails(cartId)) })
+            PlacesScreen(
+                onCartClick = { cartId -> navController.navigate(Routes.coffeeCartDetails(cartId)) },
+                onBakeryClick = { bakeryId -> navController.navigate(Routes.bakeryDetails(bakeryId)) },
+            )
+        }
+        composable(Routes.BAKERY_DETAILS) { backStackEntry ->
+            val bakeryId = backStackEntry.arguments?.read {
+                getStringOrNull("bakeryId")
+            } ?: ""
+
+            BakeryDetailsScreen(
+                bakeryId = bakeryId,
+                onBackClick = { navController.popBackStack() },
+                onCtaClick = { id -> navController.navigate(Routes.bakeryMenuCategories(id)) }
+            )
+        }
+        composable(Routes.BAKERY_MENU_CATEGORIES) { backStackEntry ->
+            val bakeryId = backStackEntry.arguments?.read {
+                getStringOrNull("bakeryId")
+            } ?: ""
+            BakeryCategoriesScreen(
+                bakeryId = bakeryId,
+                onCategoryClick = {},
+            )
         }
         composable(Routes.COFFEE_CART_DETAILS) { backStackEntry ->
             val cartId = backStackEntry.arguments?.read {

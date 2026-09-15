@@ -80,7 +80,7 @@ fun CategoriesScreen(
 }
 
 @Composable
-private fun CoffeeCartMenuCategoriesContent(
+fun CoffeeCartMenuCategoriesContent(
     categories: List<MenuCategory>,
     onCategoryClick: (String) -> Unit,
 ) {

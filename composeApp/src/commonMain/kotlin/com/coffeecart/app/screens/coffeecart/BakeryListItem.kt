@@ -1,6 +1,7 @@
 package com.coffeecart.app.screens.coffeecart
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,7 +31,7 @@ import com.coffeecart.shared.model.Bakery
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun BakeryListItem(bakery: Bakery, formattedDistance: String? = null) {
+fun BakeryListItem(bakery: Bakery, formattedDistance: String? = null, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,6 +42,7 @@ fun BakeryListItem(bakery: Bakery, formattedDistance: String? = null) {
             )
             .clip(MaterialTheme.shapes.large)
             .background(MaterialTheme.colorScheme.surface)
+            .clickable(onClick = onClick)
             .padding(Spacing.XXSmall.dp)
     ) {
         Row(
@@ -86,5 +88,6 @@ private fun BakeryListItemPreview() {
     BakeryListItem(
         bakery = stubBakery,
         formattedDistance = "0.8",
+        onClick = {},
     )
 }
