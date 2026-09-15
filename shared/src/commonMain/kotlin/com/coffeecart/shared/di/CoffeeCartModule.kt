@@ -1,15 +1,17 @@
 package com.coffeecart.shared.di
 
 import com.coffeecart.shared.data.repository.ShoppingCartRepository
+import com.coffeecart.shared.data.repository.BakeryRepository
 import com.coffeecart.shared.data.repository.CoffeeCartRepository
 import com.coffeecart.shared.data.repository.KtorOrderRepository
 import com.coffeecart.shared.data.repository.KtorPaymentRepository
+import com.coffeecart.shared.domain.BakeryRepositoryInterface
 import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
 import com.coffeecart.shared.domain.OrderRepository
 import com.coffeecart.shared.domain.PaymentRepository
 import com.coffeecart.shared.domain.ShoppingCartRepositoryInterface
 import com.coffeecart.shared.feature.cartdetails.CoffeeCartDetailsViewModel
-import com.coffeecart.shared.feature.cartlist.CoffeeCartListViewModel
+import com.coffeecart.shared.feature.cartlist.PlacesViewModel
 import com.coffeecart.shared.feature.myorder.MyOrderViewModel
 import com.coffeecart.shared.feature.orderdashboard.OrderDashboardViewModel
 import com.coffeecart.shared.feature.profile.ProfileViewModel
@@ -34,10 +36,11 @@ val coffeeCartModule = module {
         }
     }
     single<CoffeeCartRepositoryInterface> { CoffeeCartRepository(get()) }
+    single<BakeryRepositoryInterface> { BakeryRepository() }
     single<ShoppingCartRepositoryInterface> { ShoppingCartRepository() }
     single<OrderRepository> { KtorOrderRepository(get()) }
     single<PaymentRepository> { KtorPaymentRepository(get()) }
-    factory { CoffeeCartListViewModel(get()) }
+    factory { PlacesViewModel(get(), get()) }
     factory { CoffeeCartDetailsViewModel(get(), get()) }
     factory { ProfileViewModel(get()) }
     factory { CartMediaPickerViewModel(get()) }

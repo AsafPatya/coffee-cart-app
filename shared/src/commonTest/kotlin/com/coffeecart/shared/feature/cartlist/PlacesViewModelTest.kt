@@ -1,13 +1,13 @@
 package com.coffeecart.shared.feature.cartlist
 
 import com.coffeecart.shared.contract.PlaceDetailsDto
+import com.coffeecart.shared.domain.BakeryRepositoryInterface
 import com.coffeecart.shared.domain.CoffeeCartRepositoryInterface
+import com.coffeecart.shared.model.Bakery
 import com.coffeecart.shared.model.CoffeeCart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -79,7 +79,11 @@ private class FailingRepositoryInterface(private val exception: Exception) : Cof
     override suspend fun uploadImage(bytes: ByteArray, fileName: String): String = throw exception
 }
 
-class CoffeeCartListViewModelTest {
+private class FakeBakeryRepositoryInterface(private val bakeries: List<Bakery> = emptyList()) : BakeryRepositoryInterface {
+    override suspend fun getBakeries(): List<Bakery> = bakeries
+}
+
+class PlacesViewModelTest {
     private val sampleCart = CoffeeCart(
         id = "1",
         name = "Downtown Espresso Cart",
@@ -93,7 +97,7 @@ class CoffeeCartListViewModelTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         Dispatchers.setMain(testDispatcher)
         try {
-            val viewModel = CoffeeCartListViewModel(SucceedingRepositoryInterface(listOf(sampleCart)))
+            val viewModel = PlacesViewModel(SucceedingRepositoryInterface(listOf(sampleCart)), FakeBakeryRepositoryInterface())
 
             val state = viewModel.uiState.value
             assertIs<CoffeeCartListUiState.Success>(state)
@@ -109,7 +113,7 @@ class CoffeeCartListViewModelTest {
         val testDispatcher = UnconfinedTestDispatcher(testScheduler)
         Dispatchers.setMain(testDispatcher)
         try {
-            val viewModel = CoffeeCartListViewModel(FailingRepositoryInterface(RuntimeException("boom")))
+            val viewModel = PlacesViewModel(FailingRepositoryInterface(RuntimeException("boom")), FakeBakeryRepositoryInterface())
 
             val state = viewModel.uiState.value
             assertIs<CoffeeCartListUiState.Error>(state)

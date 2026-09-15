@@ -16,7 +16,7 @@ import com.coffeecart.app.screens.myorder.MyOrderScreen
 import com.coffeecart.app.screens.coffeecart.ProductsScreen
 import com.coffeecart.app.screens.coffeecart.ProductDetailsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
-import com.coffeecart.app.screens.coffeecart.CoffeeCartListScreen
+import com.coffeecart.app.screens.coffeecart.PlacesScreen
 import com.coffeecart.app.screens.coffeecart.CategoriesScreen
 import com.coffeecart.app.screens.profile.AddCartFromGoogleScreen
 import com.coffeecart.app.screens.profile.CoffeeCartAddCategoryScreen
@@ -47,7 +47,7 @@ fun AppNavHost(
             HomeScreen(onCtaButtonClick = { navController.navigate(Destination.CoffeeCart.route) })
         }
         composable(Destination.CoffeeCart.route) {
-            CoffeeCartListScreen(onCartClick = { cartId -> navController.navigate(Routes.coffeeCartDetails(cartId)) })
+            PlacesScreen(onCartClick = { cartId -> navController.navigate(Routes.coffeeCartDetails(cartId)) })
         }
         composable(Routes.COFFEE_CART_DETAILS) { backStackEntry ->
             val cartId = backStackEntry.arguments?.read {
