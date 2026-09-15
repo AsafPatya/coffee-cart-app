@@ -6,6 +6,8 @@ package com.coffeecart.shared.contract
 object Endpoints {
     const val CARTS = "/carts"
 
+    const val BAKERIES = "/bakeries"
+
     /**
      * Returns the dynamic path for a specific coffee cart resource.
      */

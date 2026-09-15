@@ -36,7 +36,7 @@ val coffeeCartModule = module {
         }
     }
     single<CoffeeCartRepositoryInterface> { CoffeeCartRepository(get()) }
-    single<BakeryRepositoryInterface> { BakeryRepository() }
+    single<BakeryRepositoryInterface> { BakeryRepository(get()) }
     single<ShoppingCartRepositoryInterface> { ShoppingCartRepository() }
     single<OrderRepository> { KtorOrderRepository(get()) }
     single<PaymentRepository> { KtorPaymentRepository(get()) }

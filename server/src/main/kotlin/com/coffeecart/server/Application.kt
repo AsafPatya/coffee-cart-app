@@ -1,6 +1,7 @@
 package com.coffeecart.server
 
 import com.coffeecart.server.db.DatabaseFactory
+import com.coffeecart.server.db.PostgresBakeryStore
 import com.coffeecart.server.db.PostgresCartStore
 import com.coffeecart.server.db.PostgresOrderStore
 import com.coffeecart.server.google.toDto
@@ -85,6 +86,7 @@ fun Application.module() {
 
     DatabaseFactory.init()
     val cartStore = PostgresCartStore()
+    val bakeryStore = PostgresBakeryStore()
     val orderStore = PostgresOrderStore()
     val httpClient = HttpClient(OkHttp) {
         install(ClientContentNegotiation) {
@@ -134,6 +136,10 @@ fun Application.module() {
 
         get(Endpoints.CARTS) {
             call.respond(cartStore.getAll().map { it.toDto() })
+        }
+
+        get(Endpoints.BAKERIES) {
+            call.respond(bakeryStore.getAll().map { it.toDto() })
         }
 
         get(Endpoints.PLACES + "/details") {
