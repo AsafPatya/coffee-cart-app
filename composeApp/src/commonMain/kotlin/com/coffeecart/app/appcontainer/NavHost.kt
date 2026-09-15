@@ -17,6 +17,7 @@ import com.coffeecart.app.screens.coffeecart.ProductsScreen
 import com.coffeecart.app.screens.coffeecart.ProductDetailsScreen
 import com.coffeecart.app.screens.coffeecart.BakeryCategoriesScreen
 import com.coffeecart.app.screens.coffeecart.BakeryDetailsScreen
+import com.coffeecart.app.screens.coffeecart.BakeryProductsScreen
 import com.coffeecart.app.screens.coffeecart.CoffeeCartDetailsScreen
 import com.coffeecart.app.screens.coffeecart.PlacesScreen
 import com.coffeecart.app.screens.coffeecart.CategoriesScreen
@@ -71,7 +72,22 @@ fun AppNavHost(
             } ?: ""
             BakeryCategoriesScreen(
                 bakeryId = bakeryId,
-                onCategoryClick = {},
+                onCategoryClick = { categoryName ->
+                    navController.navigate(Routes.bakeryCategoryProducts(bakeryId, categoryName))
+                },
+            )
+        }
+        composable(Routes.BAKERY_CATEGORY_PRODUCTS) { backStackEntry ->
+            val bakeryId = backStackEntry.arguments?.read {
+                getStringOrNull("bakeryId")
+            } ?: ""
+            val categoryName = backStackEntry.arguments?.read {
+                getStringOrNull("categoryName")
+            } ?: ""
+            BakeryProductsScreen(
+                bakeryId = bakeryId,
+                categoryName = categoryName,
+                onProductClick = {},
             )
         }
         composable(Routes.COFFEE_CART_DETAILS) { backStackEntry ->

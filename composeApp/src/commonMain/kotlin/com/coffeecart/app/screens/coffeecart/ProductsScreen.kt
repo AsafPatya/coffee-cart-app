@@ -104,7 +104,7 @@ internal fun formatPrice(price: Double): String {
 }
 
 @Composable
-private fun CoffeeCartCategoryProductsContent(products: List<Product>, onProductClick: (Product) -> Unit) {
+fun CoffeeCartCategoryProductsContent(products: List<Product>, onProductClick: (Product) -> Unit) {
     if (products.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "No products available in this category.", style = MaterialTheme.typography.bodyLarge)
